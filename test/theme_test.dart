@@ -73,10 +73,8 @@ void main() {
         findsOneWidget,
       );
 
-      // Open drawer and tap 'Start' to return to dashboard
-      await tester.tap(find.byIcon(Icons.menu));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Start').last);
+      // Tap AppBar back button to return to dashboard
+      await tester.tap(find.byIcon(Icons.arrow_back_rounded));
       await tester.pumpAndSettle();
 
       // Returns to dashboard with 'Start' in AppBar

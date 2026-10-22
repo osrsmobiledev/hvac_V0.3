@@ -42,6 +42,7 @@ class _AppShellScreenState extends State<AppShellScreen> {
           builder: (context, constraints) {
             // Tablet & landscape threshold (720px)
             final isWideScreen = constraints.maxWidth >= 720;
+            final isHome = _controller.activeApplet == AppletType.home;
             final isCombustion =
                 _controller.activeApplet == AppletType.combustion;
 
@@ -55,72 +56,104 @@ class _AppShellScreenState extends State<AppShellScreen> {
                 ),
             };
 
-            return Scaffold(
-              // Persistent AppBar: stays visible at all times
-              appBar: AppBar(
-                toolbarHeight:
-                    (isCombustion && !isWideScreen) ? 74.0 : kToolbarHeight,
-                centerTitle: true,
-                leading: isWideScreen
-                    ? null
-                    : IconButton(
-                        icon: const Icon(Icons.menu),
-                        tooltip: _isDrawerOpen ? 'Menu sluiten' : 'Menu openen',
-                        onPressed: () {
-                          final scaffoldState = _phoneScaffoldKey.currentState;
-                          if (scaffoldState == null) return;
-                          if (scaffoldState.isDrawerOpen) {
-                            scaffoldState.closeDrawer();
-                          } else {
-                            scaffoldState.openDrawer();
-                          }
-                        },
-                      ),
-                title: _buildAppBarTitle(isWideScreen),
-                bottom: const PreferredSize(
-                  preferredSize: Size.fromHeight(1.0),
-                  child: Divider(
-                    height: 1.0,
-                    thickness: 1.0,
-                    color: AppColors.goldHairline,
+            return PopScope(
+              canPop: isHome && !_isDrawerOpen,
+              onPopInvokedWithResult: (didPop, _) {
+                if (didPop) return;
+                if (_isDrawerOpen) {
+                  _phoneScaffoldKey.currentState?.closeDrawer();
+                  return;
+                }
+                if (!isHome) {
+                  _controller.selectApplet(AppletType.home);
+                }
+              },
+              child: Scaffold(
+                // Persistent AppBar: stays visible at all times
+                appBar: AppBar(
+                  toolbarHeight:
+                      (isCombustion && !isWideScreen) ? 74.0 : kToolbarHeight,
+                  centerTitle: true,
+                  leading: isWideScreen
+                      ? null
+                      : AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 200),
+                          child: isHome
+                              ? IconButton(
+                                  key: const ValueKey('menu_button'),
+                                  icon: const Icon(Icons.menu),
+                                  tooltip: _isDrawerOpen
+                                      ? 'Menu sluiten'
+                                      : 'Menu openen',
+                                  onPressed: () {
+                                    final scaffoldState =
+                                        _phoneScaffoldKey.currentState;
+                                    if (scaffoldState == null) return;
+                                    if (scaffoldState.isDrawerOpen) {
+                                      scaffoldState.closeDrawer();
+                                    } else {
+                                      scaffoldState.openDrawer();
+                                    }
+                                  },
+                                )
+                              : IconButton(
+                                  key: const ValueKey('back_button'),
+                                  icon: const Icon(
+                                    Icons.arrow_back_rounded,
+                                    color: AppColors.amberGold,
+                                  ),
+                                  tooltip: 'Terug naar overzicht',
+                                  onPressed: () {
+                                    _controller.selectApplet(AppletType.home);
+                                  },
+                                ),
+                        ),
+                  title: _buildAppBarTitle(isWideScreen),
+                  bottom: const PreferredSize(
+                    preferredSize: Size.fromHeight(1.0),
+                    child: Divider(
+                      height: 1.0,
+                      thickness: 1.0,
+                      color: AppColors.goldHairline,
+                    ),
                   ),
                 ),
-              ),
-              body: isWideScreen
-                  // Tablet/wide screen layout: permanent side menu on left, body on right
-                  ? Row(
-                      children: [
-                        AppDrawer(
-                          controller: _controller,
-                          isPermanent: true,
-                        ),
-                        const VerticalDivider(
-                          width: 1.0,
-                          thickness: 1.0,
-                          color: AppColors.goldHairline,
-                        ),
-                        Expanded(child: currentBody),
-                      ],
-                    )
-                  // Phone layout: inner Scaffold whose drawer opens underneath the persistent AppBar
-                  : Scaffold(
-                      key: _phoneScaffoldKey,
-                      onDrawerChanged: (isOpen) {
-                        if (_isDrawerOpen != isOpen) {
-                          setState(() {
-                            _isDrawerOpen = isOpen;
-                          });
-                        }
-                      },
-                      drawer: AppDrawer(
-                        controller: _controller,
-                        isPermanent: false,
-                        onItemTapped: () {
-                          Navigator.of(context).pop();
+                body: isWideScreen
+                    // Tablet/wide screen layout: permanent side menu on left, body on right
+                    ? Row(
+                        children: [
+                          AppDrawer(
+                            controller: _controller,
+                            isPermanent: true,
+                          ),
+                          const VerticalDivider(
+                            width: 1.0,
+                            thickness: 1.0,
+                            color: AppColors.goldHairline,
+                          ),
+                          Expanded(child: currentBody),
+                        ],
+                      )
+                    // Phone layout: inner Scaffold whose drawer opens underneath the persistent AppBar
+                    : Scaffold(
+                        key: _phoneScaffoldKey,
+                        onDrawerChanged: (isOpen) {
+                          if (_isDrawerOpen != isOpen) {
+                            setState(() {
+                              _isDrawerOpen = isOpen;
+                            });
+                          }
                         },
+                        drawer: AppDrawer(
+                          controller: _controller,
+                          isPermanent: false,
+                          onItemTapped: () {
+                            Navigator.of(context).pop();
+                          },
+                        ),
+                        body: currentBody,
                       ),
-                      body: currentBody,
-                    ),
+              ),
             );
           },
         );

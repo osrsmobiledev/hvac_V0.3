@@ -169,5 +169,53 @@ void main() {
       // Verify still at scrolled position (Druk [Pa] is still visible)
       expect(find.text('Druk [Pa]'), findsOneWidget);
     });
+
+    testWidgets('AppBar back button returns to the home dashboard',
+        (tester) async {
+      tester.view.physicalSize = const Size(390, 844);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() => tester.view.resetPhysicalSize());
+
+      await tester.pumpWidget(buildTestApp(width: 390, height: 844));
+      await tester.pumpAndSettle();
+
+      // Open Verbrandingsattest
+      await tester.tap(find.text('Verbrandingsattest'));
+      await tester.pumpAndSettle();
+
+      // Find and tap the AppBar back button
+      final backButton = find.byTooltip('Terug naar overzicht');
+      expect(backButton, findsOneWidget);
+      await tester.tap(backButton);
+      await tester.pumpAndSettle();
+
+      // Should be back on the dashboard
+      expect(find.text('Kies een applet'), findsOneWidget);
+    });
+
+    testWidgets('System back navigation returns from applet to home dashboard',
+        (tester) async {
+      tester.view.physicalSize = const Size(390, 844);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() => tester.view.resetPhysicalSize());
+
+      await tester.pumpWidget(buildTestApp(width: 390, height: 844));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Verbrandingsattest'));
+      await tester.pumpAndSettle();
+
+      // Switch to Start tab (index 1)
+      await tester.tap(find.widgetWithText(Tab, 'Start'));
+      await tester.pumpAndSettle();
+
+      // Trigger system back (e.g. Android swipe-back gesture or back button)
+      final dynamic widgetsAppState = tester.state(find.byType(WidgetsApp));
+      await widgetsAppState.didPopRoute();
+      await tester.pumpAndSettle();
+
+      // Returns to the Dashboard without closing the app
+      expect(find.text('Kies een applet'), findsOneWidget);
+    });
   });
 }

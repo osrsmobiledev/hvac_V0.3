@@ -1,18 +1,22 @@
 /// Lightweight domain model representing an active draft visit.
 ///
-/// Holds the primary setup fields edited on Tab 2 (Start)
+/// Holds the primary setup fields edited on Tab 2 (Start) & Tab 3 (Firma - Technicus)
 /// and synchronized with the SQLite `maintenance_visits` table.
 class DraftVisit {
   final int id;
   final String activityType; // 'onderhoud' or 'eerste_ingebruikname'
   final String attestNumber;
   final String visitDate;
+  final String startTime;
+  final String endTime;
 
   const DraftVisit({
     required this.id,
     required this.activityType,
     required this.attestNumber,
     required this.visitDate,
+    this.startTime = '',
+    this.endTime = '',
   });
 
   /// Factory constructor to map an SQLite row into a [DraftVisit] entity.
@@ -22,6 +26,8 @@ class DraftVisit {
       activityType: (map['activity_type'] as String?) ?? 'onderhoud',
       attestNumber: (map['attest_number'] as String?) ?? '',
       visitDate: (map['visit_date'] as String?) ?? '',
+      startTime: (map['start_time'] as String?) ?? '',
+      endTime: (map['end_time'] as String?) ?? '',
     );
   }
 
@@ -30,12 +36,16 @@ class DraftVisit {
     String? activityType,
     String? attestNumber,
     String? visitDate,
+    String? startTime,
+    String? endTime,
   }) {
     return DraftVisit(
       id: id,
       activityType: activityType ?? this.activityType,
       attestNumber: attestNumber ?? this.attestNumber,
       visitDate: visitDate ?? this.visitDate,
+      startTime: startTime ?? this.startTime,
+      endTime: endTime ?? this.endTime,
     );
   }
 }

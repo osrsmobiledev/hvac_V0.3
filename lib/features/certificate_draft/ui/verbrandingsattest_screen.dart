@@ -3,6 +3,7 @@ import 'package:hvac_app/app/shell/app_shell_controller.dart';
 import 'package:hvac_app/app/theme/app_colors.dart';
 import 'package:hvac_app/app/theme/app_theme.dart';
 import 'tabs/data_tab.dart';
+import 'tabs/firma_technicus_tab.dart';
 import 'tabs/start_tab.dart';
 
 /// The 7-tab workflow screen for 'Verbrandingsattest Vlaanderen'.
@@ -110,13 +111,8 @@ class _VerbrandingsattestScreenState extends State<VerbrandingsattestScreen>
               // Tab 2: Start (Active in Slice 2.2)
               StartTab(),
 
-              // Tab 3: Firma - Technicus (Slice 2.3)
-              _DraftTabPlaceholder(
-                tabName: 'Firma - Technicus',
-                sliceInfo:
-                    'Wordt geïmplementeerd in Slice 2.3 met BO2 Time Spinner',
-                icon: Icons.badge_rounded,
-              ),
+              // Tab 3: Firma - Technicus (Active in Slice 2.3)
+              FirmaTechnicusTab(),
 
               // Tab 4: Klant (Slice 2.4)
               _DraftTabPlaceholder(

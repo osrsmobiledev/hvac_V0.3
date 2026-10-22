@@ -7,6 +7,8 @@ import '../theme/app_theme.dart';
 /// Features:
 /// - Single squircle box with colored rim border (compact, well-proportioned).
 /// - Centered glowing icon glyph inside the tile.
+/// - Ink ripple and highlight are constrained strictly to the squircle box,
+///   preventing text underneath from being highlighted.
 /// - Centered 2-line title in Libron font directly beneath the tile.
 class AppletBentoTile extends StatelessWidget {
   final String title;
@@ -34,35 +36,45 @@ class AppletBentoTile extends StatelessWidget {
       AppColors.carbonCard,
     );
 
-    return InkWell(
-      borderRadius: BorderRadius.circular(22),
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
       onTap: onTap,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Single compact squircle tile container with colored rim border
+          // Squircle tile container with localized ink splash/highlight
           AspectRatio(
             aspectRatio: 1.0,
-            child: Container(
-              decoration: BoxDecoration(
-                color: tonalBackground,
+            child: Material(
+              color: tonalBackground,
+              borderRadius: BorderRadius.circular(22),
+              child: InkWell(
                 borderRadius: BorderRadius.circular(22),
-                border: Border.all(
-                  color: borderColor,
-                  width: 1.4,
-                ),
-              ),
-              child: Center(
-                child: Icon(
-                  icon,
-                  color: accentColor,
-                  size: 42,
+                splashColor: accentColor.withValues(alpha: 0.16),
+                highlightColor: accentColor.withValues(alpha: 0.08),
+                onTap: onTap,
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(22),
+                    border: Border.all(
+                      color: borderColor,
+                      width: 1.4,
+                    ),
+                  ),
+                  child: Center(
+                    child: Icon(
+                      icon,
+                      color: accentColor,
+                      size: 42,
+                    ),
+                  ),
                 ),
               ),
             ),
           ),
           const SizedBox(height: 8),
-          // Centered 2-line title in Libron font
+
+          // Centered 2-line title in Libron font (never highlighted)
           SizedBox(
             height: 36,
             child: Column(
