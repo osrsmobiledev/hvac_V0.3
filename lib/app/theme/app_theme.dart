@@ -121,47 +121,54 @@ abstract final class AppTheme {
           fontSize: 14,
         ),
       ),
-      textTheme: const TextTheme(
-        headlineMedium: TextStyle(
-          fontFamily: fontFamily,
-          color: AppColors.textPrimary,
-          fontSize: 24,
-          fontWeight: FontWeight.w700,
-          letterSpacing: -0.3,
-        ),
-        titleLarge: TextStyle(
-          fontFamily: fontFamily,
-          color: AppColors.textPrimary,
-          fontSize: 18,
-          fontWeight: FontWeight.w700,
-          letterSpacing: 0.1,
-        ),
-        titleMedium: TextStyle(
-          fontFamily: fontFamily,
-          color: AppColors.textPrimary,
-          fontSize: 15,
-          fontWeight: FontWeight.w600,
-        ),
-        bodyLarge: TextStyle(
-          fontFamily: fontFamily,
-          color: AppColors.textPrimary,
-          fontSize: 15,
-          height: 1.4,
-        ),
-        bodyMedium: TextStyle(
-          fontFamily: fontFamily,
-          color: AppColors.textSecondary,
-          fontSize: 13,
-          height: 1.4,
-        ),
-        labelSmall: TextStyle(
-          fontFamily: fontFamily,
-          color: AppColors.textMuted,
-          fontSize: 11,
-          letterSpacing: 0.8,
-          fontWeight: FontWeight.w700,
-        ),
-      ),
+      textTheme: ThemeData.dark()
+          .textTheme
+          .apply(
+            fontFamily: fontFamily,
+            bodyColor: AppColors.textPrimary,
+            displayColor: AppColors.textPrimary,
+          )
+          .copyWith(
+            headlineMedium: const TextStyle(
+              fontFamily: fontFamily,
+              color: AppColors.textPrimary,
+              fontSize: 24,
+              fontWeight: FontWeight.w700,
+              letterSpacing: -0.3,
+            ),
+            titleLarge: const TextStyle(
+              fontFamily: fontFamily,
+              color: AppColors.textPrimary,
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.1,
+            ),
+            titleMedium: const TextStyle(
+              fontFamily: fontFamily,
+              color: AppColors.textPrimary,
+              fontSize: 15,
+              fontWeight: FontWeight.w600,
+            ),
+            bodyLarge: const TextStyle(
+              fontFamily: fontFamily,
+              color: AppColors.textPrimary,
+              fontSize: 15,
+              height: 1.4,
+            ),
+            bodyMedium: const TextStyle(
+              fontFamily: fontFamily,
+              color: AppColors.textSecondary,
+              fontSize: 13,
+              height: 1.4,
+            ),
+            labelSmall: const TextStyle(
+              fontFamily: fontFamily,
+              color: AppColors.textMuted,
+              fontSize: 11,
+              letterSpacing: 0.8,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
     );
   }
 }
