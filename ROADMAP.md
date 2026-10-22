@@ -17,18 +17,20 @@
 - [x] **Slice 1.3 — Home Dashboard (Applet Launcher):** Build the homepage body containing the "Bento Squircle" applet tiles (e.g., Verbrandingsattest, Cleaning, Inspection). Implement the Tinted Dark Mode / Tonal Surfaces so each tile has a subtle hue tint matching its accent border and vibrant glyph. Use a responsive grid (e.g., 1-2 columns on phones, 3-4 columns on tablets).
 - [x] **Slice 1.4 — SQLite Database Core:** Set up `sqflite` tables (`technician_profile`, `customers`, `service_locations`, `boilers`, `maintenance_visits`, `measurement_captures`). Ensure the DB initializes correctly on app launch.
 
-### Milestone 2: The "Verbrandingsattest" Applet (Tabs 1-4)
-*Goal: Build the 7-tab workflow inside the persistent shell.*
+### Milestone 2: The "Verbrandingsattest" Applet (Tabs 1 to 4)
+*Goal: Build the 7-tab persistent shell and the first 4 tabs tab-by-tab.*
 
-- [ ] **Slice 2.1 — 7-Tab Internal Shell & `Start` Tab:** When tapping the Verbrandingsattest tile on the homepage, route to the applet. Update the AppBar title to "Verbrandingsattest". Add the internal 7-tab navigation bar at the bottom/top. Build the `Start` tab and adapt the legacy `bo2_time_spinner.dart` with Dutch labels and auto-save.
-- [ ] **Slice 2.2 — `Firma` Tab (Reusable Technician Profile):** Build the `Firma` form backed by the singleton `technician_profile` table.
-- [ ] **Slice 2.3 — `Klant` Tab & Saved Customer Directory:** Build the customer/owner/tenant/installation location form with a searchable saved-customer picker.
-- [ ] **Slice 2.4 — `Stooktoestel` Tab + Serial Barcode Scanner:** Build the appliance (`Toestel`) and burner (`Brander`) form, including the single authoritative fuel selector. Add a camera barcode scan button (`mobile_scanner`) next to the `Fabricatienummer` fields with manual text fallback.
+- [ ] **Slice 2.1 — 7-Tab Internal Shell & Tab 1 (`Data`):** Route from Home "Verbrandingsattest Vlaanderen" tile into the 7-tab workflow. Adaptive persistent AppBar title in Libron font: 2 lines centered on narrow screens ("Verbrandingsattest" / "Vlaanderen" with comfortable height padding) and 1 line on wider screens ("Verbrandingsattest Vlaanderen"). Top scrollable horizontal navigation bar directly below AppBar (`Data`, `Start`, `Firma - Technicus`, `Klant`, `Stooktoestel`, `Meting`, `Eindbeoordeling`) matching preferred theme. Build Tab 1 (`Data`) UI layout: collapsible `Meetgegevens` bento card, `Rookgassen` sub-card with Eurolyzer QR scanner launch icon button and live readings container.
+- [ ] **Slice 2.2 — Tab 2 (`Start`):** Build the clean `Start` form: Activity type selector (*Onderhoud* vs. *Keuring voor eerste ingebruikname*) and *Volgnummer Attest*. Auto-save draft changes to SQLite `maintenance_visits`.
+- [ ] **Slice 2.3 — Tab 3 (`Firma - Technicus` & BO2 Time Spinner):** Build Company & Technician form backed by the singleton `technician_profile` table. *Datum onderhoud* (calendar picker defaulting to today). Adapt and integrate the 24-hour **BO2 Time Spinner** with Dutch labels (*Uren*, *Minuten*, *Kies tijd*, *Annuleren*, *OK*) for *Arbeidsduur van* & *tot*. Auto-save to SQLite.
+- [ ] **Slice 2.4 — Tab 4 (`Klant` & Installation Location):** Customer contact details, *Eigenaar* vs. *Huurder* role toggle, installation address, and searchable SQLite saved-customer directory picker.
 
-### Milestone 3: Measurements (`Meting`), Eurolyzer QR & Final Assessment (`Besluit`)
-- [ ] **Slice 3.1 — `Meting` Tab & Fuel-Driven Field Visibility:** Build the `Meting` form dynamically showing/hiding fuel-specific fields based on `Stooktoestel` without deleting hidden measurement rows.
-- [ ] **Slice 3.2 — Eurolyzer QR Code Scanner & Parser:** Connect `mobile_scanner` to parse flue-gas readings into the selected slot (`initial`, `final_low`, `final_high`), and warn on fuel mismatch.
-- [ ] **Slice 3.3 — `Besluit` Tab & Signature Capture:** Build the final assessment tab (`Goed`/`Veilig`, dates, remarks) and dual signature pads saved locally.
+### Milestone 3: Appliance, Measurements & Final Assessment (Tabs 5 to 7)
+*Goal: Complete the remaining tabs tab-by-tab.*
+
+- [ ] **Slice 3.1 — Tab 5 (`Stooktoestel` + Serial Barcode Scanner):** Appliance (`Toestel`) & burner (`Brander`) forms, single authoritative Fuel selector (`Stookolie`, `Aardgas`, `LPG`, etc.), and camera barcode scanner button (`mobile_scanner`) next to `Fabricatienummer` with manual text fallback.
+- [ ] **Slice 3.2 — Tab 6 (`Meting` & Eurolyzer Flue-Gas QR):** Flue-gas measurement slots (*Vóór onderhoud*, *Na - Laaglast*, *Na - Hooglast*), QR reading insertion from Tab 1 into active slot, and fuel-driven check visibility.
+- [ ] **Slice 3.3 — Tab 7 (`Eindbeoordeling` & Signatures):** Dual conclusions (*Goed*/*Niet goed*, *Veilig*/*Niet veilig*), statutory next inspection date, defects/remarks, digital signature pads for technician and customer, and *Afdrukken* trigger.
 
 ### Milestone 4: Re-Wired PDF Generation & Local Completion (`Voltooien`)
 - [ ] **Slice 4.1 — `Voltooien` Pre-Flight Validation:** Build the `Voltooien` checklist showing missing fields with one-tap navigation to fix them. Freeze a `snapshot_json` upon finalization.
@@ -45,10 +47,11 @@
 ## 2. Current Handoff (Active State for AI Agent)
 
 - **Current Status:** Milestone 1 complete (Slices 1.1, 1.2, 1.3, and 1.4 tested and committed).
-- **Active Slice:** **Slice 2.1 — 7-Tab Internal Shell & `Start` Tab**
+- **Active Slice:** **Slice 2.1 — 7-Tab Internal Shell & Tab 1 (`Data`)**
 - **Immediate Next Step for Agent:**
-  1. Route from Home "Verbrandingsattest Vlaanderen" tile into the internal 7-tab workflow (Data, Start, Firma - Technicus, Klant, Stooktoestel, Meting, Eindbeoordeling).
-  2. Implement top scrollable horizontal tab bar matching the owner's preferred styling in references/legacy/prefered_theme/tab_Data/.
-  3. Build Start tab form (Activity Type toggle, Volgnummer attest, Datum onderhoud, Arbeidsduur van & tot with adapted Dutch BO2 Time Spinner).
-  4. Auto-save every edit into an active draft row in SQLite maintenance_visits table. Ensure all files remain strictly under 250 lines with helpful comments.
+  1. Route from Home "Verbrandingsattest Vlaanderen" tile into the internal 7-tab workflow.
+  2. Implement adaptive AppBar title: 2 lines centered on narrow screens, 1 line on wider screens, with comfortable height so it is displayed cleanly.
+  3. Implement top scrollable horizontal tab bar (`Data`, `Start`, `Firma - Technicus`, `Klant`, `Stooktoestel`, `Meting`, `Eindbeoordeling`) directly underneath the AppBar matching `Screenshot_20261022_152134.jpg`.
+  4. Build Tab 1 (`Data`) UI layout with collapsible `Meetgegevens` and `Rookgassen` card, QR icon button, and flue-gas parameter placeholders.
+  5. Verify with `flutter analyze` and `flutter test`. Ensure all files remain strictly under 250 lines with helpful comments.
 - **Blockers / Open Questions:** None. Awaiting owner approval to begin Slice 2.1.
