@@ -1,0 +1,785 @@
+Date: Tue, 22 Sep 2026 09:08:03 +0000 (UTC)
+Message-ID: <1735551751.3.1790068083435@0f43d8afa7a9>
+Subject: Exported From Confluence
+MIME-Version: 1.0
+Content-Type: multipart/related; 
+	boundary="----=_Part_2_361118356.1790068083434"
+
+------=_Part_2_361118356.1790068083434
+Content-Type: text/html; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+Content-Location: file:///C:/exported.html
+
+<html xmlns:o=3D'urn:schemas-microsoft-com:office:office'
+      xmlns:w=3D'urn:schemas-microsoft-com:office:word'
+      xmlns:v=3D'urn:schemas-microsoft-com:vml'
+      xmlns=3D'urn:w3-org-ns:HTML'>
+<head>
+    <meta http-equiv=3D"Content-Type" content=3D"text/html; charset=3Dutf-8=
+">
+    <title>meldingCentraleStooktoestellen</title>
+    <!--[if gte mso 9]>
+    <xml>
+        <o:OfficeDocumentSettings>
+            <o:TargetScreenSize>1024x640</o:TargetScreenSize>
+            <o:PixelsPerInch>72</o:PixelsPerInch>
+            <o:AllowPNG/>
+        </o:OfficeDocumentSettings>
+        <w:WordDocument>
+            <w:View>Print</w:View>
+            <w:Zoom>90</w:Zoom>
+            <w:DoNotOptimizeForBrowser/>
+        </w:WordDocument>
+    </xml>
+    <![endif]-->
+    <style>
+                <!--
+        @page Section1 {
+            size: 8.5in 11.0in;
+            margin: 1.0in;
+            mso-header-margin: .5in;
+            mso-footer-margin: .5in;
+            mso-paper-source: 0;
+        }
+
+        table {
+            border: solid 1px;
+            border-collapse: collapse;
+        }
+
+        table td, table th {
+            border: solid 1px;
+            padding: 5px;
+        }
+
+        td {
+            page-break-inside: avoid;
+        }
+
+        tr {
+            page-break-after: avoid;
+        }
+
+        div.Section1 {
+            page: Section1;
+        }
+
+        /* Confluence print stylesheet. Common to all themes for print medi=
+a */
+/* Full of !important until we improve batching for print CSS */
+
+@media print {
+    #main {
+        padding-bottom: 1em !important; /* The default padding of 6em is to=
+o much for printouts */
+    }
+
+    body {
+        font: var(--ds-font-body-small, Arial, Helvetica, FreeSans, sans-se=
+rif);
+    }
+
+    body, #full-height-container, #main, #page, #content, .has-personal-sid=
+ebar #content {
+        background: var(--ds-surface, #fff) !important;
+        color: var(--ds-text, #000) !important;
+        border: 0 !important;
+        width: 100% !important;
+        height: auto !important;
+        min-height: auto !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        display: block !important;
+    }
+
+    a, a:link, a:visited, a:focus, a:hover, a:active {
+        color: var(--ds-text, #000);
+    }
+
+    #content h1,
+    #content h2,
+    #content h3,
+    #content h4,
+    #content h5,
+    #content h6 {
+        page-break-after: avoid;
+    }
+
+    pre {
+        font: var(--ds-font-code, Monaco, "Courier New", monospace);
+    }
+
+    #header,
+    .aui-header-inner,
+    #navigation,
+    #sidebar,
+    .sidebar,
+    #personal-info-sidebar,
+    .ia-fixed-sidebar,
+    .page-actions,
+    .navmenu,
+    .ajs-menu-bar,
+    .noprint,
+    .inline-control-link,
+    .inline-control-link a,
+    a.show-labels-editor,
+    .global-comment-actions,
+    .comment-actions,
+    .quick-comment-container,
+    #addcomment {
+        display: none !important;
+    }
+
+    /* CONF-28544 cannot print multiple pages in IE */
+    #splitter-content {
+        position: relative !important;
+    }
+
+    .comment .date::before {
+        content: none !important; /* remove middot for print view */
+    }
+
+    h1.pagetitle img {
+        height: auto;
+        width: auto;
+    }
+
+    .print-only {
+        display: block;
+    }
+
+    #footer {
+        position: relative !important; /* CONF-17506 Place the footer at en=
+d of the content */
+        margin: 0;
+        padding: 0;
+        background: none;
+        clear: both;
+    }
+
+    #poweredby {
+        border-top: none;
+        background: none;
+    }
+
+    #poweredby li.print-only {
+        display: list-item;
+        font-style: italic;
+    }
+
+    #poweredby li.noprint {
+        display: none;
+    }
+
+    /* no width controls in print */
+    .wiki-content .table-wrap,
+    .wiki-content p,
+    .panel .codeContent,
+    .panel .codeContent pre,
+    .image-wrap {
+        overflow: visible !important;
+    }
+
+    /* TODO - should this work? */
+    #children-section,
+    #comments-section .comment,
+    #comments-section .comment .comment-body,
+    #comments-section .comment .comment-content,
+    #comments-section .comment p {
+        page-break-inside: avoid;
+    }
+
+    #page-children a {
+        text-decoration: none;
+    }
+
+    /**
+     hide twixies
+
+     the specificity here is a hack because print styles
+     are getting loaded before the base styles. */
+    #comments-section.pageSection .section-header,
+    #comments-section.pageSection .section-title,
+    #children-section.pageSection .section-header,
+    #children-section.pageSection .section-title,
+    .children-show-hide {
+        padding-left: 0;
+        margin-left: 0;
+    }
+
+    .children-show-hide.icon {
+        display: none;
+    }
+
+    /* personal sidebar */
+    .has-personal-sidebar #content {
+        margin-right: 0px;
+    }
+
+    .has-personal-sidebar #content .pageSection {
+        margin-right: 0px;
+    }
+
+    .no-print, .no-print * {
+        display: none !important;
+    }
+}
+-->
+    </style>
+</head>
+<body>
+    <h1>meldingCentraleStooktoestellen</h1>
+    <div class=3D"Section1">
+        <style type=3D"text/css">/*<![CDATA[*/
+div.rbtoc1790068083422 {padding: 0px;}
+div.rbtoc1790068083422 ul {list-style: disc;margin-left: 0px;}
+div.rbtoc1790068083422 li {margin-left: 0px;padding-left: 0px;}
+
+/*]]>*/</style>
+<div class=3D"toc-macro rbtoc1790068083422">
+<ul class=3D"toc-indentation">
+<li><a href=3D"#meldingCentraleStooktoestellen-APICall">API Call</a></li>
+<li><a href=3D"#meldingCentraleStooktoestellen-Overzichtvandeinvoervelden">=
+Overzicht van de invoervelden</a></li>
+<li><a href=3D"#meldingCentraleStooktoestellen-Formaatvanrequest">Formaat v=
+an request</a></li>
+<li><a href=3D"#meldingCentraleStooktoestellen-Formaatvanresponse">Formaat =
+van response</a>
+<ul class=3D"toc-indentation">
+<li><a href=3D"#meldingCentraleStooktoestellen-Succesvollemelding">Succesvo=
+lle melding</a></li>
+<li><a href=3D"#meldingCentraleStooktoestellen-Foutievemelding">Foutieve me=
+lding</a></li>
+</ul></li>
+</ul>
+</div>
+<h1 id=3D"meldingCentraleStooktoestellen-APICall">API Call</h1>
+<div class=3D"table-wrap">
+<table data-table-width=3D"760" data-layout=3D"default" data-local-id=3D"70=
+80afa5-767d-4ffd-9db3-667720ff74ad" class=3D"confluenceTable">
+<colgroup>
+<col style=3D"width: 128.0px;">
+<col style=3D"width: 630.0px;">
+</colgroup>
+<tbody>
+<tr>
+<th class=3D"confluenceTh">
+<p><strong>API call</strong></p></th>
+<td class=3D"confluenceTd">
+<p>POST /meldingen-api-a2a/v1/extern/meldingCentraleStooktoestellen</p></td=
+>
+</tr>
+<tr>
+<th class=3D"confluenceTh">
+<p><strong>Beschrijving</strong></p></th>
+<td class=3D"confluenceTd">
+<p>API call voor het melden van een keuring of onderhoud van een centraal s=
+tooktoestel</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>De belangrijkste voorwaarden om de gegevens voor een melding te aanvaard=
+en zijn:</p>
+<ul>
+<li>
+<p>De HVAC onderneming melder is geregistreerd en actief op het moment van =
+opladen</p></li>
+<li>
+<p>De activiteit keuring of onderhoud werd nog niet gemeld aan het VEKA (op=
+ basis van eigen externe refertenummer)</p></li>
+<li>
+<p>De datum van de activiteit keuring of onderhoud ligt niet in de toekomst=
+</p></li>
+<li>
+<p>De technicus is gekend bij de Vlaamse Overheid en mag de keuring en onde=
+rhoud van centrale stooktoestellen uitvoeren op datum van de activiteit</p>=
+</li>
+<li>
+<p>Het correcte identificatienummer voor adres, gebouw en gebouweenheid wer=
+d meegeleverd zoals opgenomen in het adres- en gebouwregister van de Vlaams=
+e Overheid</p>
+<ul>
+<li>
+<p>Bij voorkeur door doorgave van het gebouw(eenheid)ID.</p></li>
+<li>
+<p>In eerste fase is minstens het adresID verplicht</p></li>
+</ul></li>
+</ul>
+<h1 id=3D"meldingCentraleStooktoestellen-Overzichtvandeinvoervelden">Overzi=
+cht van de invoervelden</h1>
+<div class=3D"table-wrap">
+<table data-table-width=3D"760" data-layout=3D"default" data-local-id=3D"9e=
+1d1079-73fc-4291-b517-9c94a4f17222" class=3D"confluenceTable">
+<colgroup>
+<col style=3D"width: 206.0px;">
+<col style=3D"width: 339.0px;">
+<col style=3D"width: 215.0px;">
+</colgroup>
+<tbody>
+<tr>
+<td data-highlight-colour=3D"#e7e6e6" class=3D"confluenceTd">
+<p><strong>Veldnaam</strong></p></td>
+<td data-highlight-colour=3D"#e7e6e6" class=3D"confluenceTd">
+<p><strong>Omschrijving</strong></p></td>
+<td data-highlight-colour=3D"#e7e6e6" class=3D"confluenceTd">
+<p><strong>Toegelaten waarden</strong></p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>externeReferte</p></td>
+<td class=3D"confluenceTd">
+<p>Unieke ID uit eigen software</p></td>
+<td class=3D"confluenceTd">
+<p>&nbsp;</p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>ondernemingsnummer</p></td>
+<td class=3D"confluenceTd">
+<p>KBO nummer of ondernemingsnummer van de HVAC onderneming melder</p></td>
+<td class=3D"confluenceTd">
+<p>&nbsp;</p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>activiteitType</p></td>
+<td class=3D"confluenceTd">
+<p>Uitgevoerde ativiteit die wordt gemeld</p></td>
+<td class=3D"confluenceTd">
+<p>Keuze:</p>
+<ul>
+<li>
+<p>Keuring voor eerste ingebruikname</p></li>
+<li>
+<p>Onderhoud</p></li>
+</ul></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>datumActiviteit</p></td>
+<td class=3D"confluenceTd">
+<p>Datum waarop de activiteit keuring of onderhoud werd uitgevoerd door de =
+erkende technicus</p></td>
+<td class=3D"confluenceTd">
+<p>&nbsp;</p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>erkenningsnummer</p></td>
+<td class=3D"confluenceTd">
+<p>Erkenningsnummer van de technicus die de activiteit keuring of onderhoud=
+ heeft uitgevoerd</p></td>
+<td class=3D"confluenceTd">
+<p>&nbsp;</p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>verwarmingType</p></td>
+<td class=3D"confluenceTd">
+<p>&nbsp;</p></td>
+<td class=3D"confluenceTd">
+<p>Keuze:</p>
+<ul>
+<li>
+<p>individueel</p></li>
+<li>
+<p>collectief</p></li>
+<li>
+<p>onbekend</p></li>
+</ul></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>adresId</p></td>
+<td class=3D"confluenceTd">
+<p>AdresID uit het adresregister van de Vlaamse overheid</p></td>
+<td rowspan=3D"2" class=3D"confluenceTd">
+<p><a href=3D"https://vo-veka.atlassian.net/wiki/spaces/TDV/pages/232158003=
+3/Locatie+van+een+stooktoestel#API-endpoints" data-linked-resource-id=3D"23=
+21580033" data-linked-resource-version=3D"37" data-linked-resource-type=3D"=
+page">Locatie van een stooktoestel</a></p>
+<p>&nbsp;</p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>gebouwId</p></td>
+<td class=3D"confluenceTd">
+<p>GebouwID uit het gebouwregister van de Vlaamse overheid</p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>gebouwIdNietGekend</p></td>
+<td class=3D"confluenceTd">
+<p>True indien de gebruiker via de toepassing heeft aangegeven na nazicht o=
+p de kaart dat het gebouwID onbekend is in het basisregister</p></td>
+<td class=3D"confluenceTd">
+<p>Keuze</p>
+<ul>
+<li>
+<p>True</p></li>
+<li>
+<p>False</p></li>
+</ul></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>gebouweenheidId</p></td>
+<td class=3D"confluenceTd">
+<p>GebouwEenheidID uit het gebouwregister van de Vlaamse overheid</p></td>
+<td class=3D"confluenceTd">
+<p>&nbsp;<a href=3D"https://vo-veka.atlassian.net/wiki/spaces/TDV/pages/232=
+1580033/Locatie+van+een+stooktoestel#API-endpoints" data-linked-resource-id=
+=3D"2321580033" data-linked-resource-version=3D"37" data-linked-resource-ty=
+pe=3D"page">Locatie van een stooktoestel</a></p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>gebouweenheidIdNietGekend</p></td>
+<td class=3D"confluenceTd">
+<p>True indien de gebruiker via de toepassing heeft aangegeven na nazicht o=
+p de kaart dat het gebouweenheidID onbekend is in het basisregister</p></td=
+>
+<td class=3D"confluenceTd">
+<p>Keuze:</p>
+<ul>
+<li>
+<p>True</p></li>
+<li>
+<p>False</p></li>
+</ul></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>fabricatienummer</p></td>
+<td class=3D"confluenceTd">
+<p>Fabricatienummer van het stooktoestel</p></td>
+<td class=3D"confluenceTd">
+<p>&nbsp;</p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>fabricatienummerNietGekend</p></td>
+<td class=3D"confluenceTd">
+<p>True indien de technicus het Fabricatienummer niet heeft aangeleverd</p>=
+</td>
+<td class=3D"confluenceTd">
+<p>Keuze:</p>
+<ul>
+<li>
+<p>True</p></li>
+<li>
+<p>False</p></li>
+</ul></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>nominaalVermogen</p></td>
+<td class=3D"confluenceTd">
+<p>Nominaal vermogen van het stooktoestel (in kW)</p></td>
+<td class=3D"confluenceTd">
+<p>double</p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>brandstof</p></td>
+<td class=3D"confluenceTd">
+<p>&nbsp;</p></td>
+<td class=3D"confluenceTd">
+<p>Keuze:</p>
+<ul>
+<li>
+<p>Aardgas</p></li>
+<li>
+<p>Stookolie</p></li>
+<li>
+<p>Houtpellets</p></li>
+<li>
+<p>LPG</p></li>
+<li>
+<p>Houtblokken</p></li>
+<li>
+<p>Gas =E2=80=93 type onbekend</p></li>
+<li>
+<p>Vloeibaar =E2=80=93 type onbekend</p></li>
+<li>
+<p>Vast =E2=80=93 type onbekend</p></li>
+</ul></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>branderTechnologie</p></td>
+<td class=3D"confluenceTd">
+<p>&nbsp;</p></td>
+<td class=3D"confluenceTd">
+<p>Keuze:<br>
+=E2=80=A2Premix (GI)<br>
+=E2=80=A2Niet premix (GI)<br>
+=E2=80=A2Gasketel met ventillatorbrander (GI)</p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>merk</p></td>
+<td class=3D"confluenceTd">
+<p>Merk van het stooktoestel</p></td>
+<td class=3D"confluenceTd">
+<p>&nbsp;</p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>merkNietGekend</p></td>
+<td class=3D"confluenceTd">
+<p>True indien de technicus het merk van het stooktoestel niet heeft aangel=
+everd</p></td>
+<td class=3D"confluenceTd">
+<p>Keuze:</p>
+<ul>
+<li>
+<p>True</p></li>
+<li>
+<p>False</p></li>
+</ul></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>type</p></td>
+<td class=3D"confluenceTd">
+<p>Type of model van het stooktoestel</p></td>
+<td class=3D"confluenceTd">
+<p>&nbsp;</p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>typeNietGekend</p></td>
+<td class=3D"confluenceTd">
+<p>&nbsp;</p></td>
+<td class=3D"confluenceTd">
+<p>Keuze:</p>
+<ul>
+<li>
+<p>True</p></li>
+<li>
+<p>False</p></li>
+</ul></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>werking</p></td>
+<td class=3D"confluenceTd">
+<p>&nbsp;</p></td>
+<td class=3D"confluenceTd">
+<p>Keuze</p>
+<ul>
+<li>
+<p>Condenserende ketel</p></li>
+<li>
+<p>Niet-condenserende ketel</p></li>
+<li>
+<p>Onbekend</p></li>
+</ul></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>bouwjaar</p></td>
+<td class=3D"confluenceTd">
+<p>Bouwjaar van het stooktoestel</p></td>
+<td class=3D"confluenceTd">
+<p>numeriek</p></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>bouwjaarNietGekend</p></td>
+<td class=3D"confluenceTd">
+<p>True indien de technicus het bouwjaar van het stooktoestel niet heeft aa=
+ngeleverd</p></td>
+<td class=3D"confluenceTd">
+<p>Keuze:</p>
+<ul>
+<li>
+<p>True</p></li>
+<li>
+<p>False</p></li>
+</ul></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>stooktoestelConform</p></td>
+<td class=3D"confluenceTd">
+<p>&nbsp;</p></td>
+<td class=3D"confluenceTd">
+<p>Keuze:</p>
+<ul>
+<li>
+<p>OK</p></li>
+<li>
+<p>Niet OK</p></li>
+</ul></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>rookgasafvoerkanaalConform</p></td>
+<td class=3D"confluenceTd">
+<p>&nbsp;</p></td>
+<td class=3D"confluenceTd">
+<p>Keuze:</p>
+<ul>
+<li>
+<p>OK</p></li>
+<li>
+<p>Niet OK</p></li>
+</ul></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>stookplaatsConform</p></td>
+<td class=3D"confluenceTd">
+<p>&nbsp;</p></td>
+<td class=3D"confluenceTd">
+<p>Keuze:</p>
+<ul>
+<li>
+<p>OK</p></li>
+<li>
+<p>Niet OK</p></li>
+</ul></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>verbrandingscontrole</p></td>
+<td class=3D"confluenceTd">
+<p>&nbsp;</p></td>
+<td class=3D"confluenceTd">
+<p>Keuze:</p>
+<ul>
+<li>
+<p>OK</p></li>
+<li>
+<p>Niet OK</p></li>
+</ul></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>toestelWerkingGoed</p></td>
+<td class=3D"confluenceTd">
+<p>&nbsp;</p></td>
+<td class=3D"confluenceTd">
+<p>Keuze:</p>
+<ul>
+<li>
+<p>Goed</p></li>
+<li>
+<p>Niet goed</p></li>
+</ul></td>
+</tr>
+<tr>
+<td class=3D"confluenceTd">
+<p>toestelWerkingVeilig</p></td>
+<td class=3D"confluenceTd">
+<p>&nbsp;</p></td>
+<td class=3D"confluenceTd">
+<p>Keuze:</p>
+<ul>
+<li>
+<p>Veilig</p></li>
+<li>
+<p>Niet veilig</p></li>
+</ul></td>
+</tr>
+</tbody>
+</table>
+</div>
+<h1 id=3D"meldingCentraleStooktoestellen-Formaatvanrequest">Formaat van req=
+uest</h1>
+<div class=3D"code panel pdl" style=3D"border-width: 1px;">
+<div class=3D"codeContent panelContent pdl">
+<pre class=3D"syntaxhighlighter-pre" data-syntaxhighlighter-params=3D"brush=
+: java; gutter: false; theme: Confluence" data-theme=3D"Confluence">{
+  "externeReferte": "0-1234-ABCD",
+  "ondernemingsnummer": "1234567890",
+  "gegevensActiviteit": {
+    "activiteitType": "Keuring voor eerste ingebruikname",
+    "datumActiviteit": "2023-02-14",
+    "erkenningsnummer": "TV12345",
+    "verwarmingType": "Individueel",
+    "adresId": "12345",
+    "gebouwId": "9400001",
+    "gebouwIdNietGekend": false,
+    "gebouweenheidId": "9400075"
+    "gebouweenheidIdNietGekend": false
+  },
+  "kenmerkenToestel": {
+    "bouwjaar": 2023,
+    "bouwjaarNietGekend": false,
+    "fabricatienummer": "A12345678",
+    "fabricatienummerNietGekend": false,
+    "nominaalVermogen": 21,
+    "brandstof": "Aardgas",
+    "branderTechnologie": "Premix (GI)",
+    "merk": "Merknaam",
+    "merkNietGekend": false,
+    "type": "type toestel",
+    "typeNietGekend": false,=20
+    "werking": "Condenserende ketel"
+  },
+  "eindbeoordeling": {
+    "stooktoestelConform": "OK",
+    "rookgasafvoerkanaalConform": "NOK",
+    "stookplaatsConform": "OK",
+    "verbrandingscontrole": "NOK",
+    "toestelWerkingGoed": "Goed",
+    "toestelWerkingVeilig": "Veilig"
+  }
+}</pre>
+</div>
+</div>
+<h1 id=3D"meldingCentraleStooktoestellen-Formaatvanresponse">Formaat van re=
+sponse</h1>
+<h2 id=3D"meldingCentraleStooktoestellen-Succesvollemelding">Succesvolle me=
+lding</h2>
+<p>HTTP Code: 2xx (vb. 201)<br>
+Response: Bevestiging en uniek VEKA meldingsnummer</p>
+<div class=3D"code panel pdl" style=3D"border-width: 1px;">
+<div class=3D"codeContent panelContent pdl">
+<pre class=3D"syntaxhighlighter-pre" data-syntaxhighlighter-params=3D"brush=
+: java; gutter: false; theme: Confluence" data-theme=3D"Confluence">{
+"externeReferte": "8205546",
+"meldingsnummer": "2025-CV-O-170",
+"message": "Melding 2025-CV-O-170 correct opgeladen.",
+"opmerkingen": [
+"De melding werd te laat gevalideerd maar toch geregistreerd. Een melding v=
+an keuring bij eerste ingebruikname of periodiek onderhoud van een centraal=
+ stooktoestel moet binnen de 30 dagen na het uitvoeren van de activiteit wo=
+rden geregistreerd."
+]
+}</pre>
+</div>
+</div>
+<h2 id=3D"meldingCentraleStooktoestellen-Foutievemelding">Foutieve melding<=
+/h2>
+<p>HTTP Code: 4xx (vb. 400, 404)<br>
+Response: Lijst van fouten gevonden in de melding</p>
+<div class=3D"code panel pdl" style=3D"border-width: 1px;">
+<div class=3D"codeContent panelContent pdl">
+<pre class=3D"syntaxhighlighter-pre" data-syntaxhighlighter-params=3D"brush=
+: java; gutter: false; theme: Confluence" data-theme=3D"Confluence">{
+"type": "https://datatracker.ietf.org/doc/html/rfc2616#section-10.4.1",
+"title": "Bad Request",
+"status": 400,
+"errors": [
+{
+"detail": "De meegegeven waarde is niet toegestaan: Goedkeuring. Mogelijke =
+waarden zijn: Keuring voor eerste ingebruikname, Onderhoud",
+"field": "activiteitType",
+"rejectedValue": "Goedkeuring"
+}
+],
+"timestamp": "2025-10-25T08:56:25.229+02:00",
+"path": "/attesten-api/extern/meldingCentraleStooktoestellen"
+}</pre>
+</div>
+</div>
+<p></p>
+    </div>
+</body>
+</html>
+------=_Part_2_361118356.1790068083434--
