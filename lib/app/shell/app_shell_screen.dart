@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import '../../features/certificate_draft/ui/verbrandingsattest_screen.dart';
 import '../dashboard/dashboard_screen.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_theme.dart';
 import 'app_drawer.dart';
 import 'app_shell_controller.dart';
+import 'applet_content_placeholder.dart';
 
 /// Main Adaptive App Shell for HVAC Field Service.
 ///
@@ -39,20 +42,24 @@ class _AppShellScreenState extends State<AppShellScreen> {
           builder: (context, constraints) {
             // Tablet & landscape threshold (720px)
             final isWideScreen = constraints.maxWidth >= 720;
+            final isCombustion =
+                _controller.activeApplet == AppletType.combustion;
 
-            final Widget currentBody =
-                _controller.activeApplet == AppletType.home
-                    ? DashboardScreen(controller: _controller)
-                    : _AppletContentPlaceholder(
-                        activeApplet: _controller.activeApplet,
-                        appBarTitle: _controller.appBarTitle,
-                        onBackToHome: () =>
-                            _controller.selectApplet(AppletType.home),
-                      );
+            final Widget currentBody = switch (_controller.activeApplet) {
+              AppletType.home => DashboardScreen(controller: _controller),
+              AppletType.combustion =>
+                VerbrandingsattestScreen(controller: _controller),
+              _ => AppletContentPlaceholder(
+                  appBarTitle: _controller.appBarTitle,
+                  onBackToHome: () => _controller.selectApplet(AppletType.home),
+                ),
+            };
 
             return Scaffold(
               // Persistent AppBar: stays visible at all times
               appBar: AppBar(
+                toolbarHeight:
+                    (isCombustion && !isWideScreen) ? 74.0 : kToolbarHeight,
                 centerTitle: true,
                 leading: isWideScreen
                     ? null
@@ -69,7 +76,7 @@ class _AppShellScreenState extends State<AppShellScreen> {
                           }
                         },
                       ),
-                title: Text(_controller.appBarTitle),
+                title: _buildAppBarTitle(isWideScreen),
                 bottom: const PreferredSize(
                   preferredSize: Size.fromHeight(1.0),
                   child: Divider(
@@ -120,74 +127,61 @@ class _AppShellScreenState extends State<AppShellScreen> {
       },
     );
   }
-}
 
-/// Placeholder displayed when an applet is selected from the dashboard or drawer.
-/// Will be replaced by the 7-tab workflow in Milestone 2.
-class _AppletContentPlaceholder extends StatelessWidget {
-  final AppletType activeApplet;
-  final String appBarTitle;
-  final VoidCallback onBackToHome;
-
-  const _AppletContentPlaceholder({
-    required this.activeApplet,
-    required this.appBarTitle,
-    required this.onBackToHome,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 480),
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
+  /// Builds the persistent AppBar title adapting between a clean 2-line title
+  /// on narrow phone viewports and 1-line title on wider tablet displays.
+  Widget _buildAppBarTitle(bool isWideScreen) {
+    if (_controller.activeApplet == AppletType.combustion) {
+      if (!isWideScreen) {
+        return const Padding(
+          padding: EdgeInsets.symmetric(vertical: 4.0),
           child: Column(
             mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Container(
-                width: 60,
-                height: 60,
-                decoration: BoxDecoration(
-                  color: AppColors.carbonCard,
-                  shape: BoxShape.circle,
-                  border: Border.all(color: AppColors.hairlineBorder),
-                ),
-                child: const Icon(
-                  Icons.construction_rounded,
-                  size: 26,
-                  color: AppColors.amberGold,
-                ),
-              ),
-              const SizedBox(height: 16),
               Text(
-                appBarTitle,
-                style: const TextStyle(
-                  color: AppColors.textPrimary,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                ),
+                'Verbrandingsattest',
                 textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                'De 7-tab workflow voor dit attest wordt gebouwd in Milestone 2.',
                 style: TextStyle(
-                  color: AppColors.textSecondary,
-                  fontSize: 13,
-                  height: 1.4,
+                  fontFamily: AppTheme.fontFamily,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 18,
+                  letterSpacing: 0.2,
                 ),
-                textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 20),
-              OutlinedButton.icon(
-                onPressed: onBackToHome,
-                icon: const Icon(Icons.arrow_back_rounded, size: 16),
-                label: const Text('Terug naar dashboard'),
+              SizedBox(height: 2),
+              Text(
+                'Vlaanderen',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontFamily: AppTheme.fontFamily,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 18,
+                  letterSpacing: 0.2,
+                ),
               ),
             ],
           ),
-        ),
+        );
+      } else {
+        return const Text(
+          'Verbrandingsattest Vlaanderen',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontFamily: AppTheme.fontFamily,
+            fontWeight: FontWeight.w700,
+            fontSize: 20,
+            letterSpacing: 0.2,
+          ),
+        );
+      }
+    }
+    return Text(
+      _controller.appBarTitle,
+      style: const TextStyle(
+        fontFamily: AppTheme.fontFamily,
+        fontWeight: FontWeight.w700,
+        fontSize: 20,
       ),
     );
   }

@@ -57,17 +57,26 @@ void main() {
       await tester.tap(find.text('Verbrandingsattest'));
       await tester.pumpAndSettle();
 
-      // Persistent AppBar title updates
+      // Persistent AppBar title updates with adaptive 2-line title on phone
       expect(
         find.descendant(
           of: appBarFinder,
-          matching: find.text(AppDictionary.menuCombustion),
+          matching: find.text('Verbrandingsattest'),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(
+          of: appBarFinder,
+          matching: find.text('Vlaanderen'),
         ),
         findsOneWidget,
       );
 
-      // Tap back button
-      await tester.tap(find.text('Terug naar dashboard'));
+      // Open drawer and tap 'Start' to return to dashboard
+      await tester.tap(find.byIcon(Icons.menu));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Start').last);
       await tester.pumpAndSettle();
 
       // Returns to dashboard with 'Start' in AppBar

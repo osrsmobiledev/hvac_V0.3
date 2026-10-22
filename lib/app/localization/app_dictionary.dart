@@ -36,12 +36,13 @@ abstract final class AppDictionary {
 
   // --- Verbrandingsattest Applet Tabs ---
   static const List<String> combustionTabs = [
+    'Data',
     'Start',
-    'Firma',
+    'Firma - Technicus',
     'Klant',
-    'Toestel',
+    'Stooktoestel',
     'Meting',
-    'Besluit',
+    'Eindbeoordeling',
   ];
 
   // --- Setup / Start Tab ---
