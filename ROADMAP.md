@@ -12,7 +12,7 @@
 ### Milestone 1: "BO2 Tactical" UI Theme, App Shell & Dashboard
 *Goal: Nail the Dark Luxury Industrial aesthetic, bento squircle applet tiles, and persistent navigation before building any forms.*
 
-- [ ] **Slice 1.1 — Theme Engine & Initialization (BO2 Tactical HUD):** Initialize the Flutter app. Ensure a standard Flutter .gitignore is created so build artifacts are not tracked. Set up the app_theme.dart using the "Glow on Carbon" / Dark Luxury Industrial tokens: deep #121212 OLED base, amber gold/terracotta/slate accents, negative-space silhouette icons, hairline dividers, and 28px bento squircle radii for cards.
+- [x] **Slice 1.1 — Theme Engine & Initialization (BO2 Tactical HUD):** Initialize the Flutter app. Ensure a standard Flutter .gitignore is created so build artifacts are not tracked. Set up the app_theme.dart using the "Glow on Carbon" / Dark Luxury Industrial tokens: deep #121212 OLED base, amber gold/terracotta/slate accents, negative-space silhouette icons, hairline dividers, and 28px bento squircle radii for cards.
 - [ ] **Slice 1.2 — Adaptive App Shell & Drawer:** Build the main Scaffold with a persistent AppBar. Implement adaptive navigation: a Hamburger Drawer on phones, the Hamburger Drawer must open directly underneath the persistent AppBar (leaving the top AppBar visible), transitioning to a permanent side menu on tablet/landscape widths. The AppBar title must dynamically change based on the active applet.
 - [ ] **Slice 1.3 — Home Dashboard (Applet Launcher):** Build the homepage body containing the "Bento Squircle" applet tiles (e.g., Verbrandingsattest, Cleaning, Inspection). Implement the Tinted Dark Mode / Tonal Surfaces so each tile has a subtle hue tint matching its accent border and vibrant glyph. Use a responsive grid (e.g., 1-2 columns on phones, 3-4 columns on tablets).
 - [ ] **Slice 1.4 — SQLite Database Core:** Set up `sqflite` tables (`technician_profile`, `customers`, `service_locations`, `boilers`, `maintenance_visits`, `measurement_captures`). Ensure the DB initializes correctly on app launch.
@@ -44,10 +44,11 @@
 
 ## 2. Current Handoff (Active State for AI Agent)
 
-- **Current Status:** Project architecture and foundation docs finalized for `hvac_V0.3`. No Flutter code has been generated.
-- **Active Slice:** **Slice 1.1 — Theme Engine (BO2 Tactical HUD)**
+- **Current Status:** Slice 1.1 (Theme Engine & Initialization) completed and verified.
+- **Active Slice:** **Slice 1.2 — Adaptive App Shell & Drawer**
 - **Immediate Next Step for Agent:**
-  1. Check if the Flutter project scaffold (`pubspec.yaml`, `lib/main.dart`) exists in `hvac_V0.3`. If not, initialize it.
-  2. Implement `app_theme.dart` strictly following the "BO2 Tactical HUD" / Dark Luxury Industrial design language: deep `#121212` background, amber/gold accents, 28px bento squircles, and hairline dividers.
-  3. Adapt any legacy color files (`bo2_colors.dart`) to fit this exact spec, ready for the main shell build in Slice 1.2.
-- **Blockers / Open Questions:** None for Slice 1.1.
+  1. Build the adaptive App Shell with persistent AppBar and Hamburger Drawer.
+  2. On mobile/phones, drawer slides out underneath the persistent AppBar (leaving AppBar visible). On tablet/landscape, drawer displays as a permanent side menu.
+  3. Style Drawer items using the BO2 dark carbon aesthetic with glowing icon badges.
+  4. Keep main.dart minimal (< 40 lines) and ensure all files remain strictly under 250 lines with helpful comments.
+- **Blockers / Open Questions:** None for Slice 1.2.
