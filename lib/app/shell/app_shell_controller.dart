@@ -24,7 +24,7 @@ class AppShellController extends ChangeNotifier {
   /// Returns the dynamic Dutch title to display in the persistent AppBar.
   String get appBarTitle {
     return switch (_activeApplet) {
-      AppletType.home => AppDictionary.appTitle,
+      AppletType.home => AppDictionary.menuStart,
       AppletType.combustion => AppDictionary.menuCombustion,
       AppletType.cleaning => AppDictionary.menuCleaning,
       AppletType.inspection => AppDictionary.menuInspection,

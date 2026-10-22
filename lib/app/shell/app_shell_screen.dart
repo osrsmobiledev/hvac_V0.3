@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../dashboard/dashboard_screen.dart';
 import '../theme/app_colors.dart';
 import 'app_drawer.dart';
 import 'app_shell_controller.dart';
@@ -21,6 +22,7 @@ class AppShellScreen extends StatefulWidget {
 class _AppShellScreenState extends State<AppShellScreen> {
   final AppShellController _controller = AppShellController();
   final GlobalKey<ScaffoldState> _phoneScaffoldKey = GlobalKey<ScaffoldState>();
+  bool _isDrawerOpen = false;
 
   @override
   void dispose() {
@@ -38,17 +40,33 @@ class _AppShellScreenState extends State<AppShellScreen> {
             // Tablet & landscape threshold (720px)
             final isWideScreen = constraints.maxWidth >= 720;
 
+            final Widget currentBody =
+                _controller.activeApplet == AppletType.home
+                    ? DashboardScreen(controller: _controller)
+                    : _AppletContentPlaceholder(
+                        activeApplet: _controller.activeApplet,
+                        appBarTitle: _controller.appBarTitle,
+                        onBackToHome: () =>
+                            _controller.selectApplet(AppletType.home),
+                      );
+
             return Scaffold(
               // Persistent AppBar: stays visible at all times
               appBar: AppBar(
+                centerTitle: true,
                 leading: isWideScreen
                     ? null
                     : IconButton(
                         icon: const Icon(Icons.menu),
-                        tooltip: 'Menu openen',
+                        tooltip: _isDrawerOpen ? 'Menu sluiten' : 'Menu openen',
                         onPressed: () {
-                          // Opens the phone drawer directly underneath this persistent AppBar
-                          _phoneScaffoldKey.currentState?.openDrawer();
+                          final scaffoldState = _phoneScaffoldKey.currentState;
+                          if (scaffoldState == null) return;
+                          if (scaffoldState.isDrawerOpen) {
+                            scaffoldState.closeDrawer();
+                          } else {
+                            scaffoldState.openDrawer();
+                          }
                         },
                       ),
                 title: Text(_controller.appBarTitle),
@@ -74,17 +92,19 @@ class _AppShellScreenState extends State<AppShellScreen> {
                           thickness: 1.0,
                           color: AppColors.hairlineBorder,
                         ),
-                        Expanded(
-                          child: _ShellBodyPlaceholder(
-                            activeApplet: _controller.activeApplet,
-                            appBarTitle: _controller.appBarTitle,
-                          ),
-                        ),
+                        Expanded(child: currentBody),
                       ],
                     )
                   // Phone layout: inner Scaffold whose drawer opens underneath the persistent AppBar
                   : Scaffold(
                       key: _phoneScaffoldKey,
+                      onDrawerChanged: (isOpen) {
+                        if (_isDrawerOpen != isOpen) {
+                          setState(() {
+                            _isDrawerOpen = isOpen;
+                          });
+                        }
+                      },
                       drawer: AppDrawer(
                         controller: _controller,
                         isPermanent: false,
@@ -92,10 +112,7 @@ class _AppShellScreenState extends State<AppShellScreen> {
                           Navigator.of(context).pop();
                         },
                       ),
-                      body: _ShellBodyPlaceholder(
-                        activeApplet: _controller.activeApplet,
-                        appBarTitle: _controller.appBarTitle,
-                      ),
+                      body: currentBody,
                     ),
             );
           },
@@ -105,15 +122,17 @@ class _AppShellScreenState extends State<AppShellScreen> {
   }
 }
 
-/// Temporary clean placeholder for Slice 1.2.
-/// The 4 Bento Squircle Applet Tiles will be implemented here in Slice 1.3.
-class _ShellBodyPlaceholder extends StatelessWidget {
+/// Placeholder displayed when an applet is selected from the dashboard or drawer.
+/// Will be replaced by the 7-tab workflow in Milestone 2.
+class _AppletContentPlaceholder extends StatelessWidget {
   final AppletType activeApplet;
   final String appBarTitle;
+  final VoidCallback onBackToHome;
 
-  const _ShellBodyPlaceholder({
+  const _AppletContentPlaceholder({
     required this.activeApplet,
     required this.appBarTitle,
+    required this.onBackToHome,
   });
 
   @override
@@ -127,17 +146,17 @@ class _ShellBodyPlaceholder extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                width: 64,
-                height: 64,
+                width: 60,
+                height: 60,
                 decoration: BoxDecoration(
                   color: AppColors.carbonCard,
                   shape: BoxShape.circle,
                   border: Border.all(color: AppColors.hairlineBorder),
                 ),
                 child: const Icon(
-                  Icons.layers_outlined,
-                  size: 28,
-                  color: AppColors.textSecondary,
+                  Icons.construction_rounded,
+                  size: 26,
+                  color: AppColors.amberGold,
                 ),
               ),
               const SizedBox(height: 16),
@@ -152,13 +171,19 @@ class _ShellBodyPlaceholder extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               const Text(
-                'Dashboard applet launcher tegels worden gebouwd in Slice 1.3.',
+                'De 7-tab workflow voor dit attest wordt gebouwd in Milestone 2.',
                 style: TextStyle(
                   color: AppColors.textSecondary,
                   fontSize: 13,
                   height: 1.4,
                 ),
                 textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 20),
+              OutlinedButton.icon(
+                onPressed: onBackToHome,
+                icon: const Icon(Icons.arrow_back_rounded, size: 16),
+                label: const Text('Terug naar dashboard'),
               ),
             ],
           ),

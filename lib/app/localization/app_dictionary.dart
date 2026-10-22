@@ -13,6 +13,16 @@ abstract final class AppDictionary {
   static const String menuInspection = 'Keuringsrapport Vlaanderen';
   static const String menuMeasurement = 'Meetrapport';
 
+  // --- Applet Descriptions (Home Dashboard) ---
+  static const String descCombustion =
+      'Gasketel & Stookolie periodieke controle conform VEKA normen.';
+  static const String descCleaning =
+      'Periodiek schoorsteenveeg- en reinigingsattest.';
+  static const String descInspection =
+      'Keuringsrapport voor eerste ingebruikname van installaties.';
+  static const String descMeasurement =
+      'Digitale rookgas- en drukmetingen via Eurolyzer bluetooth.';
+
   // --- Common Actions & Buttons ---
   static const String btnSave = 'Opslaan';
   static const String btnCancel = 'Annuleren';
