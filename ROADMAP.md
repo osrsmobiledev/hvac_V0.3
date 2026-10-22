@@ -21,7 +21,7 @@
 *Goal: Build the 7-tab persistent shell and the first 4 tabs tab-by-tab.*
 
 - [x] **Slice 2.1 — 7-Tab Internal Shell & Tab 1 (`Data`):** Route from Home "Verbrandingsattest Vlaanderen" tile into the 7-tab workflow. Adaptive persistent AppBar title in Libron font: 2 lines centered on narrow screens ("Verbrandingsattest" / "Vlaanderen" with comfortable height padding) and 1 line on wider screens ("Verbrandingsattest Vlaanderen"). Top scrollable horizontal navigation bar directly below AppBar (`Data`, `Start`, `Firma - Technicus`, `Klant`, `Stooktoestel`, `Meting`, `Eindbeoordeling`) matching preferred theme. Build Tab 1 (`Data`) UI layout: collapsible `Meetgegevens` bento card, `Rookgassen` sub-card with Eurolyzer QR scanner launch icon button and live readings container.
-- [ ] **Slice 2.2 — Tab 2 (`Start`):** Build the clean `Start` form: Activity type selector (*Onderhoud* vs. *Keuring voor eerste ingebruikname*) and *Volgnummer Attest*. Auto-save draft changes to SQLite `maintenance_visits`.
+- [x] **Slice 2.2 — Tab 2 (`Start`):** Build the clean `Start` form: Reusable gold-tinted `BentoMainSection` header, tactile activity type selector (*Onderhoud* vs. *Keuring voor eerste ingebruikname*) with springy mechanical tap animation and reticle indicators, and tactical *Volgnummer Attest* input box. Auto-save draft changes to SQLite `maintenance_visits`.
 - [ ] **Slice 2.3 — Tab 3 (`Firma - Technicus` & BO2 Time Spinner):** Build Company & Technician form backed by the singleton `technician_profile` table. *Datum onderhoud* (calendar picker defaulting to today). Adapt and integrate the 24-hour **BO2 Time Spinner** with Dutch labels (*Uren*, *Minuten*, *Kies tijd*, *Annuleren*, *OK*) for *Arbeidsduur van* & *tot*. Auto-save to SQLite.
 - [ ] **Slice 2.4 — Tab 4 (`Klant` & Installation Location):** Customer contact details, *Eigenaar* vs. *Huurder* role toggle, installation address, and searchable SQLite saved-customer directory picker.
 
@@ -46,15 +46,14 @@
 
 ## 2. Current Handoff (Active State for AI Agent)
 
-- **Current Status:** Milestone 1 complete; Slice 2.1 complete, tested, and verified.
-- **Active Slice:** **Slice 2.2 — Tab 2 (`Start`)**
+- **Current Status:** Milestone 1 complete; Slice 2.1 & Slice 2.2 complete, tested, and verified.
+- **Active Slice:** **Slice 2.3 — Tab 3 (`Firma - Technicus` & BO2 Time Spinner)**
 - **Immediate Next Step for Agent:**
-  1. Build `StartTab` in `lib/features/certificate_draft/ui/tabs/start_tab.dart` using the reusable `BentoCollapsibleCard` template.
-  2. Implement the clean fields from `Screenshot 2026-10-20 012335.png`:
-     - Header: *Verbrandingsattest Vlaanderen*
-     - Radio selector: *Onderhoud* vs *Keuring voor eerste ingebruikname*
-     - Input field: *Volgnummer Attest*
-  3. Wire auto-save on input change to persist draft into the SQLite `maintenance_visits` table.
-  4. Ensure all files remain strictly under 250 lines with helpful comments.
-  5. Verify with `flutter analyze` and `flutter test`.
-- **Blockers / Open Questions:** None. Ready to implement Slice 2.2 upon approval.
+  1. Inspect `references/legacy/screenshots/Firma/` and `references/legacy/code/` for company/technician fields and `bo2_time_spinner.dart`.
+  2. Implement `FirmaTechnicusTab` in `lib/features/certificate_draft/ui/tabs/firma_technicus_tab.dart` using the reusable `BentoMainSection` and `DarkInputBox` templates.
+  3. Wire Company Details (Company name, street, number, postal code, municipality, tel, email, enterprise/KBO number).
+  4. Wire Technician Details (First name, last name, GV recognition number, TV recognition number) backed by SQLite `technician_profile`.
+  5. Integrate the 24-hour BO2 Time Spinner for *Arbeidsduur van* & *tot*, and Date Picker for *Datum onderhoud*.
+  6. Ensure all files remain strictly under 250 lines with helpful comments.
+  7. Verify with `flutter analyze` and `flutter test`.
+- **Blockers / Open Questions:** None. Ready to proceed with Slice 2.3 upon owner authorization.
