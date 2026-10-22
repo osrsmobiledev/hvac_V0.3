@@ -2,8 +2,14 @@ import 'package:flutter/material.dart';
 import 'app/localization/app_dictionary.dart';
 import 'app/shell/app_shell_screen.dart';
 import 'app/theme/app_theme.dart';
+import 'core/database/app_database.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize SQLite database on startup for offline draft safety
+  await AppDatabase.instance.database;
+
   runApp(const HvacFieldServiceApp());
 }
 

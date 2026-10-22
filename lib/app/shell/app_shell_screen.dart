@@ -75,7 +75,7 @@ class _AppShellScreenState extends State<AppShellScreen> {
                   child: Divider(
                     height: 1.0,
                     thickness: 1.0,
-                    color: AppColors.hairlineBorder,
+                    color: AppColors.goldHairline,
                   ),
                 ),
               ),
@@ -90,7 +90,7 @@ class _AppShellScreenState extends State<AppShellScreen> {
                         const VerticalDivider(
                           width: 1.0,
                           thickness: 1.0,
-                          color: AppColors.hairlineBorder,
+                          color: AppColors.goldHairline,
                         ),
                         Expanded(child: currentBody),
                       ],

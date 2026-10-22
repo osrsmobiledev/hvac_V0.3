@@ -1,13 +1,19 @@
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_theme.dart';
 
-/// Single navigation tile inside the Drawer featuring glowing applet icon badge.
+/// Single navigation tile inside the Drawer matching the owner's preferred theme.
 ///
-/// Designed to provide visual feedback with tonal background and edge indicator on selection.
+/// Features:
+/// - Follows the signature applet accent color when selected.
+/// - Left indicator bar glows with the applet's accent color.
+/// - Background adopts a subtle tonal tint of the accent color.
+/// - Libron font typography.
 class DrawerNavigationTile extends StatelessWidget {
   final String label;
   final IconData icon;
   final Color accentColor;
+  final Color borderColor;
   final bool isSelected;
   final VoidCallback onTap;
 
@@ -16,77 +22,94 @@ class DrawerNavigationTile extends StatelessWidget {
     required this.label,
     required this.icon,
     required this.accentColor,
+    required this.borderColor,
     required this.isSelected,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    final backgroundColor =
-        isSelected ? AppColors.carbonCardElevated : Colors.transparent;
+    // Tonal background tint matching the applet's accent color when selected
+    final backgroundColor = isSelected
+        ? Color.alphaBlend(
+            accentColor.withValues(alpha: 0.12),
+            AppColors.carbonCardElevated,
+          )
+        : Colors.transparent;
 
-    final borderColor =
-        isSelected ? accentColor.withValues(alpha: 0.4) : Colors.transparent;
+    // Glowing border when selected
+    final activeBorderColor = isSelected ? accentColor : borderColor;
 
     return Container(
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: borderColor, width: 1.0),
-      ),
+      color: backgroundColor,
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          borderRadius: BorderRadius.circular(14),
           onTap: onTap,
-          child: Padding(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 12.0, vertical: 10.0),
+          child: IntrinsicHeight(
             child: Row(
               children: [
-                // Glowing applet icon badge container
+                // Left indicator bar glowing with the applet's accent color
                 Container(
-                  width: 38,
-                  height: 38,
-                  decoration: BoxDecoration(
-                    color: accentColor.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(
-                      color: accentColor.withValues(alpha: 0.35),
-                      width: 1.0,
-                    ),
-                  ),
-                  child: Icon(
-                    icon,
-                    color: accentColor,
-                    size: 20,
-                  ),
+                  width: 4,
+                  color: isSelected ? accentColor : Colors.transparent,
                 ),
-                const SizedBox(width: 12),
                 Expanded(
-                  child: Text(
-                    label,
-                    style: TextStyle(
-                      color: isSelected
-                          ? AppColors.textPrimary
-                          : AppColors.textSecondary,
-                      fontSize: 13,
-                      fontWeight:
-                          isSelected ? FontWeight.w600 : FontWeight.w500,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16.0,
+                      vertical: 10.0,
                     ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
+                    child: Row(
+                      children: [
+                        // Squircle icon container with accent border
+                        Container(
+                          width: 42,
+                          height: 42,
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? Color.alphaBlend(
+                                    accentColor.withValues(alpha: 0.16),
+                                    AppColors.carbonCard,
+                                  )
+                                : AppColors.carbonCard,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: activeBorderColor,
+                              width: isSelected ? 1.5 : 1.2,
+                            ),
+                          ),
+                          child: Icon(
+                            icon,
+                            color: accentColor,
+                            size: 22,
+                          ),
+                        ),
+                        const SizedBox(width: 14),
+                        // Label in Libron font
+                        Expanded(
+                          child: Text(
+                            label,
+                            style: TextStyle(
+                              fontFamily: AppTheme.fontFamily,
+                              color: isSelected
+                                  ? AppColors.textPrimary
+                                  : AppColors.textPrimary
+                                      .withValues(alpha: 0.85),
+                              fontSize: 14,
+                              fontWeight: isSelected
+                                  ? FontWeight.w700
+                                  : FontWeight.w600,
+                              height: 1.25,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-                if (isSelected)
-                  Container(
-                    width: 6,
-                    height: 6,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: accentColor,
-                    ),
-                  ),
               ],
             ),
           ),

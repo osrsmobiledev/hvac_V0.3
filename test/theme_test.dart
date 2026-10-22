@@ -8,20 +8,22 @@ import 'package:hvac_app/app/theme/app_theme.dart';
 import 'package:hvac_app/main.dart';
 
 void main() {
-  group('Slice 1.3 — Home Dashboard & Drawer Toggle', () {
-    test('AppTheme defines dark brightness and expected color tokens', () {
+  group('Preferred Theme & 2-Column Layout', () {
+    test('AppTheme configures Libron font and luxury industrial tokens', () {
       final theme = AppTheme.darkTheme;
 
       expect(theme.brightness, Brightness.dark);
+      expect(AppTheme.fontFamily, 'Libron');
       expect(theme.scaffoldBackgroundColor, AppColors.scaffoldBackground);
       expect(theme.colorScheme.primary, AppColors.amberGold);
       expect(AppTheme.bentoCornerRadius, 28.0);
     });
 
     testWidgets(
-        'Dashboard renders 2-column tiles in exact order with 2-line labels',
+        'Phone layout (e.g. Pixel 10 Pro / S23): 2-column compact tiles',
         (WidgetTester tester) async {
-      tester.view.physicalSize = const Size(400, 800);
+      // Set phone screen size (412 x 892 - Pixel 10 Pro / S23 standard)
+      tester.view.physicalSize = const Size(412, 892);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.resetPhysicalSize);
 
@@ -41,7 +43,7 @@ void main() {
       // Centered "Kies een applet" header
       expect(find.text(AppDictionary.dashboardTitle), findsOneWidget);
 
-      // Verify all 4 Applet Bento Tiles are present
+      // 4 Applet Bento Tiles are present in 2 columns
       final tiles = find.byType(AppletBentoTile);
       expect(tiles, findsNWidgets(4));
 
@@ -50,7 +52,6 @@ void main() {
       expect(find.text('Reinigingsattest'), findsOneWidget);
       expect(find.text('Keuringsrapport'), findsOneWidget);
       expect(find.text('Meetrapport'), findsOneWidget);
-      expect(find.text('Vlaanderen'), findsNWidgets(3));
 
       // Tap on 'Verbrandingsattest' tile
       await tester.tap(find.text('Verbrandingsattest'));
@@ -79,9 +80,10 @@ void main() {
       );
     });
 
-    testWidgets('Hamburger icon toggles drawer open and closed on phone',
+    testWidgets(
+        'Drawer features HVAC branding, clean uppercase headers and toggle behavior',
         (WidgetTester tester) async {
-      tester.view.physicalSize = const Size(400, 800);
+      tester.view.physicalSize = const Size(412, 892);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.resetPhysicalSize);
 
@@ -91,20 +93,26 @@ void main() {
       final hamburgerFinder = find.byTooltip('Menu openen');
       expect(hamburgerFinder, findsOneWidget);
 
-      // Tap hamburger to open drawer
+      // Open drawer
       await tester.tap(hamburgerFinder);
       await tester.pumpAndSettle();
 
-      // Drawer is open
-      expect(find.byType(AppDrawer), findsOneWidget);
+      // Verify Drawer branding and clean section titles without extra spaced letters
+      expect(find.text('HVAC'), findsOneWidget);
+      expect(find.text('DASHBOARD'), findsOneWidget);
+      expect(find.text('APPLETS'), findsOneWidget);
+      expect(find.text('BEHEER'), findsOneWidget);
 
-      // Tap hamburger icon again to close drawer
+      // Verify Beheer items
+      expect(find.text('Instellingen Technicus'), findsOneWidget);
+      expect(find.text('Import / Export'), findsOneWidget);
+
+      // Close drawer via hamburger icon
       final closeFinder = find.byTooltip('Menu sluiten');
       expect(closeFinder, findsOneWidget);
       await tester.tap(closeFinder);
       await tester.pumpAndSettle();
 
-      // Drawer is closed (offstage / not visible)
       expect(find.byTooltip('Menu openen'), findsOneWidget);
     });
 

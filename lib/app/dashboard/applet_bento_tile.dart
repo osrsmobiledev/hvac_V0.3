@@ -2,17 +2,18 @@ import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_theme.dart';
 
-/// Single Bento Squircle Tile for the Home Dashboard.
+/// Bento Squircle Tile matching the legacy reference sizing.
 ///
 /// Features:
-/// - One single solid/tonal squircle tile (no nested inner tiles).
+/// - Single squircle box with colored rim border (compact, well-proportioned).
 /// - Centered glowing icon glyph inside the tile.
-/// - Two-line centered title text directly beneath the tile.
+/// - Centered 2-line title in Libron font directly beneath the tile.
 class AppletBentoTile extends StatelessWidget {
   final String title;
   final String? subtitle;
   final IconData icon;
   final Color accentColor;
+  final Color borderColor;
   final VoidCallback onTap;
 
   const AppletBentoTile({
@@ -21,46 +22,47 @@ class AppletBentoTile extends StatelessWidget {
     this.subtitle,
     required this.icon,
     required this.accentColor,
+    required this.borderColor,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    // Tonal surface: blend 8% accent tint over dark carbon card
+    // Tonal surface: blend 8% accent tint over the dark carbon background
     final tonalBackground = Color.alphaBlend(
       accentColor.withValues(alpha: 0.08),
       AppColors.carbonCard,
     );
 
     return InkWell(
-      borderRadius: BorderRadius.circular(AppTheme.bentoCornerRadius),
+      borderRadius: BorderRadius.circular(22),
       onTap: onTap,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Single squircle tile container with centered icon
+          // Single compact squircle tile container with colored rim border
           AspectRatio(
             aspectRatio: 1.0,
             child: Container(
               decoration: BoxDecoration(
                 color: tonalBackground,
-                borderRadius: BorderRadius.circular(AppTheme.bentoCornerRadius),
+                borderRadius: BorderRadius.circular(22),
                 border: Border.all(
-                  color: accentColor.withValues(alpha: 0.35),
-                  width: 1.0,
+                  color: borderColor,
+                  width: 1.4,
                 ),
               ),
               child: Center(
                 child: Icon(
                   icon,
                   color: accentColor,
-                  size: 44,
+                  size: 42,
                 ),
               ),
             ),
           ),
-          const SizedBox(height: 10),
-          // Centered title text (Line 1 and optional Line 2)
+          const SizedBox(height: 8),
+          // Centered 2-line title in Libron font
           SizedBox(
             height: 36,
             child: Column(
@@ -70,10 +72,11 @@ class AppletBentoTile extends StatelessWidget {
                   title,
                   textAlign: TextAlign.center,
                   style: const TextStyle(
+                    fontFamily: AppTheme.fontFamily,
                     color: AppColors.textPrimary,
                     fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    height: 1.25,
+                    fontWeight: FontWeight.w700,
+                    height: 1.2,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -84,10 +87,11 @@ class AppletBentoTile extends StatelessWidget {
                     subtitle!,
                     textAlign: TextAlign.center,
                     style: const TextStyle(
+                      fontFamily: AppTheme.fontFamily,
                       color: AppColors.textPrimary,
                       fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      height: 1.25,
+                      fontWeight: FontWeight.w700,
+                      height: 1.2,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
