@@ -13,7 +13,7 @@
 *Goal: Nail the Dark Luxury Industrial aesthetic, bento squircle applet tiles, and persistent navigation before building any forms.*
 
 - [x] **Slice 1.1 — Theme Engine & Initialization (BO2 Tactical HUD):** Initialize the Flutter app. Ensure a standard Flutter .gitignore is created so build artifacts are not tracked. Set up the app_theme.dart using the "Glow on Carbon" / Dark Luxury Industrial tokens: deep #121212 OLED base, amber gold/terracotta/slate accents, negative-space silhouette icons, hairline dividers, and 28px bento squircle radii for cards.
-- [ ] **Slice 1.2 — Adaptive App Shell & Drawer:** Build the main Scaffold with a persistent AppBar. Implement adaptive navigation: a Hamburger Drawer on phones, the Hamburger Drawer must open directly underneath the persistent AppBar (leaving the top AppBar visible), transitioning to a permanent side menu on tablet/landscape widths. The AppBar title must dynamically change based on the active applet.
+- [x] **Slice 1.2 — Adaptive App Shell & Drawer:** Build the main Scaffold with a persistent AppBar. Implement adaptive navigation: a Hamburger Drawer on phones, the Hamburger Drawer must open directly underneath the persistent AppBar (leaving the top AppBar visible), transitioning to a permanent side menu on tablet/landscape widths. The AppBar title must dynamically change based on the active applet.
 - [ ] **Slice 1.3 — Home Dashboard (Applet Launcher):** Build the homepage body containing the "Bento Squircle" applet tiles (e.g., Verbrandingsattest, Cleaning, Inspection). Implement the Tinted Dark Mode / Tonal Surfaces so each tile has a subtle hue tint matching its accent border and vibrant glyph. Use a responsive grid (e.g., 1-2 columns on phones, 3-4 columns on tablets).
 - [ ] **Slice 1.4 — SQLite Database Core:** Set up `sqflite` tables (`technician_profile`, `customers`, `service_locations`, `boilers`, `maintenance_visits`, `measurement_captures`). Ensure the DB initializes correctly on app launch.
 
@@ -44,11 +44,11 @@
 
 ## 2. Current Handoff (Active State for AI Agent)
 
-- **Current Status:** Slice 1.1 (Theme Engine & Initialization) completed and verified.
-- **Active Slice:** **Slice 1.2 — Adaptive App Shell & Drawer**
+- **Current Status:** Slices 1.1 and 1.2 completed and verified.
+- **Active Slice:** **Slice 1.3 — Home Dashboard (Applet Launcher)**
 - **Immediate Next Step for Agent:**
-  1. Build the adaptive App Shell with persistent AppBar and Hamburger Drawer.
-  2. On mobile/phones, drawer slides out underneath the persistent AppBar (leaving AppBar visible). On tablet/landscape, drawer displays as a permanent side menu.
-  3. Style Drawer items using the BO2 dark carbon aesthetic with glowing icon badges.
-  4. Keep main.dart minimal (< 40 lines) and ensure all files remain strictly under 250 lines with helpful comments.
-- **Blockers / Open Questions:** None for Slice 1.2.
+  1. Build the Home Dashboard body containing the 4 "Bento Squircle" applet tiles (Verbrandingsattest Vlaanderen, Reinigingsattest Vlaanderen, Keuringsrapport Vlaanderen, and Meetrapport).
+  2. Implement Tinted Dark Mode / Tonal Surfaces for each tile with subtle hue tints matching accent borders and vibrant glowing glyphs.
+  3. Use a responsive grid (1-2 columns on phones, 3-4 columns on tablets).
+  4. Ensure all files remain strictly under 250 lines with helpful comments.
+- **Blockers / Open Questions:** None for Slice 1.3.
