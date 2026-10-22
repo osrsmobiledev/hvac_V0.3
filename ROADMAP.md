@@ -15,7 +15,7 @@
 - [x] **Slice 1.1 — Theme Engine & Initialization (BO2 Tactical HUD):** Initialize the Flutter app. Ensure a standard Flutter .gitignore is created so build artifacts are not tracked. Set up the app_theme.dart using the "Glow on Carbon" / Dark Luxury Industrial tokens: deep #121212 OLED base, amber gold/terracotta/slate accents, negative-space silhouette icons, hairline dividers, and 28px bento squircle radii for cards.
 - [x] **Slice 1.2 — Adaptive App Shell & Drawer:** Build the main Scaffold with a persistent AppBar. Implement adaptive navigation: a Hamburger Drawer on phones, the Hamburger Drawer must open directly underneath the persistent AppBar (leaving the top AppBar visible), transitioning to a permanent side menu on tablet/landscape widths. The AppBar title must dynamically change based on the active applet.
 - [x] **Slice 1.3 — Home Dashboard (Applet Launcher):** Build the homepage body containing the "Bento Squircle" applet tiles (e.g., Verbrandingsattest, Cleaning, Inspection). Implement the Tinted Dark Mode / Tonal Surfaces so each tile has a subtle hue tint matching its accent border and vibrant glyph. Use a responsive grid (e.g., 1-2 columns on phones, 3-4 columns on tablets).
-- [ ] **Slice 1.4 — SQLite Database Core:** Set up `sqflite` tables (`technician_profile`, `customers`, `service_locations`, `boilers`, `maintenance_visits`, `measurement_captures`). Ensure the DB initializes correctly on app launch.
+- [x] **Slice 1.4 — SQLite Database Core:** Set up `sqflite` tables (`technician_profile`, `customers`, `service_locations`, `boilers`, `maintenance_visits`, `measurement_captures`). Ensure the DB initializes correctly on app launch.
 
 ### Milestone 2: The "Verbrandingsattest" Applet (Tabs 1-4)
 *Goal: Build the 7-tab workflow inside the persistent shell.*
@@ -44,11 +44,11 @@
 
 ## 2. Current Handoff (Active State for AI Agent)
 
-- **Current Status:** Slices 1.1, 1.2, and 1.3 completed and pushed.
-- **Active Slice:** **Slice 1.4 — SQLite Database Core**
+- **Current Status:** Milestone 1 complete (Slices 1.1, 1.2, 1.3, and 1.4 tested and committed).
+- **Active Slice:** **Slice 2.1 — 7-Tab Internal Shell & `Start` Tab**
 - **Immediate Next Step for Agent:**
-  1. Add sqflite and path to pubspec.yaml (plus sqflite_common_ffi for testing).
-  2. Implement AppDatabase under lib/core/database/ with the 6 core tables (technician_profile, customers, service_locations, boilers, maintenance_visits, measurement_captures).
-  3. Ensure DB initializes on app launch and write unit tests for schema integrity.
-  4. Ensure all files remain strictly under 250 lines with helpful comments.
-- **Blockers / Open Questions:** None for Slice 1.4.
+  1. Route from Home "Verbrandingsattest Vlaanderen" tile into the internal 7-tab workflow (Data, Start, Firma - Technicus, Klant, Stooktoestel, Meting, Eindbeoordeling).
+  2. Implement top scrollable horizontal tab bar matching the owner's preferred styling in references/legacy/prefered_theme/tab_Data/.
+  3. Build Start tab form (Activity Type toggle, Volgnummer attest, Datum onderhoud, Arbeidsduur van & tot with adapted Dutch BO2 Time Spinner).
+  4. Auto-save every edit into an active draft row in SQLite maintenance_visits table. Ensure all files remain strictly under 250 lines with helpful comments.
+- **Blockers / Open Questions:** None. Awaiting owner approval to begin Slice 2.1.
