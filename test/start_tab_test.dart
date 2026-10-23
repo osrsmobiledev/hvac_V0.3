@@ -51,7 +51,6 @@ void main() {
 
       // Verify Main Gold Dropdown Header
       expect(find.text('Start'), findsOneWidget);
-      expect(find.text('Type activiteit'), findsOneWidget);
 
       // Verify Options
       expect(find.text('Onderhoud'), findsOneWidget);

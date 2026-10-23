@@ -96,4 +96,25 @@ class DraftRepository {
       whereArgs: [visitId],
     );
   }
+
+  /// Updates the Tab 4 (Klant) customer and service location links for the draft.
+  Future<void> updateVisitCustomer({
+    required int visitId,
+    int? customerId,
+    int? serviceLocationId,
+    Database? dbOverride,
+  }) async {
+    final db = dbOverride ?? await _appDatabase.database;
+
+    await db.update(
+      'maintenance_visits',
+      {
+        'customer_id': customerId,
+        'service_location_id': serviceLocationId,
+        'updated_at': DateTime.now().toIso8601String(),
+      },
+      where: 'id = ?',
+      whereArgs: [visitId],
+    );
+  }
 }

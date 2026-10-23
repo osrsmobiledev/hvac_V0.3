@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:hvac_app/app/theme/app_colors.dart';
+import 'package:hvac_app/core/utils/belgian_formatters.dart';
 import '../../data/draft_repository.dart';
 import '../../data/technician_profile_repository.dart';
 import '../../domain/technician_profile.dart';
@@ -102,9 +103,11 @@ class _FirmaTechnicusTabState extends State<FirmaTechnicusTab>
           _houseNumberController.text = profile.houseNumber;
           _postalCodeController.text = profile.postalCode;
           _cityController.text = profile.city;
-          _phoneController.text = profile.phone;
+          _phoneController.text =
+              BelgianFormatters.stripPhonePrefix(profile.phone);
           _emailController.text = profile.email;
-          _kboNumberController.text = profile.kboNumber;
+          _kboNumberController.text =
+              BelgianFormatters.stripKboPrefix(profile.kboNumber);
 
           // Populate technician fields
           _firstNameController.text = profile.technicianFirstName;
@@ -123,7 +126,10 @@ class _FirmaTechnicusTabState extends State<FirmaTechnicusTab>
           _isLoading = false;
         });
       }
-    } catch (_) {
+    } catch (e, stack) {
+      // Log unexpected errors so they are visible during development.
+      // The form stays empty but the user is not blocked.
+      debugPrint('[FirmaTechnicusTab] _loadData error: $e\n$stack');
       if (mounted) setState(() => _isLoading = false);
     }
   }
@@ -142,9 +148,9 @@ class _FirmaTechnicusTabState extends State<FirmaTechnicusTab>
       houseNumber: _houseNumberController.text.trim(),
       postalCode: _postalCodeController.text.trim(),
       city: _cityController.text.trim(),
-      phone: _phoneController.text.trim(),
+      phone: BelgianFormatters.normalizePhone(_phoneController.text),
       email: _emailController.text.trim(),
-      kboNumber: _kboNumberController.text.trim(),
+      kboNumber: BelgianFormatters.normalizeKbo(_kboNumberController.text),
       technicianFirstName: _firstNameController.text.trim(),
       technicianLastName: _lastNameController.text.trim(),
       gvNumber: _gvController.text.trim(),

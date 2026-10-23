@@ -100,11 +100,6 @@ class _StartTabState extends State<StartTab>
       );
     }
 
-    final cardBackground = Color.alphaBlend(
-      Colors.white.withValues(alpha: 0.03),
-      const Color(0xFF141414),
-    );
-
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Center(
@@ -120,70 +115,44 @@ class _StartTabState extends State<StartTab>
               // Standalone gold-tinted main dropdown header labeled 'Start'
               BentoMainSection(
                 title: 'Start',
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: cardBackground,
-                    borderRadius: BorderRadius.circular(18),
-                    border: Border.all(
-                      color: AppColors.amberGoldBorder,
-                      width: 1.2,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    ActivityOptionTile(
+                      title: 'Onderhoud',
+                      isSelected: _activityType == 'onderhoud',
+                      onTap: () => _onActivityChanged('onderhoud'),
                     ),
-                  ),
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      // Section 1: Type Activiteit
-                      const Text(
-                        'Type activiteit',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                          letterSpacing: 0.2,
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      ActivityOptionTile(
-                        title: 'Onderhoud',
-                        isSelected: _activityType == 'onderhoud',
-                        onTap: () => _onActivityChanged('onderhoud'),
-                      ),
-                      const SizedBox(height: 10),
-                      ActivityOptionTile(
-                        title: 'Keuring voor eerste ingebruikname',
-                        isSelected: _activityType == 'eerste_ingebruikname',
-                        onTap: () => _onActivityChanged('eerste_ingebruikname'),
-                      ),
-                      const SizedBox(height: 20),
+                    const SizedBox(height: 10),
+                    ActivityOptionTile(
+                      title: 'Keuring voor eerste ingebruikname',
+                      isSelected: _activityType == 'eerste_ingebruikname',
+                      onTap: () => _onActivityChanged('eerste_ingebruikname'),
+                    ),
+                    const SizedBox(height: 20),
 
-                      // Section 2: Volgnummer Attest
-                      const Text(
-                        'Volgnummer Attest:',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                          letterSpacing: 0.2,
-                        ),
+                    // Section 2: Volgnummer Attest
+                    const Text(
+                      'Volgnummer Attest:',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 0.2,
                       ),
-                      const SizedBox(height: 8),
-                      TextField(
-                        controller: _attestNumberController,
-                        onChanged: _onAttestNumberChanged,
-                        textInputAction: TextInputAction.done,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                        ),
-                        cursorColor: AppColors.amberGold,
-                        decoration: DarkInputBox.decoration(
-                          hintText: 'bv. 2026-001',
-                        ),
+                    ),
+                    const SizedBox(height: 8),
+                    TextField(
+                      controller: _attestNumberController,
+                      onChanged: _onAttestNumberChanged,
+                      textInputAction: TextInputAction.done,
+                      style: DarkInputBox.inputStyle,
+                      cursorColor: AppColors.amberGold,
+                      decoration: DarkInputBox.decoration(
+                        hintText: 'bv. 2026-001',
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
               const SizedBox(height: 32),

@@ -61,4 +61,17 @@ abstract final class AppDictionary {
   static const String lblDate = 'Datum onderhoud';
   static const String lblTimeFrom = 'Arbeidsduur van';
   static const String lblTimeTo = 'tot';
+
+  // --- Klant & Installatieadres Tab ---
+  static const String headerCustomerDetails = 'Klantgegevens';
+  static const String headerInstallationAddress = 'Installatieadres';
+  static const String subInstallationAddress =
+      '(indien afwijkend van adres klant)';
+  static const String btnChooseCustomer = 'Kies bestaande klant';
+  static const String btnNewCustomer = 'Nieuwe klant';
+  static const String searchCustomerHint = 'Zoek op naam, bedrijf, stad...';
+  static const String roleOwner = 'Eigenaar';
+  static const String roleTenant = 'Huurder';
+  static const String lblSameAsCustomerAddress =
+      'Installatieadres is hetzelfde als klantadres';
 }

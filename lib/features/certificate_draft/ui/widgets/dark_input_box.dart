@@ -26,15 +26,50 @@ class DarkInputBox extends StatelessWidget {
     this.padding = const EdgeInsets.symmetric(horizontal: 16.0),
   });
 
+  /// Single source of truth for user-entered input text style across all form fields.
+  static const TextStyle inputStyle = TextStyle(
+    color: Colors.white,
+    fontSize: 15,
+    fontWeight: FontWeight.w500,
+  );
+
   /// Factory helper for creating standard tactical [InputDecoration]
   /// with dark #0C0C0C fill, white/grey resting border, and gold focused border.
-  static InputDecoration decoration({String? hintText}) {
+  static InputDecoration decoration({
+    String? hintText,
+    String? prefixText,
+    TextStyle? prefixStyle,
+    Widget? prefixIcon,
+    Widget? suffixIcon,
+  }) {
+    final effectivePrefix = prefixText != null
+        ? Padding(
+            padding: const EdgeInsets.only(left: 10.0, right: 1.0),
+            child: Text(
+              prefixText,
+              style: prefixStyle ??
+                  const TextStyle(
+                    color: AppColors.antiqueGold,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                  ),
+            ),
+          )
+        : prefixIcon;
+
     return InputDecoration(
       filled: true,
       fillColor: const Color(0xFF0C0C0C),
-      contentPadding: const EdgeInsets.symmetric(
-        horizontal: 16.0,
-        vertical: 14.0,
+      prefixIcon: effectivePrefix,
+      prefixIconConstraints: effectivePrefix != null
+          ? const BoxConstraints(minWidth: 0, minHeight: 0)
+          : null,
+      suffixIcon: suffixIcon,
+      contentPadding: EdgeInsets.only(
+        left: prefixText != null ? 4.0 : 14.0,
+        right: 10.0,
+        top: 12.0,
+        bottom: 12.0,
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
@@ -49,6 +84,25 @@ class DarkInputBox extends StatelessWidget {
           color: AppColors.amberGold,
           width: 1.4,
         ),
+      ),
+      errorBorder: const OutlineInputBorder(
+        borderRadius: BorderRadius.all(Radius.circular(12)),
+        borderSide: BorderSide(
+          color: AppColors.errorRed,
+          width: 1.0,
+        ),
+      ),
+      focusedErrorBorder: const OutlineInputBorder(
+        borderRadius: BorderRadius.all(Radius.circular(12)),
+        borderSide: BorderSide(
+          color: AppColors.errorRed,
+          width: 1.4,
+        ),
+      ),
+      errorStyle: const TextStyle(
+        color: AppColors.errorRed,
+        fontSize: 12,
+        fontWeight: FontWeight.w500,
       ),
       hintText: hintText,
       hintStyle: const TextStyle(

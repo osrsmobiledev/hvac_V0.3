@@ -23,7 +23,7 @@
 - [x] **Slice 2.1 — 7-Tab Internal Shell & Tab 1 (`Data`):** Route from Home "Verbrandingsattest Vlaanderen" tile into the 7-tab workflow. Adaptive persistent AppBar title in Libron font: 2 lines centered on narrow screens ("Verbrandingsattest" / "Vlaanderen" with comfortable height padding) and 1 line on wider screens ("Verbrandingsattest Vlaanderen"). Top scrollable horizontal navigation bar directly below AppBar (`Data`, `Start`, `Firma - Technicus`, `Klant`, `Stooktoestel`, `Meting`, `Eindbeoordeling`) matching preferred theme. Build Tab 1 (`Data`) UI layout: collapsible `Meetgegevens` bento card, `Rookgassen` sub-card with Eurolyzer QR scanner launch icon button and live readings container.
 - [x] **Slice 2.2 — Tab 2 (`Start`):** Build the clean `Start` form: Reusable gold-tinted `BentoMainSection` header, tactile activity type selector (*Onderhoud* vs. *Keuring voor eerste ingebruikname*) with springy mechanical tap animation and reticle indicators, and tactical *Volgnummer Attest* input box. Auto-save draft changes to SQLite `maintenance_visits`.
 - [x] **Slice 2.3 — Tab 3 (`Firma - Technicus` & BO2 Time Spinner):** Build Company & Technician form backed by the singleton `technician_profile` table. *Datum onderhoud* (calendar picker defaulting to today). Adapt and integrate the 24-hour **BO2 Time Spinner** with Dutch labels (*Uren*, *Minuten*, *Kies tijd*, *Annuleren*, *OK*) for *Arbeidsduur van* & *tot*. Auto-save to SQLite.
-- [ ] **Slice 2.4 — Tab 4 (`Klant` & Installation Location):** Customer contact details, *Eigenaar* vs. *Huurder* role toggle, installation address, and searchable SQLite saved-customer directory picker.
+- [x] **Slice 2.4 — Tab 4 (`Klant` & Installation Location):** Customer contact details, *Eigenaar* vs. *Huurder* role toggle, installation address, and searchable SQLite saved-customer directory picker.
 
 ### Milestone 3: Appliance, Measurements & Final Assessment (Tabs 5 to 7)
 *Goal: Complete the remaining tabs tab-by-tab.*
@@ -46,12 +46,10 @@
 
 ## 2. Current Handoff (Active State for AI Agent)
 
-- **Current Status:** Milestone 1, Slice 2.1, Slice 2.2, and Slice 2.3 complete, tested, and verified.
-- **Active Slice:** **Slice 2.4 — Tab 4 (`Klant` & Installation Location)**
+- **Current Status:** Milestone 1 and Milestone 2 (Slices 2.1, 2.2, 2.3, 2.4) complete, tested, and verified.
+- **Active Slice:** **Slice 2.4 — Tab 4 (`Klant` & Installation Location)** — awaiting owner sign-off.
+- **Next Slice:** **Slice 3.1 — Tab 5 (`Stooktoestel` + Serial Barcode Scanner)** under Milestone 3.
 - **Immediate Next Step for Agent:**
-  1. Inspect `references/legacy/screenshots/` and legacy customer models/forms for Tab 4 (`Klant`).
-  2. Implement `KlantTab` with Customer Contact Details, Role selector (*Eigenaar* / *Huurder*), and Installation Address fields.
-  3. Wire searchable customer picker modal querying SQLite `customers` and `service_locations` tables.
-  4. Ensure all files remain strictly under 250 lines with helpful comments.
-  5. Verify with `flutter analyze` and `flutter test`.
-- **Blockers / Open Questions:** None. Ready to proceed with Slice 2.4 upon owner authorization.
+  1. Present Slice 2.4 verification results and 3–4 testing instructions to the owner.
+  2. Await owner's confirmation before writing code for Milestone 3 / Slice 3.1.
+- **Blockers / Open Questions:** None. Ready to proceed to Slice 3.1 upon owner authorization.

@@ -101,7 +101,7 @@ void main() {
     });
 
     testWidgets(
-        'Tapping Meetgegevens and Rookgassen toggles accordion collapse',
+        'Tapping Meetgegevens and Rookgassen toggles accordion collapse and preserves nested state',
         (tester) async {
       tester.view.physicalSize = const Size(390, 844);
       tester.view.devicePixelRatio = 1.0;
@@ -113,17 +113,19 @@ void main() {
       await tester.tap(find.text('Verbrandingsattest'));
       await tester.pumpAndSettle();
 
-      // Initially expanded
+      // Initially expanded: headers, QR icon button, and fields are visible
       expect(find.text('Rookgassen'), findsOneWidget);
       expect(find.text('Brandstof'), findsOneWidget);
+      expect(find.byIcon(Icons.qr_code_scanner_rounded), findsOneWidget);
 
       // Tap Rookgassen header to collapse fields
       await tester.tap(find.text('Rookgassen'));
       await tester.pumpAndSettle();
 
-      // Rookgassen header still visible, but fields are hidden
+      // Rookgassen header still visible, but fields and QR button are hidden
       expect(find.text('Rookgassen'), findsOneWidget);
       expect(find.text('Brandstof'), findsNothing);
+      expect(find.byIcon(Icons.qr_code_scanner_rounded), findsNothing);
 
       // Tap Meetgegevens header to collapse everything
       await tester.tap(find.text('Meetgegevens'));
@@ -136,7 +138,18 @@ void main() {
       await tester.tap(find.text('Meetgegevens'));
       await tester.pumpAndSettle();
 
+      // Rookgassen is visible, BUT it must stay collapsed (fields and QR button remain hidden)
       expect(find.text('Rookgassen'), findsOneWidget);
+      expect(find.text('Brandstof'), findsNothing);
+      expect(find.byIcon(Icons.qr_code_scanner_rounded), findsNothing);
+
+      // Tap Rookgassen again to re-expand it
+      await tester.tap(find.text('Rookgassen'));
+      await tester.pumpAndSettle();
+
+      // Now fields and QR button reappear
+      expect(find.text('Brandstof'), findsOneWidget);
+      expect(find.byIcon(Icons.qr_code_scanner_rounded), findsOneWidget);
     });
 
     testWidgets('Preserves scroll position when switching tabs',

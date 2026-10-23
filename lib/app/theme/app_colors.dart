@@ -34,6 +34,9 @@ abstract final class AppColors {
   /// Amber gold accent for Verbrandingsattest.
   static const Color amberGold = Color(0xFFFFB300);
 
+  /// Toned-down antique gold accent for dark surfaces (M3 compliant desaturation).
+  static const Color antiqueGold = Color(0xFFC89A3C);
+
   /// Antique gold border framing the Verbrandingsattest card.
   static const Color amberGoldBorder = Color(0xFF8A6A1D);
 

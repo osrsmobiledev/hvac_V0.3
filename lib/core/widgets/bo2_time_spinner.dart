@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:hvac_app/app/theme/app_colors.dart';
 import 'package:hvac_app/app/theme/app_theme.dart';
 import 'bo2_time_wheels.dart';
@@ -82,7 +83,7 @@ class _Bo2TimeSpinnerDialogState extends State<_Bo2TimeSpinnerDialog> {
         child: Container(
           decoration: BoxDecoration(
             color: AppColors.charcoalGlass,
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(24),
             border: Border.all(
               color: Colors.white.withValues(alpha: 0.12),
               width: 1,
@@ -107,76 +108,49 @@ class _Bo2TimeSpinnerDialogState extends State<_Bo2TimeSpinnerDialog> {
                     color: Colors.white,
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
+                    letterSpacing: 0.3,
                   ),
                 ),
               ),
-              const Divider(color: AppColors.goldHairline, height: 1),
-              const Padding(
-                padding: EdgeInsets.only(top: 18, bottom: 6),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    SizedBox(
-                      width: 100,
-                      child: Center(
-                        child: Text(
-                          'UREN',
-                          style: TextStyle(
-                            fontFamily: AppTheme.fontFamily,
-                            color: AppColors.amberGold,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: 1.5,
-                          ),
-                        ),
-                      ),
-                    ),
-                    SizedBox(width: 40),
-                    SizedBox(
-                      width: 100,
-                      child: Center(
-                        child: Text(
-                          'MINUTEN',
-                          style: TextStyle(
-                            fontFamily: AppTheme.fontFamily,
-                            color: AppColors.amberGold,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: 1.5,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+              const Bo2LaserDivider(),
+              const Bo2WheelColumnLabels(),
               Bo2TimeWheels(
                 hourController: _hourController,
                 minuteController: _minuteController,
                 onHourChanged: (v) => _tempHour = v,
                 onMinuteChanged: (v) => _tempMinute = v,
               ),
-              const Divider(color: AppColors.goldHairline, height: 1),
+              const SizedBox(height: 6),
+              const Bo2LaserDivider(),
               Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 18,
+                ),
                 child: Row(
                   children: [
                     Expanded(
-                      child: TextButton(
-                        onPressed: () => Navigator.of(context).pop(),
-                        style: TextButton.styleFrom(
-                          backgroundColor: Colors.white.withValues(alpha: 0.06),
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                      child: OutlinedButton(
+                        onPressed: () {
+                          HapticFeedback.selectionClick();
+                          Navigator.of(context).pop();
+                        },
+                        style: OutlinedButton.styleFrom(
+                          minimumSize: const Size.fromHeight(48),
+                          backgroundColor: const Color(0xFF1E1E1E),
+                          side: BorderSide(
+                            color: Colors.white.withValues(alpha: 0.14),
+                            width: 1.0,
                           ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(24),
+                          ),
+                          foregroundColor: Colors.white70,
                         ),
                         child: const Text(
                           'Annuleren',
                           style: TextStyle(
                             fontFamily: AppTheme.fontFamily,
-                            color: Colors.white70,
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
                           ),
@@ -185,26 +159,27 @@ class _Bo2TimeSpinnerDialogState extends State<_Bo2TimeSpinnerDialog> {
                     ),
                     const SizedBox(width: 14),
                     Expanded(
-                      child: TextButton(
+                      child: FilledButton(
                         onPressed: () {
+                          HapticFeedback.selectionClick();
                           Navigator.of(context).pop();
                           final hStr = _tempHour.toString().padLeft(2, '0');
                           final mStr = _tempMinute.toString().padLeft(2, '0');
                           widget.onConfirmed('$hStr:$mStr');
                         },
-                        style: TextButton.styleFrom(
-                          backgroundColor: AppColors.amberGold,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
+                        style: FilledButton.styleFrom(
+                          minimumSize: const Size.fromHeight(48),
+                          backgroundColor: AppColors.antiqueGold,
+                          foregroundColor: Colors.black,
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(24),
                           ),
                         ),
                         child: const Text(
                           'OK',
                           style: TextStyle(
                             fontFamily: AppTheme.fontFamily,
-                            color: Colors.black,
-                            fontSize: 14,
+                            fontSize: 15,
                             fontWeight: FontWeight.w700,
                           ),
                         ),

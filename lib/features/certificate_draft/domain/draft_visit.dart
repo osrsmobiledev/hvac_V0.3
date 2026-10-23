@@ -1,7 +1,7 @@
 /// Lightweight domain model representing an active draft visit.
 ///
-/// Holds the primary setup fields edited on Tab 2 (Start) & Tab 3 (Firma - Technicus)
-/// and synchronized with the SQLite `maintenance_visits` table.
+/// Holds the primary setup fields edited on Tab 2 (Start), Tab 3 (Firma - Technicus)
+/// & Tab 4 (Klant) and synchronized with the SQLite `maintenance_visits` table.
 class DraftVisit {
   final int id;
   final String activityType; // 'onderhoud' or 'eerste_ingebruikname'
@@ -9,6 +9,8 @@ class DraftVisit {
   final String visitDate;
   final String startTime;
   final String endTime;
+  final int? customerId;
+  final int? serviceLocationId;
 
   const DraftVisit({
     required this.id,
@@ -17,6 +19,8 @@ class DraftVisit {
     required this.visitDate,
     this.startTime = '',
     this.endTime = '',
+    this.customerId,
+    this.serviceLocationId,
   });
 
   /// Factory constructor to map an SQLite row into a [DraftVisit] entity.
@@ -28,6 +32,8 @@ class DraftVisit {
       visitDate: (map['visit_date'] as String?) ?? '',
       startTime: (map['start_time'] as String?) ?? '',
       endTime: (map['end_time'] as String?) ?? '',
+      customerId: map['customer_id'] as int?,
+      serviceLocationId: map['service_location_id'] as int?,
     );
   }
 
@@ -38,6 +44,8 @@ class DraftVisit {
     String? visitDate,
     String? startTime,
     String? endTime,
+    int? customerId,
+    int? serviceLocationId,
   }) {
     return DraftVisit(
       id: id,
@@ -46,6 +54,8 @@ class DraftVisit {
       visitDate: visitDate ?? this.visitDate,
       startTime: startTime ?? this.startTime,
       endTime: endTime ?? this.endTime,
+      customerId: customerId ?? this.customerId,
+      serviceLocationId: serviceLocationId ?? this.serviceLocationId,
     );
   }
 }

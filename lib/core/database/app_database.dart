@@ -38,6 +38,11 @@ class AppDatabase {
       onCreate: (db, version) async {
         await DatabaseSchema.createAllTables(db);
       },
+      // TODO(Slice 3.1): Implement onUpgrade to add new columns (e.g., stooktoestel table).
+      // Example:
+      //   onUpgrade: (db, oldVersion, newVersion) async {
+      //     if (oldVersion < 2) await db.execute('ALTER TABLE ...');
+      //   },
     );
   }
 

@@ -69,114 +69,101 @@ class TechnicianSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cardBackground = Color.alphaBlend(
-      Colors.white.withValues(alpha: 0.03),
-      const Color(0xFF141414),
-    );
-
     return BentoMainSection(
       title: 'Technicus',
-      child: Container(
-        decoration: BoxDecoration(
-          color: cardBackground,
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: AppColors.amberGoldBorder, width: 1.2),
-        ),
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: FirmaField(
-                    label: 'Voornaam:',
-                    controller: firstNameController,
-                    hint: 'Jan',
-                    onChanged: onProfileChanged,
-                  ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: FirmaField(
+                  label: 'Voornaam:',
+                  controller: firstNameController,
+                  hint: 'Jan',
+                  onChanged: onProfileChanged,
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: FirmaField(
-                    label: 'Achternaam:',
-                    controller: lastNameController,
-                    hint: 'Janssens',
-                    onChanged: onProfileChanged,
-                  ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: FirmaField(
+                  label: 'Achternaam:',
+                  controller: lastNameController,
+                  hint: 'Janssens',
+                  onChanged: onProfileChanged,
                 ),
-              ],
-            ),
-            const SizedBox(height: 14),
-            Row(
-              children: [
-                Expanded(
-                  child: FirmaField(
-                    label: 'GV-nummer:',
-                    controller: gvController,
-                    hint: 'GV01234',
-                    onChanged: onProfileChanged,
-                  ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          Row(
+            children: [
+              Expanded(
+                child: FirmaField(
+                  label: 'GV-nummer:',
+                  controller: gvController,
+                  hint: 'GV01234',
+                  onChanged: onProfileChanged,
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: FirmaField(
-                    label: 'TV-nummer:',
-                    controller: tvController,
-                    hint: 'TV01234',
-                    onChanged: onProfileChanged,
-                  ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: FirmaField(
+                  label: 'TV-nummer:',
+                  controller: tvController,
+                  hint: 'TV01234',
+                  onChanged: onProfileChanged,
                 ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            const Divider(color: AppColors.goldHairline, height: 1),
-            const SizedBox(height: 14),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          const Divider(color: AppColors.goldHairline, height: 1),
+          const SizedBox(height: 14),
 
-            // Date Picker: Datum onderhoud
-            FirmaActionField(
-              label: 'Datum onderhoud:',
-              controller: dateController,
-              hint: 'JJJJ-MM-DD',
-              icon: Icons.calendar_month_rounded,
-              onTap: () => _selectDate(context),
-            ),
-            const SizedBox(height: 14),
+          // Date Picker: Datum onderhoud
+          FirmaActionField(
+            label: 'Datum onderhoud:',
+            controller: dateController,
+            hint: 'JJJJ-MM-DD',
+            icon: Icons.calendar_month_rounded,
+            onTap: () => _selectDate(context),
+          ),
+          const SizedBox(height: 14),
 
-            // Time Pickers: Arbeidsduur van & tot
-            Row(
-              children: [
-                Expanded(
-                  child: FirmaActionField(
-                    label: 'Arbeidsduur van:',
-                    controller: startTimeController,
-                    hint: '08:00',
-                    icon: Icons.access_time_rounded,
-                    onTap: () => showBo2TimeSpinner(
-                      context,
-                      startTimeController,
-                      onTimeSelected: onTimingsChanged,
-                    ),
+          // Time Pickers: Arbeidsduur van & tot
+          Row(
+            children: [
+              Expanded(
+                child: FirmaActionField(
+                  label: 'Arbeidsduur van:',
+                  controller: startTimeController,
+                  hint: '08:00',
+                  icon: Icons.access_time_rounded,
+                  onTap: () => showBo2TimeSpinner(
+                    context,
+                    startTimeController,
+                    onTimeSelected: onTimingsChanged,
                   ),
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: FirmaActionField(
-                    label: 'tot:',
-                    controller: endTimeController,
-                    hint: '10:00',
-                    icon: Icons.access_time_rounded,
-                    onTap: () => showBo2TimeSpinner(
-                      context,
-                      endTimeController,
-                      onTimeSelected: onTimingsChanged,
-                    ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: FirmaActionField(
+                  label: 'tot:',
+                  controller: endTimeController,
+                  hint: '10:00',
+                  icon: Icons.access_time_rounded,
+                  onTap: () => showBo2TimeSpinner(
+                    context,
+                    endTimeController,
+                    onTimeSelected: onTimingsChanged,
                   ),
                 ),
-              ],
-            ),
-          ],
-        ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

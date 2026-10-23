@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:hvac_app/app/theme/app_colors.dart';
 import '../../widgets/dark_input_box.dart';
 
@@ -7,6 +8,10 @@ class FirmaField extends StatelessWidget {
   final String label;
   final TextEditingController controller;
   final String? hint;
+  final String? prefixText;
+  final List<TextInputFormatter>? inputFormatters;
+  final FormFieldValidator<String>? validator;
+  final AutovalidateMode autovalidateMode;
   final TextInputType? keyboardType;
   final TextInputAction textInputAction;
   final VoidCallback onChanged;
@@ -16,6 +21,10 @@ class FirmaField extends StatelessWidget {
     required this.label,
     required this.controller,
     this.hint,
+    this.prefixText,
+    this.inputFormatters,
+    this.validator,
+    this.autovalidateMode = AutovalidateMode.onUserInteraction,
     this.keyboardType,
     this.textInputAction = TextInputAction.next,
     required this.onChanged,
@@ -29,21 +38,29 @@ class FirmaField extends StatelessWidget {
       children: [
         Text(
           label,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
           style: const TextStyle(
             color: Colors.white,
-            fontSize: 14,
+            fontSize: 13,
             fontWeight: FontWeight.w600,
           ),
         ),
         const SizedBox(height: 6),
-        TextField(
+        TextFormField(
           controller: controller,
           onChanged: (_) => onChanged(),
+          validator: validator,
+          autovalidateMode: autovalidateMode,
           keyboardType: keyboardType,
           textInputAction: textInputAction,
-          style: const TextStyle(color: Colors.white, fontSize: 15),
+          inputFormatters: inputFormatters,
+          style: DarkInputBox.inputStyle,
           cursorColor: AppColors.amberGold,
-          decoration: DarkInputBox.decoration(hintText: hint),
+          decoration: DarkInputBox.decoration(
+            hintText: hint,
+            prefixText: prefixText,
+          ),
         ),
       ],
     );
@@ -75,6 +92,8 @@ class FirmaActionField extends StatelessWidget {
       children: [
         Text(
           label,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
           style: const TextStyle(
             color: Colors.white,
             fontSize: 14,
@@ -86,7 +105,7 @@ class FirmaActionField extends StatelessWidget {
           controller: controller,
           readOnly: true,
           onTap: onTap,
-          style: const TextStyle(color: Colors.white, fontSize: 15),
+          style: DarkInputBox.inputStyle,
           decoration: DarkInputBox.decoration(hintText: hint).copyWith(
             suffixIcon: IconButton(
               icon: Icon(icon, color: AppColors.amberGold, size: 20),

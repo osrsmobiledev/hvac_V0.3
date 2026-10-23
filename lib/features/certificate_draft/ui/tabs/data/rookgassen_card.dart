@@ -12,16 +12,22 @@ import 'flue_gas_field_box.dart';
 /// - Displays the 21 flue gas parameter boxes.
 class RookgassenCard extends StatelessWidget {
   final VoidCallback? onScanQrPressed;
+  final bool? isExpanded;
+  final ValueChanged<bool>? onExpansionChanged;
 
   const RookgassenCard({
     super.key,
     this.onScanQrPressed,
+    this.isExpanded,
+    this.onExpansionChanged,
   });
 
   @override
   Widget build(BuildContext context) {
     return BentoSubSection(
       title: 'Rookgassen',
+      isExpanded: isExpanded,
+      onExpansionChanged: onExpansionChanged,
       actionWidget: IconButton(
         icon: const Icon(
           Icons.qr_code_scanner_rounded,

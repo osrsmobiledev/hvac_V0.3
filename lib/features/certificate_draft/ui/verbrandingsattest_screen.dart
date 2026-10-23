@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:hvac_app/app/localization/app_dictionary.dart';
 import 'package:hvac_app/app/shell/app_shell_controller.dart';
 import 'package:hvac_app/app/theme/app_colors.dart';
 import 'package:hvac_app/app/theme/app_theme.dart';
 import 'tabs/data_tab.dart';
 import 'tabs/firma_technicus_tab.dart';
+import 'tabs/klant_tab.dart';
 import 'tabs/start_tab.dart';
 
 /// The 7-tab workflow screen for 'Verbrandingsattest Vlaanderen'.
@@ -30,15 +32,9 @@ class _VerbrandingsattestScreenState extends State<VerbrandingsattestScreen>
     with SingleTickerProviderStateMixin {
   late final TabController _tabController;
 
-  static const List<String> _tabTitles = [
-    'Data',
-    'Start',
-    'Firma - Technicus',
-    'Klant',
-    'Stooktoestel',
-    'Meting',
-    'Eindbeoordeling',
-  ];
+  /// Tab titles sourced from [AppDictionary.combustionTabs] to keep UI labels
+  /// centralized in the single Dutch dictionary. Edit labels there, not here.
+  static List<String> get _tabTitles => AppDictionary.combustionTabs;
 
   @override
   void initState() {
@@ -114,12 +110,8 @@ class _VerbrandingsattestScreenState extends State<VerbrandingsattestScreen>
               // Tab 3: Firma - Technicus (Active in Slice 2.3)
               FirmaTechnicusTab(),
 
-              // Tab 4: Klant (Slice 2.4)
-              _DraftTabPlaceholder(
-                tabName: 'Klant',
-                sliceInfo: 'Wordt geïmplementeerd in Slice 2.4',
-                icon: Icons.person_pin_rounded,
-              ),
+              // Tab 4: Klant (Active in Slice 2.4)
+              KlantTab(),
 
               // Tab 5: Stooktoestel (Slice 3.1)
               _DraftTabPlaceholder(

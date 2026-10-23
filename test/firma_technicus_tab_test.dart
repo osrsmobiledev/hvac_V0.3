@@ -71,7 +71,7 @@ void main() {
       expect(find.text('Gemeente:'), findsOneWidget);
       expect(find.text('Tel:'), findsOneWidget);
       expect(find.text('Email:'), findsOneWidget);
-      expect(find.text('Ondernemingsnummer (KBO):'), findsOneWidget);
+      expect(find.text('Ondernemingsnummer:'), findsOneWidget);
 
       // Verify Technician Labels
       expect(find.text('Voornaam:'), findsOneWidget);

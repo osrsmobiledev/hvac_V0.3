@@ -113,7 +113,7 @@ abstract final class AppTheme {
         hintStyle: const TextStyle(
           fontFamily: fontFamily,
           color: AppColors.textMuted,
-          fontSize: 14,
+          fontSize: 15,
         ),
         labelStyle: const TextStyle(
           fontFamily: fontFamily,
