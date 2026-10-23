@@ -40,6 +40,7 @@ Follow the official Flutter Architecture Guide (UI Layer + Data Layer):
 6. **Zero Fake Defaults or Silent Compliance:** Never use demo/test numbers as default boiler readings, never invent work start/end times, and never embed private certificates or API secrets in the mobile app.
 
 ## 5. Verification & Handoff
-- Before marking a slice complete, run `dart format`, `flutter analyze`, and focused unit/widget tests for the changed logic.
+- Before marking a slice complete, verify against the short reminders in `IMPLEMENTATION_CHECKLIST.md`.
+- Run `dart format`, `flutter analyze`, and focused unit/widget tests for the changed logic.
 - Give the owner 3–4 short, concrete steps to test the feature on their Android emulator/device.
 - After the owner confirms the slice works, commit the changes to Git with a clear message (e.g., feat: completed Slice 1.1), push to the repository, and update the Current Handoff section at the bottom of `ROADMAP.md`.
