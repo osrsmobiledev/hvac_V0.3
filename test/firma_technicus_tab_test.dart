@@ -83,6 +83,19 @@ void main() {
       expect(find.text('Datum onderhoud:'), findsOneWidget);
       expect(find.text('Arbeidsduur van:'), findsOneWidget);
       expect(find.text('tot:'), findsOneWidget);
+
+      // Verify Date and Time input fields have centered text alignment
+      final dateField =
+          tester.widget<TextField>(find.widgetWithText(TextField, 'JJJJ-MM-DD'));
+      expect(dateField.textAlign, equals(TextAlign.center));
+
+      final startTimeField =
+          tester.widget<TextField>(find.widgetWithText(TextField, '08:00'));
+      expect(startTimeField.textAlign, equals(TextAlign.center));
+
+      final endTimeField =
+          tester.widget<TextField>(find.widgetWithText(TextField, '10:00'));
+      expect(endTimeField.textAlign, equals(TextAlign.center));
     });
 
     testWidgets(

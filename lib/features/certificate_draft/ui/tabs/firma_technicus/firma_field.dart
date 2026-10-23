@@ -74,6 +74,7 @@ class FirmaActionField extends StatelessWidget {
   final String hint;
   final IconData icon;
   final VoidCallback onTap;
+  final TextAlign textAlign;
 
   const FirmaActionField({
     super.key,
@@ -82,6 +83,7 @@ class FirmaActionField extends StatelessWidget {
     required this.hint,
     required this.icon,
     required this.onTap,
+    this.textAlign = TextAlign.center,
   });
 
   @override
@@ -105,8 +107,22 @@ class FirmaActionField extends StatelessWidget {
           controller: controller,
           readOnly: true,
           onTap: onTap,
+          textAlign: textAlign,
           style: DarkInputBox.inputStyle,
-          decoration: DarkInputBox.decoration(hintText: hint).copyWith(
+          decoration: DarkInputBox.decoration(
+            hintText: hint,
+            prefixIcon: textAlign == TextAlign.center
+                ? const IgnorePointer(
+                    child: SizedBox(
+                      width: 48,
+                      height: 48,
+                    ),
+                  )
+                : null,
+          ).copyWith(
+            contentPadding: textAlign == TextAlign.center
+                ? const EdgeInsets.symmetric(horizontal: 10, vertical: 12)
+                : null,
             suffixIcon: IconButton(
               icon: Icon(icon, color: AppColors.amberGold, size: 20),
               onPressed: onTap,

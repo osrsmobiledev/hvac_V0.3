@@ -127,6 +127,7 @@ class TechnicianSection extends StatelessWidget {
             controller: dateController,
             hint: 'JJJJ-MM-DD',
             icon: Icons.calendar_month_rounded,
+            textAlign: TextAlign.center,
             onTap: () => _selectDate(context),
           ),
           const SizedBox(height: 14),
@@ -140,6 +141,7 @@ class TechnicianSection extends StatelessWidget {
                   controller: startTimeController,
                   hint: '08:00',
                   icon: Icons.access_time_rounded,
+                  textAlign: TextAlign.center,
                   onTap: () => showBo2TimeSpinner(
                     context,
                     startTimeController,
@@ -154,6 +156,7 @@ class TechnicianSection extends StatelessWidget {
                   controller: endTimeController,
                   hint: '10:00',
                   icon: Icons.access_time_rounded,
+                  textAlign: TextAlign.center,
                   onTap: () => showBo2TimeSpinner(
                     context,
                     endTimeController,
