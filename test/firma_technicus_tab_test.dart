@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:hvac_app/app/localization/app_dictionary.dart';
 import 'package:hvac_app/app/theme/app_theme.dart';
 import 'package:hvac_app/core/database/app_database.dart';
 import 'package:hvac_app/features/certificate_draft/data/draft_repository.dart';
@@ -42,6 +43,10 @@ void main() {
   }
 
   Future<void> pumpTab(WidgetTester tester) async {
+    tester.view.physicalSize = const Size(412, 1600);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(() => tester.view.resetPhysicalSize());
+
     await tester.pumpWidget(buildTestWidget());
     for (int i = 0; i < 20; i++) {
       await tester.runAsync(() async {
@@ -63,30 +68,31 @@ void main() {
       expect(find.text('Firma'), findsOneWidget);
       expect(find.text('Technicus'), findsOneWidget);
 
-      // Verify Company Labels
-      expect(find.text('Naam:'), findsOneWidget);
-      expect(find.text('Straat:'), findsOneWidget);
-      expect(find.text('Nr:'), findsOneWidget);
-      expect(find.text('Postnummer:'), findsOneWidget);
-      expect(find.text('Gemeente:'), findsOneWidget);
-      expect(find.text('Tel:'), findsOneWidget);
-      expect(find.text('Email:'), findsOneWidget);
-      expect(find.text('Ondernemingsnummer:'), findsOneWidget);
+      // Verify Company Labels (matching Klant standard)
+      expect(find.text(AppDictionary.lblCompanyName), findsOneWidget);
+      expect(find.text(AppDictionary.lblStreet), findsOneWidget);
+      expect(find.text(AppDictionary.lblHouseNumber), findsOneWidget);
+      expect(find.text(AppDictionary.lblBox), findsOneWidget);
+      expect(find.text(AppDictionary.lblPostalCode), findsOneWidget);
+      expect(find.text(AppDictionary.lblCity), findsOneWidget);
+      expect(find.text(AppDictionary.lblPhone), findsOneWidget);
+      expect(find.text(AppDictionary.lblEmail), findsOneWidget);
+      expect(find.text(AppDictionary.lblKBO), findsOneWidget);
 
-      // Verify Technician Labels
-      expect(find.text('Voornaam:'), findsOneWidget);
-      expect(find.text('Achternaam:'), findsOneWidget);
-      expect(find.text('GV-nummer:'), findsOneWidget);
-      expect(find.text('TV-nummer:'), findsOneWidget);
+      // Verify Technician Labels (no trailing colons)
+      expect(find.text(AppDictionary.lblFirstName), findsOneWidget);
+      expect(find.text(AppDictionary.lblLastName), findsOneWidget);
+      expect(find.text(AppDictionary.lblGV), findsOneWidget);
+      expect(find.text(AppDictionary.lblTV), findsOneWidget);
 
-      // Verify Visit Timings Labels
-      expect(find.text('Datum onderhoud:'), findsOneWidget);
-      expect(find.text('Arbeidsduur van:'), findsOneWidget);
-      expect(find.text('tot:'), findsOneWidget);
+      // Verify Visit Timings Labels (no trailing colons)
+      expect(find.text(AppDictionary.lblDate), findsOneWidget);
+      expect(find.text(AppDictionary.lblTimeFrom), findsOneWidget);
+      expect(find.text(AppDictionary.lblTimeTo), findsOneWidget);
 
       // Verify Date and Time input fields have centered text alignment
-      final dateField =
-          tester.widget<TextField>(find.widgetWithText(TextField, 'JJJJ-MM-DD'));
+      final dateField = tester
+          .widget<TextField>(find.widgetWithText(TextField, 'JJJJ-MM-DD'));
       expect(dateField.textAlign, equals(TextAlign.center));
 
       final startTimeField =
@@ -151,6 +157,7 @@ void main() {
         await profileRepository.saveProfile(
           const TechnicianProfile(
             companyName: 'Pre-existing HVAC',
+            boxNumber: 'Bus 4B',
             technicianFirstName: 'Pieter',
             technicianLastName: 'Claes',
             gvNumber: 'GV99999',
@@ -161,6 +168,7 @@ void main() {
       await pumpTab(tester);
 
       expect(find.text('Pre-existing HVAC'), findsOneWidget);
+      expect(find.text('Bus 4B'), findsOneWidget);
       expect(find.text('Pieter'), findsOneWidget);
       expect(find.text('Claes'), findsOneWidget);
       expect(find.text('GV99999'), findsOneWidget);

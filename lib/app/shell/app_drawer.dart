@@ -1,17 +1,19 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '../localization/app_dictionary.dart';
 import '../theme/app_colors.dart';
-import '../theme/app_theme.dart';
 import 'app_shell_controller.dart';
 import 'drawer_nav_tile.dart';
+import 'drawer_sections.dart';
 
 /// Navigation Drawer matching the owner's preferred theme.
 ///
 /// Features:
-/// - "HVAC" branding header with gold gear emblem.
+/// - "HVAC" branding header with gold dashboard emblem.
 /// - Clean uppercase section titles: DASHBOARD, APPLETS, BEHEER.
 /// - Dark squircle tiles with custom colored rims (Amber, Terracotta, Slate, Steel).
-class AppDrawer extends StatelessWidget {
+/// - Automatically scrolls down and focuses on the selected item when opened.
+class AppDrawer extends StatefulWidget {
   final AppShellController controller;
   final bool isPermanent;
   final VoidCallback? onItemTapped;
@@ -24,8 +26,66 @@ class AppDrawer extends StatelessWidget {
   });
 
   @override
+  State<AppDrawer> createState() => _AppDrawerState();
+}
+
+class _AppDrawerState extends State<AppDrawer> {
+  /// Dedicated GlobalKey for each applet navigation item for robust scrolling.
+  final Map<AppletType, GlobalKey> _itemKeys = {
+    for (final type in AppletType.values) type: GlobalKey(),
+  };
+
+  Timer? _scrollTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollToSelectedItem();
+    });
+  }
+
+  @override
+  void didUpdateWidget(covariant AppDrawer oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.controller.activeApplet != widget.controller.activeApplet) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _scrollToSelectedItem();
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _scrollTimer?.cancel();
+    super.dispose();
+  }
+
+  /// Automatically scrolls down and centers the viewport on the selected applet.
+  void _scrollToSelectedItem() {
+    _scrollTimer?.cancel();
+    // Start is already at the top edge of the drawer, no auto-scroll needed
+    if (widget.controller.activeApplet == AppletType.home) return;
+
+    // Delay ensures mobile drawer slide-in animation is active for visible smooth motion
+    _scrollTimer = Timer(const Duration(milliseconds: 100), () {
+      if (!mounted) return;
+      final key = _itemKeys[widget.controller.activeApplet];
+      final targetContext = key?.currentContext;
+      if (targetContext != null && mounted) {
+        Scrollable.ensureVisible(
+          targetContext,
+          alignment: 0.5,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOutCubic,
+        );
+      }
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final drawerWidth = isPermanent ? 280.0 : 300.0;
+    final drawerWidth = widget.isPermanent ? 280.0 : 300.0;
 
     return Container(
       width: drawerWidth,
@@ -36,87 +96,97 @@ class AppDrawer extends StatelessWidget {
         ),
       ),
       child: SafeArea(
-        top: isPermanent,
+        top: widget.isPermanent,
         bottom: true,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const _DrawerHeaderBranding(),
+            const DrawerHeaderBranding(),
             Expanded(
               child: ListView(
                 padding: const EdgeInsets.symmetric(vertical: 8.0),
                 children: [
-                  const _SectionHeader(title: 'DASHBOARD'),
+                  const DrawerSectionHeader(
+                      title: AppDictionary.sectionDashboard),
                   DrawerNavigationTile(
+                    key: _itemKeys[AppletType.home],
                     label: AppDictionary.menuStart,
                     icon: Icons.home_rounded,
                     accentColor: Colors.white,
                     borderColor: const Color(0x44FFFFFF),
-                    isSelected: controller.activeApplet == AppletType.home,
+                    isSelected:
+                        widget.controller.activeApplet == AppletType.home,
                     onTap: () => _handleSelection(AppletType.home),
                   ),
-                  const _SectionDivider(),
-                  const _SectionHeader(title: 'APPLETS'),
+                  const DrawerSectionDivider(),
+                  const DrawerSectionHeader(
+                      title: AppDictionary.sectionApplets),
                   DrawerNavigationTile(
-                    label: 'Verbrandingsattest\nVlaanderen',
+                    key: _itemKeys[AppletType.combustion],
+                    label: AppDictionary.menuCombustionMultiLine,
                     icon: Icons.local_fire_department_rounded,
                     accentColor: AppColors.amberGold,
                     borderColor: AppColors.amberGoldBorder,
                     isSelected:
-                        controller.activeApplet == AppletType.combustion,
+                        widget.controller.activeApplet == AppletType.combustion,
                     onTap: () => _handleSelection(AppletType.combustion),
                   ),
                   const SizedBox(height: 4),
                   DrawerNavigationTile(
-                    label: 'Reinigingsattest\nVlaanderen',
+                    key: _itemKeys[AppletType.cleaning],
+                    label: AppDictionary.menuCleaningMultiLine,
                     icon: Icons.cleaning_services_rounded,
                     accentColor: AppColors.terracotta,
                     borderColor: AppColors.terracottaBorder,
-                    isSelected: controller.activeApplet == AppletType.cleaning,
+                    isSelected:
+                        widget.controller.activeApplet == AppletType.cleaning,
                     onTap: () => _handleSelection(AppletType.cleaning),
                   ),
                   const SizedBox(height: 4),
                   DrawerNavigationTile(
-                    label: 'Keuringsrapport\nVlaanderen',
+                    key: _itemKeys[AppletType.inspection],
+                    label: AppDictionary.menuInspectionMultiLine,
                     icon: Icons.fact_check_rounded,
                     accentColor: AppColors.slate,
                     borderColor: AppColors.slateBorder,
                     isSelected:
-                        controller.activeApplet == AppletType.inspection,
+                        widget.controller.activeApplet == AppletType.inspection,
                     onTap: () => _handleSelection(AppletType.inspection),
                   ),
                   const SizedBox(height: 4),
                   DrawerNavigationTile(
-                    label: 'Meetrapport',
+                    key: _itemKeys[AppletType.measurement],
+                    label: AppDictionary.menuMeasurement,
                     icon: Icons.factory_rounded,
                     accentColor: AppColors.steelMuted,
                     borderColor: AppColors.steelBorder,
-                    isSelected:
-                        controller.activeApplet == AppletType.measurement,
+                    isSelected: widget.controller.activeApplet ==
+                        AppletType.measurement,
                     onTap: () => _handleSelection(AppletType.measurement),
                   ),
-                  const _SectionDivider(),
-                  const _SectionHeader(title: 'BEHEER'),
+                  const DrawerSectionDivider(),
+                  const DrawerSectionHeader(title: AppDictionary.sectionManage),
                   DrawerNavigationTile(
-                    label: 'Instellingen Technicus',
+                    key: _itemKeys[AppletType.technicianSettings],
+                    label: AppDictionary.menuTechSettings,
                     icon: Icons.settings_outlined,
                     accentColor: AppColors.textSecondary,
                     borderColor: const Color(0xFF3A3A3C),
-                    isSelected: false,
-                    onTap: () {
-                      onItemTapped?.call();
-                    },
+                    isSelected: widget.controller.activeApplet ==
+                        AppletType.technicianSettings,
+                    onTap: () =>
+                        _handleSelection(AppletType.technicianSettings),
                   ),
                   const SizedBox(height: 4),
                   DrawerNavigationTile(
-                    label: 'Import / Export',
+                    key: _itemKeys[AppletType.importExport],
+                    label: AppDictionary.menuImportExport,
                     icon: Icons.swap_vert_rounded,
                     accentColor: AppColors.textSecondary,
                     borderColor: const Color(0xFF3A3A3C),
-                    isSelected: false,
-                    onTap: () {
-                      onItemTapped?.call();
-                    },
+                    isSelected: widget.controller.activeApplet ==
+                        AppletType.importExport,
+                    onTap: () => _handleSelection(AppletType.importExport),
                   ),
                 ],
               ),
@@ -128,91 +198,7 @@ class AppDrawer extends StatelessWidget {
   }
 
   void _handleSelection(AppletType applet) {
-    controller.selectApplet(applet);
-    onItemTapped?.call();
-  }
-}
-
-/// Header for the Drawer featuring the gold gear emblem and "HVAC" title.
-class _DrawerHeaderBranding extends StatelessWidget {
-  const _DrawerHeaderBranding();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(20.0, 24.0, 20.0, 20.0),
-      child: Row(
-        children: [
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              color: AppColors.carbonCard,
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(
-                color: AppColors.amberGoldBorder,
-                width: 1.5,
-              ),
-            ),
-            child: const Icon(
-              Icons.miscellaneous_services_rounded,
-              color: AppColors.amberGold,
-              size: 26,
-            ),
-          ),
-          const SizedBox(width: 16),
-          const Text(
-            'HVAC',
-            style: TextStyle(
-              fontFamily: AppTheme.fontFamily,
-              color: AppColors.textPrimary,
-              fontSize: 26,
-              fontWeight: FontWeight.w800,
-              letterSpacing: 0.5,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Clean uppercase section header inside the Drawer without extra spacing.
-class _SectionHeader extends StatelessWidget {
-  final String title;
-
-  const _SectionHeader({required this.title});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20.0, 14.0, 20.0, 8.0),
-      child: Text(
-        title,
-        style: const TextStyle(
-          color: AppColors.textMuted,
-          fontSize: 11,
-          fontWeight: FontWeight.w700,
-          letterSpacing: 0.6,
-        ),
-      ),
-    );
-  }
-}
-
-/// Subtle hairline divider separating drawer sections.
-class _SectionDivider extends StatelessWidget {
-  const _SectionDivider();
-
-  @override
-  Widget build(BuildContext context) {
-    return const Padding(
-      padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 12.0),
-      child: Divider(
-        color: Color(0x22FFFFFF),
-        height: 1.0,
-        thickness: 1.0,
-      ),
-    );
+    widget.controller.selectApplet(applet);
+    widget.onItemTapped?.call();
   }
 }

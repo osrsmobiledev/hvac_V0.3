@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:hvac_app/app/localization/app_dictionary.dart';
+import 'package:hvac_app/app/shell/app_drawer.dart';
 import 'package:hvac_app/app/shell/app_shell_screen.dart';
 import 'package:hvac_app/app/theme/app_theme.dart';
 import 'package:hvac_app/features/certificate_draft/domain/flue_gas_field.dart';
@@ -21,7 +23,7 @@ void main() {
 
   group('Slice 2.1 — 7-Tab Internal Shell & Tab 1 (Data)', () {
     testWidgets(
-        'Tapping Verbrandingsattest opens the 7-tab applet with 2-line title on phones',
+        'Tapping Verbrandingsattest opens the 7-tab applet with 1-line title on phones',
         (tester) async {
       tester.view.physicalSize = const Size(390, 844);
       tester.view.devicePixelRatio = 1.0;
@@ -36,9 +38,8 @@ void main() {
       await tester.tap(tileFinder);
       await tester.pumpAndSettle();
 
-      // Verify adaptive 2-line AppBar title
-      expect(find.text('Verbrandingsattest'), findsOneWidget);
-      expect(find.text('Vlaanderen'), findsOneWidget);
+      // Verify 1-line AppBar title
+      expect(find.text('Verbrandingsattest Vlaanderen'), findsOneWidget);
 
       // Verify top TabBar has all 7 tabs
       expect(find.text('Data'), findsOneWidget);
@@ -101,7 +102,7 @@ void main() {
     });
 
     testWidgets(
-        'Tapping Meetgegevens and Rookgassen toggles accordion collapse and preserves nested state',
+        'Tapping Meetgegevens toggles accordion collapse of telemetry contents',
         (tester) async {
       tester.view.physicalSize = const Size(390, 844);
       tester.view.devicePixelRatio = 1.0;
@@ -114,40 +115,26 @@ void main() {
       await tester.pumpAndSettle();
 
       // Initially expanded: headers, QR icon button, and fields are visible
+      expect(find.text('Meetgegevens'), findsOneWidget);
       expect(find.text('Rookgassen'), findsOneWidget);
       expect(find.text('Brandstof'), findsOneWidget);
       expect(find.byIcon(Icons.qr_code_scanner_rounded), findsOneWidget);
-
-      // Tap Rookgassen header to collapse fields
-      await tester.tap(find.text('Rookgassen'));
-      await tester.pumpAndSettle();
-
-      // Rookgassen header still visible, but fields and QR button are hidden
-      expect(find.text('Rookgassen'), findsOneWidget);
-      expect(find.text('Brandstof'), findsNothing);
-      expect(find.byIcon(Icons.qr_code_scanner_rounded), findsNothing);
 
       // Tap Meetgegevens header to collapse everything
       await tester.tap(find.text('Meetgegevens'));
       await tester.pumpAndSettle();
 
-      // Now Rookgassen card itself is hidden
+      // Now Rookgassen card, fields, and QR button are hidden
       expect(find.text('Rookgassen'), findsNothing);
+      expect(find.text('Brandstof'), findsNothing);
+      expect(find.byIcon(Icons.qr_code_scanner_rounded), findsNothing);
 
       // Tap Meetgegevens again to re-expand
       await tester.tap(find.text('Meetgegevens'));
       await tester.pumpAndSettle();
 
-      // Rookgassen is visible, BUT it must stay collapsed (fields and QR button remain hidden)
+      // Now Rookgassen, fields and QR button reappear
       expect(find.text('Rookgassen'), findsOneWidget);
-      expect(find.text('Brandstof'), findsNothing);
-      expect(find.byIcon(Icons.qr_code_scanner_rounded), findsNothing);
-
-      // Tap Rookgassen again to re-expand it
-      await tester.tap(find.text('Rookgassen'));
-      await tester.pumpAndSettle();
-
-      // Now fields and QR button reappear
       expect(find.text('Brandstof'), findsOneWidget);
       expect(find.byIcon(Icons.qr_code_scanner_rounded), findsOneWidget);
     });
@@ -183,7 +170,8 @@ void main() {
       expect(find.text('Druk [Pa]'), findsOneWidget);
     });
 
-    testWidgets('AppBar back button returns to the home dashboard',
+    testWidgets(
+        'Global menu hamburger navigates between applet and home dashboard',
         (tester) async {
       tester.view.physicalSize = const Size(390, 844);
       tester.view.devicePixelRatio = 1.0;
@@ -196,10 +184,17 @@ void main() {
       await tester.tap(find.text('Verbrandingsattest'));
       await tester.pumpAndSettle();
 
-      // Find and tap the AppBar back button
-      final backButton = find.byTooltip('Terug naar overzicht');
-      expect(backButton, findsOneWidget);
-      await tester.tap(backButton);
+      // Global hamburger menu is present and opens drawer
+      final menuButton = find.byKey(const ValueKey('menu_button'));
+      expect(menuButton, findsOneWidget);
+      await tester.tap(menuButton);
+      await tester.pumpAndSettle();
+
+      // Tap 'Start' in the global drawer to navigate to home
+      await tester.tap(find.descendant(
+        of: find.byType(AppDrawer),
+        matching: find.text(AppDictionary.menuStart),
+      ));
       await tester.pumpAndSettle();
 
       // Should be back on the dashboard

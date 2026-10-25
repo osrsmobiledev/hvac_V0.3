@@ -33,6 +33,7 @@ class BentoSubSection extends StatefulWidget {
 
 class _BentoSubSectionState extends State<BentoSubSection> {
   late bool _internalExpanded;
+
   /// Guards the PageStorage read so it only runs once (not on every dependency change).
   bool _hasRestoredState = false;
 
@@ -83,7 +84,7 @@ class _BentoSubSectionState extends State<BentoSubSection> {
       children: [
         // --- Inner Header Bar ---
         Container(
-          height: 54,
+          height: 38,
           decoration: BoxDecoration(
             color: const Color(0xFF222222),
             borderRadius: BorderRadius.circular(14),
@@ -91,13 +92,6 @@ class _BentoSubSectionState extends State<BentoSubSection> {
               color: Colors.white.withValues(alpha: 0.16),
               width: 1.0,
             ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.25),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
-            ],
           ),
           child: Material(
             color: Colors.transparent,
@@ -114,7 +108,7 @@ class _BentoSubSectionState extends State<BentoSubSection> {
                         style: const TextStyle(
                           fontFamily: AppTheme.fontFamily,
                           color: Colors.white,
-                          fontSize: 16,
+                          fontSize: 14.5,
                           fontWeight: FontWeight.w700,
                           letterSpacing: 0.2,
                         ),
@@ -135,7 +129,14 @@ class _BentoSubSectionState extends State<BentoSubSection> {
                           ? Padding(
                               key: const ValueKey('bento_sub_action_visible'),
                               padding: const EdgeInsets.only(right: 6.0),
-                              child: widget.actionWidget!,
+                              child: SizedBox(
+                                height: 28,
+                                width: 28,
+                                child: FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  child: widget.actionWidget!,
+                                ),
+                              ),
                             )
                           : const SizedBox.shrink(
                               key: ValueKey('bento_sub_action_hidden'),
@@ -149,7 +150,7 @@ class _BentoSubSectionState extends State<BentoSubSection> {
                       child: const Icon(
                         Icons.keyboard_arrow_down_rounded,
                         color: Colors.white,
-                        size: 24,
+                        size: 20,
                       ),
                     ),
                   ],

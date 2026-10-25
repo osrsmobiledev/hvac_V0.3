@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hvac_app/app/localization/app_dictionary.dart';
 import '../../widgets/bento_main_section.dart';
 import 'rookgassen_card.dart';
 
@@ -6,10 +7,8 @@ import 'rookgassen_card.dart';
 ///
 /// Features:
 /// - Reuses [BentoMainSection] for the standardized gold-tinted header and animated dropdown.
-/// - Hosts the separated [RookgassenCard] underneath.
-/// - Preserves the expanded/collapsed state of [RookgassenCard] across parent collapse/expand
-///   cycles and tab navigation.
-class MeetgegevensCard extends StatefulWidget {
+/// - Hosts the [RookgassenCard] underneath without a nested dropdown sub-box.
+class MeetgegevensCard extends StatelessWidget {
   final VoidCallback? onScanQrPressed;
 
   const MeetgegevensCard({
@@ -18,43 +17,11 @@ class MeetgegevensCard extends StatefulWidget {
   });
 
   @override
-  State<MeetgegevensCard> createState() => _MeetgegevensCardState();
-}
-
-class _MeetgegevensCardState extends State<MeetgegevensCard> {
-  bool _isRookgassenExpanded = true;
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    final saved = PageStorage.maybeOf(context)?.readState(
-      context,
-      identifier: 'meetgegevens_rookgassen_expanded',
-    ) as bool?;
-    if (saved != null) {
-      _isRookgassenExpanded = saved;
-    }
-  }
-
-  void _onRookgassenExpansionChanged(bool expanded) {
-    setState(() {
-      _isRookgassenExpanded = expanded;
-    });
-    PageStorage.maybeOf(context)?.writeState(
-      context,
-      expanded,
-      identifier: 'meetgegevens_rookgassen_expanded',
-    );
-  }
-
-  @override
   Widget build(BuildContext context) {
     return BentoMainSection(
-      title: 'Meetgegevens',
+      title: AppDictionary.headerMeetgegevens,
       child: RookgassenCard(
-        isExpanded: _isRookgassenExpanded,
-        onExpansionChanged: _onRookgassenExpansionChanged,
-        onScanQrPressed: widget.onScanQrPressed,
+        onScanQrPressed: onScanQrPressed,
       ),
     );
   }

@@ -38,6 +38,7 @@ class _FirmaTechnicusTabState extends State<FirmaTechnicusTab>
   final _nameController = TextEditingController();
   final _streetController = TextEditingController();
   final _houseNumberController = TextEditingController();
+  final _boxNumberController = TextEditingController();
   final _postalCodeController = TextEditingController();
   final _cityController = TextEditingController();
   final _phoneController = TextEditingController();
@@ -74,6 +75,7 @@ class _FirmaTechnicusTabState extends State<FirmaTechnicusTab>
     _nameController.dispose();
     _streetController.dispose();
     _houseNumberController.dispose();
+    _boxNumberController.dispose();
     _postalCodeController.dispose();
     _cityController.dispose();
     _phoneController.dispose();
@@ -101,6 +103,7 @@ class _FirmaTechnicusTabState extends State<FirmaTechnicusTab>
           _nameController.text = profile.companyName;
           _streetController.text = profile.street;
           _houseNumberController.text = profile.houseNumber;
+          _boxNumberController.text = profile.boxNumber;
           _postalCodeController.text = profile.postalCode;
           _cityController.text = profile.city;
           _phoneController.text =
@@ -146,6 +149,7 @@ class _FirmaTechnicusTabState extends State<FirmaTechnicusTab>
       companyName: _nameController.text.trim(),
       street: _streetController.text.trim(),
       houseNumber: _houseNumberController.text.trim(),
+      boxNumber: _boxNumberController.text.trim(),
       postalCode: _postalCodeController.text.trim(),
       city: _cityController.text.trim(),
       phone: BelgianFormatters.normalizePhone(_phoneController.text),
@@ -195,6 +199,7 @@ class _FirmaTechnicusTabState extends State<FirmaTechnicusTab>
                 nameController: _nameController,
                 streetController: _streetController,
                 houseNumberController: _houseNumberController,
+                boxNumberController: _boxNumberController,
                 postalCodeController: _postalCodeController,
                 cityController: _cityController,
                 phoneController: _phoneController,

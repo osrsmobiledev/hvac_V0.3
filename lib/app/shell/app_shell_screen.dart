@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../features/certificate_draft/ui/verbrandingsattest_screen.dart';
 import '../dashboard/dashboard_screen.dart';
+import '../localization/app_dictionary.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_theme.dart';
 import 'app_drawer.dart';
@@ -28,6 +30,19 @@ class _AppShellScreenState extends State<AppShellScreen> {
   bool _isDrawerOpen = false;
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _applyOrientationPolicy();
+  }
+
+  void _applyOrientationPolicy() {
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
+  }
+
+  @override
   void dispose() {
     _controller.dispose();
     super.dispose();
@@ -35,16 +50,16 @@ class _AppShellScreenState extends State<AppShellScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isTablet = MediaQuery.of(context).size.shortestSide >= 600;
+
     return ListenableBuilder(
       listenable: _controller,
       builder: (context, _) {
         return LayoutBuilder(
           builder: (context, constraints) {
-            // Tablet & landscape threshold (720px)
-            final isWideScreen = constraints.maxWidth >= 720;
+            // Tablet & landscape threshold (720px) — strictly active on true tablets (>= 600dp shortest side)
+            final isWideScreen = isTablet && constraints.maxWidth >= 720;
             final isHome = _controller.activeApplet == AppletType.home;
-            final isCombustion =
-                _controller.activeApplet == AppletType.combustion;
 
             final Widget currentBody = switch (_controller.activeApplet) {
               AppletType.home => DashboardScreen(controller: _controller),
@@ -71,42 +86,26 @@ class _AppShellScreenState extends State<AppShellScreen> {
               child: Scaffold(
                 // Persistent AppBar: stays visible at all times
                 appBar: AppBar(
-                  toolbarHeight:
-                      (isCombustion && !isWideScreen) ? 74.0 : kToolbarHeight,
+                  toolbarHeight: kToolbarHeight,
                   centerTitle: true,
                   leading: isWideScreen
                       ? null
-                      : AnimatedSwitcher(
-                          duration: const Duration(milliseconds: 200),
-                          child: isHome
-                              ? IconButton(
-                                  key: const ValueKey('menu_button'),
-                                  icon: const Icon(Icons.menu),
-                                  tooltip: _isDrawerOpen
-                                      ? 'Menu sluiten'
-                                      : 'Menu openen',
-                                  onPressed: () {
-                                    final scaffoldState =
-                                        _phoneScaffoldKey.currentState;
-                                    if (scaffoldState == null) return;
-                                    if (scaffoldState.isDrawerOpen) {
-                                      scaffoldState.closeDrawer();
-                                    } else {
-                                      scaffoldState.openDrawer();
-                                    }
-                                  },
-                                )
-                              : IconButton(
-                                  key: const ValueKey('back_button'),
-                                  icon: const Icon(
-                                    Icons.arrow_back_rounded,
-                                    color: AppColors.amberGold,
-                                  ),
-                                  tooltip: 'Terug naar overzicht',
-                                  onPressed: () {
-                                    _controller.selectApplet(AppletType.home);
-                                  },
-                                ),
+                      : IconButton(
+                          key: const ValueKey('menu_button'),
+                          icon: const Icon(Icons.menu_rounded),
+                          tooltip: _isDrawerOpen
+                              ? AppDictionary.tooltipCloseMenu
+                              : AppDictionary.tooltipOpenMenu,
+                          onPressed: () {
+                            final scaffoldState =
+                                _phoneScaffoldKey.currentState;
+                            if (scaffoldState == null) return;
+                            if (scaffoldState.isDrawerOpen) {
+                              scaffoldState.closeDrawer();
+                            } else {
+                              scaffoldState.openDrawer();
+                            }
+                          },
                         ),
                   title: _buildAppBarTitle(isWideScreen),
                   bottom: const PreferredSize(
@@ -148,7 +147,10 @@ class _AppShellScreenState extends State<AppShellScreen> {
                           controller: _controller,
                           isPermanent: false,
                           onItemTapped: () {
-                            Navigator.of(context).pop();
+                            if (_phoneScaffoldKey.currentState?.isDrawerOpen ==
+                                true) {
+                              _phoneScaffoldKey.currentState?.closeDrawer();
+                            }
                           },
                         ),
                         body: currentBody,
@@ -161,53 +163,24 @@ class _AppShellScreenState extends State<AppShellScreen> {
     );
   }
 
-  /// Builds the persistent AppBar title adapting between a clean 2-line title
-  /// on narrow phone viewports and 1-line title on wider tablet displays.
+  /// Builds the persistent AppBar title displaying a clean 1-line title
+  /// auto-scaled with [FittedBox] so it never wraps or cuts off on any screen.
   Widget _buildAppBarTitle(bool isWideScreen) {
     if (_controller.activeApplet == AppletType.combustion) {
-      if (!isWideScreen) {
-        return const Padding(
-          padding: EdgeInsets.symmetric(vertical: 4.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                'Verbrandingsattest',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontFamily: AppTheme.fontFamily,
-                  fontWeight: FontWeight.w700,
-                  fontSize: 18,
-                  letterSpacing: 0.2,
-                ),
-              ),
-              SizedBox(height: 2),
-              Text(
-                'Vlaanderen',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontFamily: AppTheme.fontFamily,
-                  fontWeight: FontWeight.w700,
-                  fontSize: 18,
-                  letterSpacing: 0.2,
-                ),
-              ),
-            ],
-          ),
-        );
-      } else {
-        return const Text(
-          'Verbrandingsattest Vlaanderen',
+      return const FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Text(
+          AppDictionary.menuCombustion,
           textAlign: TextAlign.center,
+          maxLines: 1,
           style: TextStyle(
             fontFamily: AppTheme.fontFamily,
             fontWeight: FontWeight.w700,
-            fontSize: 20,
+            fontSize: 16.5,
             letterSpacing: 0.2,
           ),
-        );
-      }
+        ),
+      );
     }
     return Text(
       _controller.appBarTitle,

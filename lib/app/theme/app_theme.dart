@@ -108,7 +108,7 @@ abstract final class AppTheme {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: AppColors.amberGold, width: 1.5),
+          borderSide: const BorderSide(color: AppColors.amberGoldBorder, width: 1.2),
         ),
         hintStyle: const TextStyle(
           fontFamily: fontFamily,

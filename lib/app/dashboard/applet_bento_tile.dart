@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hvac_app/core/widgets/tactical_squircle_box.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_theme.dart';
 
@@ -30,55 +31,34 @@ class AppletBentoTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Tonal surface: blend 8% accent tint over the dark carbon background
-    final tonalBackground = Color.alphaBlend(
-      accentColor.withValues(alpha: 0.08),
-      AppColors.carbonCard,
-    );
-
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: onTap,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Squircle tile container with localized ink splash/highlight
+          // Squircle tile container using centralized TacticalSquircleBox
           AspectRatio(
             aspectRatio: 1.0,
-            child: Material(
-              color: tonalBackground,
-              borderRadius: BorderRadius.circular(22),
-              child: InkWell(
-                borderRadius: BorderRadius.circular(22),
-                splashColor: accentColor.withValues(alpha: 0.16),
-                highlightColor: accentColor.withValues(alpha: 0.08),
-                onTap: onTap,
-                child: Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(22),
-                    border: Border.all(
-                      color: borderColor,
-                      width: 1.4,
-                    ),
-                  ),
-                  child: Center(
-                    child: Icon(
-                      icon,
-                      color: accentColor,
-                      size: 42,
-                    ),
-                  ),
-                ),
-              ),
+            child: TacticalSquircleBox(
+              icon: icon,
+              accentColor: accentColor,
+              borderColor: borderColor,
+              borderRadius: 22,
+              iconSize: 42,
+              borderWidth: 1.4,
+              onTap: onTap,
             ),
           ),
-          const SizedBox(height: 8),
+          // 12dp spacing following Flutter Material 3 guidelines for button/card labels
+          const SizedBox(height: 12),
 
           // Centered 2-line title in Libron font (never highlighted)
-          SizedBox(
-            height: 36,
+          ConstrainedBox(
+            constraints: const BoxConstraints(minHeight: 34),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
                   title,

@@ -137,3 +137,30 @@ class KlantFormControllers {
     locMunicipality.dispose();
   }
 }
+
+/// Point-in-time snapshot of Tab 4 (Klant) state for cancel/undo rollbacks.
+class KlantFormSnapshot {
+  final Customer? customer;
+  final ServiceLocation? location;
+  final String role;
+  final bool isSameAsCustomer;
+
+  const KlantFormSnapshot({
+    this.customer,
+    this.location,
+    required this.role,
+    required this.isSameAsCustomer,
+  });
+
+  /// Restores controllers from this snapshot into [controllers].
+  void restoreInto(KlantFormControllers controllers) {
+    if (customer != null) {
+      controllers.populateCustomer(customer!);
+    } else {
+      controllers.clearAll();
+    }
+    if (location != null) {
+      controllers.populateLocation(location!);
+    }
+  }
+}

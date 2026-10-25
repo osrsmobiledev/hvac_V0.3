@@ -39,6 +39,7 @@ class BentoMainSection extends StatefulWidget {
 
 class _BentoMainSectionState extends State<BentoMainSection> {
   late bool _internalExpanded;
+
   /// Guards the PageStorage read so it only runs once (not on every dependency change).
   bool _hasRestoredState = false;
 
@@ -103,32 +104,25 @@ class _BentoMainSectionState extends State<BentoMainSection> {
       children: [
         // --- Standalone Main Box: Gold-Tinted Section Header ---
         Container(
-          height: 52,
+          height: 38,
           decoration: BoxDecoration(
             color: mainBoxTint,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(14),
             border: Border.all(
               color: widget.borderColor,
               width: 1.0,
             ),
-            boxShadow: [
-              BoxShadow(
-                color: widget.accentColor.withValues(alpha: 0.08),
-                blurRadius: 16,
-                offset: const Offset(0, 2),
-              ),
-            ],
           ),
           child: Material(
             color: Colors.transparent,
             child: InkWell(
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(14),
               onTap: _handleTap,
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 18.0),
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 child: Row(
                   children: [
-                    const SizedBox(width: 24),
+                    const SizedBox(width: 20),
                     Expanded(
                       child: Text(
                         widget.title,
@@ -136,7 +130,7 @@ class _BentoMainSectionState extends State<BentoMainSection> {
                         style: const TextStyle(
                           fontFamily: AppTheme.fontFamily,
                           color: Colors.white,
-                          fontSize: 16,
+                          fontSize: 14.5,
                           fontWeight: FontWeight.bold,
                           letterSpacing: 0.3,
                         ),
@@ -150,7 +144,7 @@ class _BentoMainSectionState extends State<BentoMainSection> {
                       child: Icon(
                         Icons.keyboard_arrow_down_rounded,
                         color: widget.accentColor,
-                        size: 24,
+                        size: 20,
                       ),
                     ),
                   ],
@@ -178,13 +172,6 @@ class _BentoMainSectionState extends State<BentoMainSection> {
                                 color: AppColors.borderSubtle,
                                 width: 1.0,
                               ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.35),
-                                  blurRadius: 18,
-                                  offset: const Offset(0, 8),
-                                ),
-                              ],
                             ),
                             padding: widget.contentPadding,
                             child: widget.child,

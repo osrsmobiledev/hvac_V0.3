@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hvac_app/app/theme/app_colors.dart';
+import 'dark_input_label.dart';
+import 'dark_input_prefix.dart';
 
 /// Reusable dark box layout matching the flue gas parameter boxes on Tab 1 (Data).
 ///
@@ -35,31 +37,31 @@ class DarkInputBox extends StatelessWidget {
 
   /// Factory helper for creating standard tactical [InputDecoration]
   /// with dark #0C0C0C fill, white/grey resting border, and gold focused border.
+  /// When [readOnly] is true, renders in a recessed, greyed-out protected state.
   static InputDecoration decoration({
     String? hintText,
     String? prefixText,
     TextStyle? prefixStyle,
     Widget? prefixIcon,
     Widget? suffixIcon,
+    bool readOnly = false,
   }) {
     final effectivePrefix = prefixText != null
-        ? Padding(
-            padding: const EdgeInsets.only(left: 10.0, right: 1.0),
-            child: Text(
-              prefixText,
-              style: prefixStyle ??
-                  const TextStyle(
-                    color: AppColors.antiqueGold,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                  ),
-            ),
-          )
-        : prefixIcon;
+        ? DarkInputPrefix.text(prefixText, isMuted: readOnly)
+        : prefixIcon != null
+            ? Padding(
+                padding: const EdgeInsets.only(left: 14.0, right: 10.0),
+                child: prefixIcon,
+              )
+            : null;
+
+    final restingBorderColor = readOnly
+        ? Colors.white.withValues(alpha: 0.08)
+        : Colors.white.withValues(alpha: 0.22);
 
     return InputDecoration(
       filled: true,
-      fillColor: const Color(0xFF0C0C0C),
+      fillColor: readOnly ? const Color(0xFF090909) : const Color(0xFF0C0C0C),
       prefixIcon: effectivePrefix,
       prefixIconConstraints: effectivePrefix != null
           ? const BoxConstraints(minWidth: 0, minHeight: 0)
@@ -74,15 +76,15 @@ class DarkInputBox extends StatelessWidget {
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
         borderSide: BorderSide(
-          color: Colors.white.withValues(alpha: 0.22),
+          color: restingBorderColor,
           width: 1.0,
         ),
       ),
-      focusedBorder: const OutlineInputBorder(
-        borderRadius: BorderRadius.all(Radius.circular(12)),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: const BorderRadius.all(Radius.circular(12)),
         borderSide: BorderSide(
-          color: AppColors.amberGold,
-          width: 1.4,
+          color: readOnly ? restingBorderColor : AppColors.amberGoldBorder,
+          width: readOnly ? 1.0 : 1.2,
         ),
       ),
       errorBorder: const OutlineInputBorder(
@@ -105,8 +107,8 @@ class DarkInputBox extends StatelessWidget {
         fontWeight: FontWeight.w500,
       ),
       hintText: hintText,
-      hintStyle: const TextStyle(
-        color: Colors.white38,
+      hintStyle: TextStyle(
+        color: readOnly ? Colors.white24 : Colors.white38,
         fontSize: 15,
       ),
     );
@@ -118,17 +120,8 @@ class DarkInputBox extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        // Label above the container
-        Text(
-          label,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 15,
-            fontWeight: FontWeight.w600,
-            letterSpacing: 0.2,
-          ),
-        ),
-        const SizedBox(height: 6),
+        // Centralized reusable label above the container
+        DarkInputLabel(label),
         // Deep dark box with white/grey tinted border
         Container(
           height: height,

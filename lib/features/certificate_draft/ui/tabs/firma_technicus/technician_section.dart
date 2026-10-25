@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hvac_app/app/localization/app_dictionary.dart';
 import 'package:hvac_app/app/theme/app_colors.dart';
 import 'package:hvac_app/core/widgets/bo2_time_spinner.dart';
 import '../../widgets/bento_main_section.dart';
@@ -35,7 +36,9 @@ class TechnicianSection extends StatelessWidget {
     if (dateController.text.isNotEmpty) {
       try {
         initial = DateTime.parse(dateController.text);
-      } catch (_) {}
+      } catch (e) {
+        debugPrint('[TechnicianSection] parse date "${dateController.text}" failed: $e');
+      }
     }
 
     final picked = await showDatePicker(
@@ -78,7 +81,7 @@ class TechnicianSection extends StatelessWidget {
             children: [
               Expanded(
                 child: FirmaField(
-                  label: 'Voornaam:',
+                  label: AppDictionary.lblFirstName,
                   controller: firstNameController,
                   hint: 'Jan',
                   onChanged: onProfileChanged,
@@ -87,7 +90,7 @@ class TechnicianSection extends StatelessWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: FirmaField(
-                  label: 'Achternaam:',
+                  label: AppDictionary.lblLastName,
                   controller: lastNameController,
                   hint: 'Janssens',
                   onChanged: onProfileChanged,
@@ -95,12 +98,12 @@ class TechnicianSection extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 12),
           Row(
             children: [
               Expanded(
                 child: FirmaField(
-                  label: 'GV-nummer:',
+                  label: AppDictionary.lblGV,
                   controller: gvController,
                   hint: 'GV01234',
                   onChanged: onProfileChanged,
@@ -109,7 +112,7 @@ class TechnicianSection extends StatelessWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: FirmaField(
-                  label: 'TV-nummer:',
+                  label: AppDictionary.lblTV,
                   controller: tvController,
                   hint: 'TV01234',
                   onChanged: onProfileChanged,
@@ -117,31 +120,29 @@ class TechnicianSection extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 16),
-          const Divider(color: AppColors.goldHairline, height: 1),
           const SizedBox(height: 14),
+          const Divider(color: AppColors.goldHairline, height: 1),
+          const SizedBox(height: 12),
 
           // Date Picker: Datum onderhoud
           FirmaActionField(
-            label: 'Datum onderhoud:',
+            label: AppDictionary.lblDate,
             controller: dateController,
             hint: 'JJJJ-MM-DD',
             icon: Icons.calendar_month_rounded,
-            textAlign: TextAlign.center,
             onTap: () => _selectDate(context),
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 12),
 
           // Time Pickers: Arbeidsduur van & tot
           Row(
             children: [
               Expanded(
                 child: FirmaActionField(
-                  label: 'Arbeidsduur van:',
+                  label: AppDictionary.lblTimeFrom,
                   controller: startTimeController,
                   hint: '08:00',
                   icon: Icons.access_time_rounded,
-                  textAlign: TextAlign.center,
                   onTap: () => showBo2TimeSpinner(
                     context,
                     startTimeController,
@@ -152,11 +153,10 @@ class TechnicianSection extends StatelessWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: FirmaActionField(
-                  label: 'tot:',
+                  label: AppDictionary.lblTimeTo,
                   controller: endTimeController,
                   hint: '10:00',
                   icon: Icons.access_time_rounded,
-                  textAlign: TextAlign.center,
                   onTap: () => showBo2TimeSpinner(
                     context,
                     endTimeController,

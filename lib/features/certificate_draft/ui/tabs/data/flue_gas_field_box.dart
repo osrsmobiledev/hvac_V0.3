@@ -26,11 +26,7 @@ class FlueGasFieldBox extends StatelessWidget {
         label: field.label,
         child: Text(
           hasValue ? field.value! : '–',
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 16,
-            fontWeight: FontWeight.w500,
-          ),
+          style: DarkInputBox.inputStyle,
         ),
       ),
     );

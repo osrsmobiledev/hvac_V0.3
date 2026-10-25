@@ -39,13 +39,15 @@ class DashboardScreen extends StatelessWidget {
                 letterSpacing: -0.2,
               ),
             ),
-            const SizedBox(height: 24),
+            // 32dp spacing (4x 8dp grid) following Material 3 guidelines to establish
+            // a clear visual hierarchy between the section headline and content grid.
+            const SizedBox(height: 32),
             // 2-column grid matching the legacy reference image proportions
             GridView.count(
               crossAxisCount: 2,
               mainAxisSpacing: 22.0,
               crossAxisSpacing: 18.0,
-              childAspectRatio: 0.77,
+              childAspectRatio: 0.70,
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               children: [

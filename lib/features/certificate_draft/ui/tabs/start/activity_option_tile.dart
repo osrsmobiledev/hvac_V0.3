@@ -2,29 +2,33 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hvac_app/app/theme/app_colors.dart';
 
-/// Official Flutter Material 3 option button for Tab 2 (Start).
+/// Official Flutter Material 3 option card for Tab 2 (Start).
 ///
 /// Features:
-/// - Built with the official Flutter [OutlinedButton] (no reinvented gesture mechanics).
-/// - Native Material 3 ripple and highlight on tap.
+/// - Built with official Flutter [OutlinedButton] for standard ripple mechanics.
 /// - Tactile haptic feedback on touch ([HapticFeedback.selectionClick]).
-/// - Constant 1.0px hairline border and pill shape (BorderRadius.circular(26)).
-/// - Tactical reticle indicator with gold pip when selected.
+/// - Tactical geometry with 12px squircle radius matching DarkInputBox.
+/// - Glowing amber-gold indicator pip and illuminated border when selected.
+/// - Single-line auto-scaled typography matching the crisp 'Brandstof' label style.
 class ActivityOptionTile extends StatelessWidget {
   final String title;
+  final String? subtitle;
+  final IconData? icon;
   final bool isSelected;
   final VoidCallback onTap;
 
   const ActivityOptionTile({
     super.key,
     required this.title,
+    this.subtitle,
+    this.icon,
     required this.isSelected,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    // Surface color: subtle antique-gold tonal blend over carbon when selected
+    // Subtle antique-gold tonal blend over dark base when selected
     final backgroundColor = isSelected
         ? Color.alphaBlend(
             AppColors.antiqueGold.withValues(alpha: 0.08),
@@ -32,9 +36,10 @@ class ActivityOptionTile extends StatelessWidget {
           )
         : const Color(0xFF0C0C0C);
 
+    // Muted, non-glaring amber/antique gold border when selected (#8A6A1D), hairline when unselected
     final borderColor = isSelected
-        ? AppColors.antiqueGold
-        : Colors.white.withValues(alpha: 0.18);
+        ? AppColors.amberGoldBorder
+        : Colors.white.withValues(alpha: 0.16);
 
     return OutlinedButton(
       onPressed: () {
@@ -42,65 +47,29 @@ class ActivityOptionTile extends StatelessWidget {
         onTap();
       },
       style: OutlinedButton.styleFrom(
-        minimumSize: const Size.fromHeight(52),
+        minimumSize: const Size.fromHeight(50),
         backgroundColor: backgroundColor,
-        side: BorderSide(color: borderColor, width: 1.0),
+        side: BorderSide(color: borderColor, width: isSelected ? 1.2 : 1.0),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(26),
+          borderRadius: BorderRadius.circular(12),
         ),
-        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 8.0),
         splashFactory: InkSparkle.splashFactory,
         foregroundColor: Colors.white,
       ),
-      child: Row(
-        children: [
-          // Tactical HUD Selector Pip (Reticle)
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            curve: Curves.easeInOutCubic,
-            width: 20,
-            height: 20,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: isSelected ? AppColors.antiqueGold : Colors.white30,
-                width: 1.4,
-              ),
-              color: isSelected
-                  ? AppColors.antiqueGold.withValues(alpha: 0.16)
-                  : Colors.transparent,
-            ),
-            child: Center(
-              child: AnimatedScale(
-                scale: isSelected ? 1.0 : 0.0,
-                duration: const Duration(milliseconds: 180),
-                curve: Curves.easeOutBack,
-                child: Container(
-                  width: 8,
-                  height: 8,
-                  decoration: const BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: AppColors.antiqueGold,
-                  ),
-                ),
-              ),
-            ),
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        alignment: Alignment.center,
+        child: Text(
+          title,
+          maxLines: 1,
+          style: TextStyle(
+            color: isSelected ? Colors.white : Colors.white60,
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            letterSpacing: 0.2,
           ),
-          const SizedBox(width: 14),
-
-          // Title with smooth text styling
-          Expanded(
-            child: Text(
-              title,
-              style: TextStyle(
-                color: isSelected ? Colors.white : Colors.white70,
-                fontSize: 15,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                letterSpacing: 0.2,
-              ),
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }

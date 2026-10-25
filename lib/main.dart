@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'app/localization/app_dictionary.dart';
 import 'app/shell/app_shell_screen.dart';
 import 'app/theme/app_theme.dart';
@@ -9,6 +10,12 @@ void main() async {
 
   // Initialize SQLite database on startup for offline draft safety
   await AppDatabase.instance.database;
+
+  // Enforce portrait orientation app-wide across all devices (phones & tablets)
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
 
   runApp(const HvacFieldServiceApp());
 }

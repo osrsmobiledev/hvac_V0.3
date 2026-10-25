@@ -10,6 +10,8 @@ enum AppletType {
   cleaning,
   inspection,
   measurement,
+  technicianSettings,
+  importExport,
 }
 
 /// Controller managing the persistent AppBar title and active navigation state.
@@ -29,6 +31,8 @@ class AppShellController extends ChangeNotifier {
       AppletType.cleaning => AppDictionary.menuCleaning,
       AppletType.inspection => AppDictionary.menuInspection,
       AppletType.measurement => AppDictionary.menuMeasurement,
+      AppletType.technicianSettings => AppDictionary.menuTechSettings,
+      AppletType.importExport => AppDictionary.menuImportExport,
     };
   }
 

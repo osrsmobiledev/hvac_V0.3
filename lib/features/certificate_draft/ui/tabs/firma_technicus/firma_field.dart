@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hvac_app/app/theme/app_colors.dart';
 import '../../widgets/dark_input_box.dart';
+import '../../widgets/dark_input_label.dart';
 
 /// Standard labeled text input field for the Firma - Technicus tab.
 class FirmaField extends StatelessWidget {
+  final Key? fieldKey;
   final String label;
   final TextEditingController controller;
   final String? hint;
@@ -18,6 +20,7 @@ class FirmaField extends StatelessWidget {
 
   const FirmaField({
     super.key,
+    this.fieldKey,
     required this.label,
     required this.controller,
     this.hint,
@@ -36,18 +39,9 @@ class FirmaField extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text(
-          label,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        const SizedBox(height: 6),
+        DarkInputLabel(label),
         TextFormField(
+          key: fieldKey,
           controller: controller,
           onChanged: (_) => onChanged(),
           validator: validator,
@@ -56,7 +50,7 @@ class FirmaField extends StatelessWidget {
           textInputAction: textInputAction,
           inputFormatters: inputFormatters,
           style: DarkInputBox.inputStyle,
-          cursorColor: AppColors.amberGold,
+          cursorColor: AppColors.amberGoldBorder,
           decoration: DarkInputBox.decoration(
             hintText: hint,
             prefixText: prefixText,
@@ -92,42 +86,38 @@ class FirmaActionField extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text(
-          label,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        const SizedBox(height: 6),
-        TextField(
-          controller: controller,
-          readOnly: true,
-          onTap: onTap,
-          textAlign: textAlign,
-          style: DarkInputBox.inputStyle,
-          decoration: DarkInputBox.decoration(
-            hintText: hint,
-            prefixIcon: textAlign == TextAlign.center
-                ? const IgnorePointer(
-                    child: SizedBox(
-                      width: 48,
-                      height: 48,
-                    ),
-                  )
-                : null,
-          ).copyWith(
-            contentPadding: textAlign == TextAlign.center
-                ? const EdgeInsets.symmetric(horizontal: 10, vertical: 12)
-                : null,
-            suffixIcon: IconButton(
-              icon: Icon(icon, color: AppColors.amberGold, size: 20),
-              onPressed: onTap,
+        DarkInputLabel(label),
+        Stack(
+          alignment: Alignment.center,
+          children: [
+            TextField(
+              controller: controller,
+              readOnly: true,
+              onTap: onTap,
+              textAlign: textAlign,
+              style: DarkInputBox.inputStyle,
+              decoration: DarkInputBox.decoration(
+                hintText: hint,
+              ).copyWith(
+                // Symmetrical 36px horizontal padding guarantees true geometric centering
+                // while reserving a safe buffer so text never touches the right icon.
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 36.0,
+                  vertical: 12.0,
+                ),
+              ),
             ),
-          ),
+            Positioned(
+              right: 12,
+              child: IgnorePointer(
+                child: Icon(
+                  icon,
+                  color: AppColors.amberGold,
+                  size: 20,
+                ),
+              ),
+            ),
+          ],
         ),
       ],
     );

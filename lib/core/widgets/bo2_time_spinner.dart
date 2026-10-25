@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:hvac_app/app/localization/app_dictionary.dart';
 import 'package:hvac_app/app/theme/app_colors.dart';
 import 'package:hvac_app/app/theme/app_theme.dart';
 import 'bo2_time_wheels.dart';
+import 'tactical_dialog_button.dart';
+import 'tactical_dialog_window.dart';
 
 /// BO2-themed 24-hour Cupertino time picker modal with Dutch localization.
 Future<void> showBo2TimeSpinner(
@@ -20,10 +22,12 @@ Future<void> showBo2TimeSpinner(
         hour: int.parse(parts[0]),
         minute: int.parse(parts[1]),
       );
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('[Bo2TimeSpinner] parse time "${controller.text}" failed: $e');
+    }
   }
 
-  await showDialog(
+  await showTacticalDialog(
     context: context,
     builder: (BuildContext dialogContext) {
       return _Bo2TimeSpinnerDialog(
@@ -79,7 +83,7 @@ class _Bo2TimeSpinnerDialogState extends State<_Bo2TimeSpinnerDialog> {
       insetPadding: const EdgeInsets.symmetric(horizontal: 24),
       elevation: 0,
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 340),
+        constraints: const BoxConstraints(maxWidth: 360),
         child: Container(
           decoration: BoxDecoration(
             color: AppColors.charcoalGlass,
@@ -102,7 +106,7 @@ class _Bo2TimeSpinnerDialogState extends State<_Bo2TimeSpinnerDialog> {
               const Padding(
                 padding: EdgeInsets.only(top: 22, bottom: 14),
                 child: Text(
-                  'Tijd instellen',
+                  AppDictionary.lblSetTime,
                   style: TextStyle(
                     fontFamily: AppTheme.fontFamily,
                     color: Colors.white,
@@ -122,71 +126,16 @@ class _Bo2TimeSpinnerDialogState extends State<_Bo2TimeSpinnerDialog> {
               ),
               const SizedBox(height: 6),
               const Bo2LaserDivider(),
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 18,
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: () {
-                          HapticFeedback.selectionClick();
-                          Navigator.of(context).pop();
-                        },
-                        style: OutlinedButton.styleFrom(
-                          minimumSize: const Size.fromHeight(48),
-                          backgroundColor: const Color(0xFF1E1E1E),
-                          side: BorderSide(
-                            color: Colors.white.withValues(alpha: 0.14),
-                            width: 1.0,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(24),
-                          ),
-                          foregroundColor: Colors.white70,
-                        ),
-                        child: const Text(
-                          'Annuleren',
-                          style: TextStyle(
-                            fontFamily: AppTheme.fontFamily,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: FilledButton(
-                        onPressed: () {
-                          HapticFeedback.selectionClick();
-                          Navigator.of(context).pop();
-                          final hStr = _tempHour.toString().padLeft(2, '0');
-                          final mStr = _tempMinute.toString().padLeft(2, '0');
-                          widget.onConfirmed('$hStr:$mStr');
-                        },
-                        style: FilledButton.styleFrom(
-                          minimumSize: const Size.fromHeight(48),
-                          backgroundColor: AppColors.antiqueGold,
-                          foregroundColor: Colors.black,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(24),
-                          ),
-                        ),
-                        child: const Text(
-                          'OK',
-                          style: TextStyle(
-                            fontFamily: AppTheme.fontFamily,
-                            fontSize: 15,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+              TacticalDialogActions(
+                cancelLabel: AppDictionary.btnCancel,
+                confirmLabel: AppDictionary.btnOk,
+                onCancel: () => Navigator.of(context).pop(),
+                onConfirm: () {
+                  Navigator.of(context).pop();
+                  final hStr = _tempHour.toString().padLeft(2, '0');
+                  final mStr = _tempMinute.toString().padLeft(2, '0');
+                  widget.onConfirmed('$hStr:$mStr');
+                },
               ),
             ],
           ),

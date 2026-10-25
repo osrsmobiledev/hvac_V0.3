@@ -55,12 +55,16 @@ abstract final class AppColors {
   /// Steel/muted gray for Meetrapport and general telemetry.
   static const Color steelMuted = Color(0xFF9E9E9E);
 
-  /// Steel border framing the Meetrapport card.
-  static const Color steelBorder = Color(0xFF455A64);
+  /// Steel border framing the Meetrapport card (cool metallic steel, distinct from slate).
+  static const Color steelBorder = Color(0xFF5A5D62);
 
   // --- Status & Validation Alerts ---
   /// High-visibility red for errors or negative findings.
   static const Color errorRed = Color(0xFFFF5252);
+
+  /// Toned-down, rich tactical crimson for destructive buttons and surfaces (#B3261E).
+  /// Eliminates glare on OLED displays while maintaining high contrast.
+  static const Color destructiveRed = Color(0xFFB3261E);
 
   /// Vibrant green for passed checks and locked drafts.
   static const Color successGreen = Color(0xFF69F0AE);

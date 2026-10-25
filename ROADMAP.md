@@ -59,18 +59,16 @@
 
 ## 2. Current Handoff (Active State for AI Agent)
 
-- **Current Status:** Milestone 1 and Milestone 2 (Slices 2.1–2.4) complete, tested, and verified. Deep code inspection slice complete and committed (`fix: deep inspection`, commit `fa54b1f`).
-- **Inspection Fixes Applied (2026-10-23):**
-  - `bo2_time_spinner.dart` split: `Bo2LaserDivider` + `Bo2WheelColumnLabels` moved to `bo2_time_wheels.dart` → under 250-line limit.
-  - `firma_technicus_tab.dart` `_loadData()` silent catch → `debugPrint` added.
-  - `klant_tab.dart` `_loadDraftCustomerData()` + `_saveToDatabase()` wrapped in `try/catch` with `debugPrint`.
-  - `bento_main_section.dart` + `bento_sub_section.dart` `didChangeDependencies` guarded with `_hasRestoredState` flag.
-  - `verbrandingsattest_screen.dart` `_tabTitles` replaced with `AppDictionary.combustionTabs`.
-  - `app_theme.dart` `hintStyle` fontSize corrected: 14 → 15 (matches `DarkInputBox.decoration()`).
-  - `app_database.dart` `onUpgrade` TODO stub added for Slice 3.1.
-  - `flutter analyze` → **0 issues**. `flutter test` → **36/36 passed**.
-- **Active Slice:** **Slice 3.1 — Tab 5 (`Stooktoestel` + Serial Barcode Scanner)** — awaiting owner authorization.
-- **Next Slice:** **Slice 3.1 — Tab 5 (`Stooktoestel` + Serial Barcode Scanner)** under Milestone 3.
+- **Current Status:** Milestone 1 and Milestone 2 (Slices 2.1–2.4) complete, tested, and verified. UI polish & tactical refinement checkpoint completed. S25 Ultra reference screenshots updated.
+- **UI Refinements Applied (2026-10-25):**
+  - **Single-Line Persistent Title:** `app_shell_screen.dart` tuned to 16.5px in standard 56dp AppBar wrapped in `FittedBox` to prevent cut-off/wrapping.
+  - **Tactical Navigation Ribbon:** Top tab bar tuned to sleek 40dp height (`Tab(height: 40.0)`), 14.5px bold font, and 2.5px gold indicator.
+  - **Tab 4 (Klant) Reorganization:** Integrated action buttons inside the top `CustomerDetailsCard` squircle accordion.
+  - **Subdued Gold Focused Border:** Unified across all dark input boxes using `AppColors.amberGoldBorder` (1.2px, #8A6A1D).
+  - **Reusable Prefix Component:** Extracted `DarkInputPrefix` for uniform styling of `#`, `+32`, and `BE`.
+  - **Reference Screenshots:** Updated `references/legacy/prefered_theme` with real Samsung Galaxy S25 Ultra screenshots.
+- **Active Slice:** **Slice 3.1 — Tab 5 (`Stooktoestel` + Serial Barcode Scanner)** under Milestone 3.
+- **Next Slice:** **Slice 3.1 — Tab 5 (`Stooktoestel` + Serial Barcode Scanner)** (Appliance & Burner form, fuel selector, barcode scanner).
 - **Immediate Next Step for Agent:**
   1. Await owner's explicit go-ahead before writing any Slice 3.1 code.
 - **Blockers / Open Questions:** None. Ready to proceed to Slice 3.1 upon owner authorization.

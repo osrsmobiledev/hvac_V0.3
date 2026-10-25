@@ -52,7 +52,7 @@ class _VerbrandingsattestScreenState extends State<VerbrandingsattestScreen>
   Widget build(BuildContext context) {
     return Column(
       children: [
-        // Top Horizontal Navigation Bar matching Screenshot_20261022_152134.jpg
+        // Top Horizontal Navigation Bar (Tactical Ribbon: 40dp height)
         Container(
           width: double.infinity,
           decoration: const BoxDecoration(
@@ -72,10 +72,10 @@ class _VerbrandingsattestScreenState extends State<VerbrandingsattestScreen>
             indicator: const UnderlineTabIndicator(
               borderSide: BorderSide(
                 color: AppColors.amberGold,
-                width: 3.0,
+                width: 2.5,
               ),
-              borderRadius: BorderRadius.all(Radius.circular(3.0)),
-              insets: EdgeInsets.only(bottom: 2.0),
+              borderRadius: BorderRadius.all(Radius.circular(2.5)),
+              insets: EdgeInsets.only(bottom: 1.5),
             ),
             splashFactory: NoSplash.splashFactory,
             overlayColor: WidgetStateProperty.all(Colors.transparent),
@@ -84,15 +84,17 @@ class _VerbrandingsattestScreenState extends State<VerbrandingsattestScreen>
             dividerColor: Colors.transparent,
             labelStyle: const TextStyle(
               fontFamily: AppTheme.fontFamily,
-              fontWeight: FontWeight.w600,
-              fontSize: 15,
+              fontWeight: FontWeight.bold,
+              fontSize: 14.5,
             ),
             unselectedLabelStyle: const TextStyle(
               fontFamily: AppTheme.fontFamily,
-              fontWeight: FontWeight.w600,
-              fontSize: 15,
+              fontWeight: FontWeight.bold,
+              fontSize: 14.5,
             ),
-            tabs: _tabTitles.map((title) => Tab(text: title)).toList(),
+            tabs: _tabTitles
+                .map((title) => Tab(height: 40.0, text: title))
+                .toList(),
           ),
         ),
 

@@ -8,6 +8,7 @@ class TechnicianProfile {
   final String kboNumber;
   final String street;
   final String houseNumber;
+  final String boxNumber;
   final String postalCode;
   final String city;
   final String phone;
@@ -23,6 +24,7 @@ class TechnicianProfile {
     this.kboNumber = '',
     this.street = '',
     this.houseNumber = '',
+    this.boxNumber = '',
     this.postalCode = '',
     this.city = '',
     this.phone = '',
@@ -40,6 +42,7 @@ class TechnicianProfile {
       kboNumber: (map['kbo_number'] as String?) ?? '',
       street: (map['street'] as String?) ?? '',
       houseNumber: (map['house_number'] as String?) ?? '',
+      boxNumber: (map['box_number'] as String?) ?? '',
       postalCode: (map['postal_code'] as String?) ?? '',
       city: (map['city'] as String?) ?? '',
       phone: (map['phone'] as String?) ?? '',
@@ -58,6 +61,7 @@ class TechnicianProfile {
       'kbo_number': kboNumber,
       'street': street,
       'house_number': houseNumber,
+      'box_number': boxNumber,
       'postal_code': postalCode,
       'city': city,
       'phone': phone,

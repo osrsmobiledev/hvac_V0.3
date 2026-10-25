@@ -63,68 +63,70 @@ void main() {
 
   group('Slice 2.4 — Tab 4 (Klant & Installatieadres) UI & Persistence', () {
     testWidgets(
-        'Renders Klant and Installatieadres sections with all core inputs',
+        'Renders Klant and Locatie Toestel sections with locked inputs in view mode',
         (tester) async {
       await pumpTab(tester);
 
       // Verify Main Section Titles
       expect(find.text(AppDictionary.headerCustomerDetails), findsOneWidget);
-      expect(
-          find.text(AppDictionary.headerInstallationAddress), findsOneWidget);
+      expect(find.text(AppDictionary.headerApplianceLocation), findsOneWidget);
 
-      // Verify Action buttons
-      expect(find.text(AppDictionary.btnChooseCustomer), findsOneWidget);
-      expect(find.text(AppDictionary.btnNewCustomer), findsOneWidget);
+      // Verify Top Action buttons
+      expect(find.text(AppDictionary.btnSearch), findsOneWidget);
+      expect(find.text(AppDictionary.btnNew), findsOneWidget);
 
       // Verify Field Labels
-      expect(find.text('Bedrijfsnaam (optioneel)'), findsOneWidget);
-      expect(find.text('Voornaam'), findsOneWidget);
-      expect(find.text('Achternaam *'), findsOneWidget);
-      expect(find.text('Straat'), findsOneWidget);
-      expect(find.text('Nummer'), findsOneWidget);
-      expect(find.text('Bus'), findsOneWidget);
-      expect(find.text('Postcode'), findsOneWidget);
-      expect(find.text('Gemeente / Stad'), findsOneWidget);
-      expect(find.text('Telefoon'), findsOneWidget);
-      expect(find.text('E-mailadres'), findsOneWidget);
+      expect(find.text(AppDictionary.lblCompanyOrCustomerOptional),
+          findsOneWidget);
+      expect(find.text(AppDictionary.lblFirstName), findsOneWidget);
+      expect(find.text(AppDictionary.lblLastName), findsOneWidget);
+      expect(find.text(AppDictionary.lblStreet), findsOneWidget);
+      expect(find.text(AppDictionary.lblHouseNumber), findsOneWidget);
+      expect(find.text(AppDictionary.lblBox), findsOneWidget);
+      expect(find.text(AppDictionary.lblPostalCode), findsOneWidget);
+      expect(find.text(AppDictionary.lblCity), findsOneWidget);
+      expect(find.text(AppDictionary.lblPhone), findsOneWidget);
+      expect(find.text(AppDictionary.lblEmail), findsOneWidget);
 
-      // Verify Role Selector Pips
-      expect(find.text(AppDictionary.roleOwner), findsOneWidget);
-      expect(find.text(AppDictionary.roleTenant), findsOneWidget);
-
-      // Verify Same Address Checkbox
+      // Verify Same Address Switch starts disabled (greyed out) with inputs locked
       expect(find.text(AppDictionary.lblSameAsCustomerAddress), findsOneWidget);
+      final initialSwitch = tester.widget<Switch>(find.byType(Switch));
+      expect(initialSwitch.onChanged, isNull);
+      final textField = tester.widget<TextField>(
+        find.descendant(
+          of: find.byKey(const ValueKey('customer_lastName')),
+          matching: find.byType(TextField),
+        ),
+      );
+      expect(textField.readOnly, isTrue);
     });
 
     testWidgets(
-        'Entering customer name and address debounces and persists to SQLite',
+        'Tapping Nieuw unlocks fields and persists entered data to SQLite',
         (tester) async {
       await pumpTab(tester);
 
-      // Enter customer name
-      final lastNameField = find.byKey(const ValueKey('customer_lastName'));
-      expect(lastNameField, findsOneWidget);
-      await tester.enterText(lastNameField, 'Vermeulen');
+      // Tap 'Nieuw' and confirm to unlock edit mode
+      await tester.tap(find.text(AppDictionary.btnNew));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(AppDictionary.dlgYes));
+      await tester.pumpAndSettle();
+
+      // Enter customer details
+      await tester.enterText(
+          find.byKey(const ValueKey('customer_lastName')), 'Vermeulen');
+      await tester.pump();
+      await tester.enterText(
+          find.byKey(const ValueKey('customer_firstName')), 'Luc');
+      await tester.pump();
+      await tester.enterText(
+          find.byKey(const ValueKey('customer_street')), 'Stationsstraat');
+      await tester.pump();
+      await tester.enterText(
+          find.byKey(const ValueKey('customer_houseNumber')), '108');
       await tester.pump();
 
-      // Enter first name
-      final firstNameField = find.byKey(const ValueKey('customer_firstName'));
-      expect(firstNameField, findsOneWidget);
-      await tester.enterText(firstNameField, 'Luc');
-      await tester.pump();
-
-      // Enter street & number
-      final streetField = find.byKey(const ValueKey('customer_street'));
-      expect(streetField, findsOneWidget);
-      await tester.enterText(streetField, 'Stationsstraat');
-      await tester.pump();
-
-      final houseNumField = find.byKey(const ValueKey('customer_houseNumber'));
-      expect(houseNumField, findsOneWidget);
-      await tester.enterText(houseNumField, '108');
-      await tester.pump();
-
-      // Trigger debounce and run async SQLite operations
+      // Trigger debounce and SQLite save
       await tester.pump(const Duration(milliseconds: 550));
       late List<Customer> customers;
       late DraftVisit draft;
@@ -141,8 +143,6 @@ void main() {
       expect(customers.first.firstName, 'Luc');
       expect(customers.first.street, 'Stationsstraat');
       expect(customers.first.houseNumber, '108');
-
-      // Verify active draft visit is linked to customer and location
       expect(draft.customerId, customers.first.id);
       expect(draft.serviceLocationId, isNotNull);
     });
@@ -152,29 +152,30 @@ void main() {
         (tester) async {
       await pumpTab(tester);
 
-      // Enter customer name first
-      final lastNameField = find.byKey(const ValueKey('customer_lastName'));
-      await tester.enterText(lastNameField, 'Claes');
+      // Tap 'Nieuw' and confirm
+      await tester.tap(find.text(AppDictionary.btnNew));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(AppDictionary.dlgYes));
+      await tester.pumpAndSettle();
+
+      // Enter customer name
+      await tester.enterText(
+          find.byKey(const ValueKey('customer_lastName')), 'Claes');
       await tester.pump();
 
-      // Tap on same address toggle to uncheck it
-      final checkbox = find.byType(Checkbox);
-      expect(checkbox, findsOneWidget);
-      await tester.tap(checkbox);
+      // Toggle separate address Switch to false
+      final toggleSwitch = find.byType(Switch);
+      expect(toggleSwitch, findsOneWidget);
+      await tester.tap(toggleSwitch);
       await tester.pumpAndSettle();
 
       // Verify separate installation fields appear
-      expect(find.text('Straat installatie'), findsOneWidget);
+      expect(find.text(AppDictionary.lblStreetInstallation), findsOneWidget);
 
       // Enter separate installation address
-      final locStreetField = find.byKey(const ValueKey('loc_street'));
-      expect(locStreetField, findsOneWidget);
-      await tester.enterText(locStreetField, 'Fabriekslaan');
+      await tester.enterText(
+          find.byKey(const ValueKey('loc_street')), 'Fabriekslaan');
       await tester.pump();
-
-      // Select 'Huurder' role
-      await tester.tap(find.text(AppDictionary.roleTenant));
-      await tester.pumpAndSettle();
 
       // Trigger debounce and run async SQLite operations
       await tester.pump(const Duration(milliseconds: 550));
@@ -188,9 +189,8 @@ void main() {
       });
       await tester.pump();
 
-      // Verify location saved with role 'tenant' and street 'Fabriekslaan'
+      // Verify location saved with street 'Fabriekslaan'
       expect(location, isNotNull);
-      expect(location!.role, 'tenant');
       expect(location!.street, 'Fabriekslaan');
     });
 
@@ -224,8 +224,8 @@ void main() {
 
       await pumpTab(tester);
 
-      // Tap 'Kies bestaande klant' button
-      final chooseBtn = find.text(AppDictionary.btnChooseCustomer);
+      // Tap 'Zoeken' button
+      final chooseBtn = find.text(AppDictionary.btnSearch);
       expect(chooseBtn, findsOneWidget);
       await tester.tap(chooseBtn);
       await tester.pump();

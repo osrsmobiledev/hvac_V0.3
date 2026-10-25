@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
+import '../localization/app_dictionary.dart';
 import '../theme/app_colors.dart';
 
-/// Placeholder displayed when an unbuilt applet is selected from the drawer or dashboard.
+/// Placeholder displayed when an unbuilt applet or management section is selected.
 class AppletContentPlaceholder extends StatelessWidget {
   final String appBarTitle;
+  final String? description;
   final VoidCallback onBackToHome;
 
   const AppletContentPlaceholder({
     super.key,
     required this.appBarTitle,
+    this.description,
     required this.onBackToHome,
   });
 
@@ -47,12 +50,11 @@ class AppletContentPlaceholder extends StatelessWidget {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 8),
-              const Text(
-                'De workflow voor dit attest wordt gebouwd in latere milestones.',
-                style: TextStyle(
+              Text(
+                description ?? AppDictionary.placeholderUnderConstruction,
+                style: const TextStyle(
                   color: AppColors.textSecondary,
                   fontSize: 13,
-                  height: 1.4,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -60,7 +62,7 @@ class AppletContentPlaceholder extends StatelessWidget {
               OutlinedButton.icon(
                 onPressed: onBackToHome,
                 icon: const Icon(Icons.arrow_back_rounded, size: 16),
-                label: const Text('Terug naar dashboard'),
+                label: const Text(AppDictionary.btnBackToDashboard),
               ),
             ],
           ),

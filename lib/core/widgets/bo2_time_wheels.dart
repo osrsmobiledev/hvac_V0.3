@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:hvac_app/app/localization/app_dictionary.dart';
 import 'package:hvac_app/app/theme/app_colors.dart';
 import 'package:hvac_app/app/theme/app_theme.dart';
 
@@ -180,7 +181,7 @@ class Bo2WheelColumnLabels extends StatelessWidget {
             width: 100,
             child: Center(
               child: Text(
-                'UREN',
+                AppDictionary.lblHours,
                 style: TextStyle(
                   fontFamily: AppTheme.fontFamily,
                   color: AppColors.antiqueGold,
@@ -196,7 +197,7 @@ class Bo2WheelColumnLabels extends StatelessWidget {
             width: 100,
             child: Center(
               child: Text(
-                'MINUTEN',
+                AppDictionary.lblMinutes,
                 style: TextStyle(
                   fontFamily: AppTheme.fontFamily,
                   color: AppColors.antiqueGold,

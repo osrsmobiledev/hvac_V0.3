@@ -1,13 +1,18 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:hvac_app/app/localization/app_dictionary.dart';
 import 'package:hvac_app/app/theme/app_colors.dart';
 import '../../data/draft_repository.dart';
 import '../widgets/bento_main_section.dart';
 import '../widgets/dark_input_box.dart';
+import '../widgets/dark_input_label.dart';
 import 'start/activity_option_tile.dart';
 
 /// Tab 2 (Start) form for Verbrandingsattest Vlaanderen.
-/// Single-card layout under the gold-tinted 'Start' header with SQLite auto-save.
+///
+/// Features:
+/// - Clean activity selection under the 'Activiteit' Bento section.
+/// - Attest sequence number tracking with live auto-save to SQLite.
 class StartTab extends StatefulWidget {
   final DraftRepository? draftRepository;
 
@@ -56,12 +61,9 @@ class _StartTabState extends State<StartTab>
           _isLoading = false;
         });
       }
-    } catch (_) {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
+    } catch (e, stack) {
+      debugPrint('[StartTab] _loadDraft error: $e\n$stack');
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -76,9 +78,12 @@ class _StartTabState extends State<StartTab>
   }
 
   void _onActivityChanged(String newType) {
-    if (_activityType == newType) return;
     setState(() {
-      _activityType = newType;
+      if (_activityType == newType) {
+        _activityType = ''; // De-selects when tapped again
+      } else {
+        _activityType = newType;
+      }
     });
     _saveDraft();
   }
@@ -112,44 +117,72 @@ class _StartTabState extends State<StartTab>
               vertical: 16.0,
             ),
             children: [
-              // Standalone gold-tinted main dropdown header labeled 'Start'
+              // Standalone gold-tinted main dropdown header labeled 'Activiteit'
               BentoMainSection(
-                title: 'Start',
+                title: AppDictionary.headerActivity,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    ActivityOptionTile(
-                      title: 'Onderhoud',
-                      isSelected: _activityType == 'onderhoud',
-                      onTap: () => _onActivityChanged('onderhoud'),
+                    // Side-by-side activity selector buttons
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: ActivityOptionTile(
+                            title: AppDictionary.activityMaintenance,
+                            isSelected: _activityType == 'onderhoud',
+                            onTap: () => _onActivityChanged('onderhoud'),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              ActivityOptionTile(
+                                title: AppDictionary.activityCommissioningShort,
+                                isSelected: _activityType == 'eerste_ingebruikname',
+                                onTap: () =>
+                                    _onActivityChanged('eerste_ingebruikname'),
+                              ),
+                              const SizedBox(height: 6),
+                              GestureDetector(
+                                onTap: () =>
+                                    _onActivityChanged('eerste_ingebruikname'),
+                                child: const FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  child: Text(
+                                    AppDictionary.captionCommissioning,
+                                    maxLines: 1,
+                                    style: TextStyle(
+                                      color: AppColors.textSecondary,
+                                      fontSize: 11,
+                                      fontStyle: FontStyle.italic,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 10),
-                    ActivityOptionTile(
-                      title: 'Keuring voor eerste ingebruikname',
-                      isSelected: _activityType == 'eerste_ingebruikname',
-                      onTap: () => _onActivityChanged('eerste_ingebruikname'),
-                    ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 18),
+                    const Divider(color: Colors.white10, height: 1),
+                    const SizedBox(height: 14),
 
                     // Section 2: Volgnummer Attest
-                    const Text(
-                      'Volgnummer Attest:',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: 0.2,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
+                    const DarkInputLabel(AppDictionary.lblSequenceNumber),
                     TextField(
                       controller: _attestNumberController,
                       onChanged: _onAttestNumberChanged,
                       textInputAction: TextInputAction.done,
                       style: DarkInputBox.inputStyle,
-                      cursorColor: AppColors.amberGold,
+                      cursorColor: AppColors.amberGoldBorder,
                       decoration: DarkInputBox.decoration(
                         hintText: 'bv. 2026-001',
+                        prefixText: '#',
                       ),
                     ),
                   ],

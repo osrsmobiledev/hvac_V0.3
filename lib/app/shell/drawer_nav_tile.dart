@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hvac_app/core/widgets/tactical_squircle_box.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_theme.dart';
 
@@ -37,9 +38,6 @@ class DrawerNavigationTile extends StatelessWidget {
           )
         : Colors.transparent;
 
-    // Glowing border when selected
-    final activeBorderColor = isSelected ? accentColor : borderColor;
-
     return Container(
       color: backgroundColor,
       child: Material(
@@ -62,28 +60,17 @@ class DrawerNavigationTile extends StatelessWidget {
                     ),
                     child: Row(
                       children: [
-                        // Squircle icon container with accent border
-                        Container(
+                        // Squircle icon container using centralized TacticalSquircleBox
+                        TacticalSquircleBox(
                           width: 42,
                           height: 42,
-                          decoration: BoxDecoration(
-                            color: isSelected
-                                ? Color.alphaBlend(
-                                    accentColor.withValues(alpha: 0.16),
-                                    AppColors.carbonCard,
-                                  )
-                                : AppColors.carbonCard,
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: activeBorderColor,
-                              width: isSelected ? 1.5 : 1.2,
-                            ),
-                          ),
-                          child: Icon(
-                            icon,
-                            color: accentColor,
-                            size: 22,
-                          ),
+                          icon: icon,
+                          accentColor: accentColor,
+                          borderColor: borderColor,
+                          borderRadius: 12,
+                          iconSize: 22,
+                          borderWidth: isSelected ? 1.5 : 1.2,
+                          isSelected: isSelected,
                         ),
                         const SizedBox(width: 14),
                         // Label in Libron font
@@ -100,7 +87,6 @@ class DrawerNavigationTile extends StatelessWidget {
                               fontWeight: isSelected
                                   ? FontWeight.w700
                                   : FontWeight.w600,
-                              height: 1.25,
                             ),
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
