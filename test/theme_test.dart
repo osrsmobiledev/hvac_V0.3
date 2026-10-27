@@ -58,18 +58,11 @@ void main() {
       await tester.tap(find.text('Verbrandingsattest'));
       await tester.pumpAndSettle();
 
-      // Persistent AppBar title updates with adaptive 2-line title on phone
+      // Persistent AppBar title updates with title on phone
       expect(
         find.descendant(
           of: appBarFinder,
-          matching: find.text('Verbrandingsattest'),
-        ),
-        findsOneWidget,
-      );
-      expect(
-        find.descendant(
-          of: appBarFinder,
-          matching: find.text('Vlaanderen'),
+          matching: find.text(AppDictionary.menuCombustion),
         ),
         findsOneWidget,
       );

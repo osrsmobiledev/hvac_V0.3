@@ -10,7 +10,7 @@ import 'package:sqflite/sqflite.dart';
 /// 5. maintenance_visits (Attest draft, measurements, assessments, PDF & VEKA state)
 /// 6. measurement_captures (Flue gas data captured manually or via Eurolyzer QR)
 abstract final class DatabaseSchema {
-  static const int version = 2;
+  static const int version = 3;
   static const String databaseName = 'hvac_service.db';
 
   /// Executes all CREATE TABLE and CREATE INDEX statements on database initialization.
@@ -82,11 +82,25 @@ abstract final class DatabaseSchema {
     await db.execute('''
       CREATE TABLE boilers (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        service_location_id INTEGER NOT NULL,
+        service_location_id INTEGER,
+        is_central INTEGER NOT NULL DEFAULT 1,
+        centraal_type TEXT,
+        type_b_text TEXT,
+        type_c_text TEXT,
+        heating_type TEXT DEFAULT 'individueel',
+        boiler_operation TEXT DEFAULT 'condenserend',
+        fuel_type TEXT NOT NULL DEFAULT 'gas',
+        fuel_subtype TEXT DEFAULT 'aardgas',
+        fuel_other_text TEXT,
+        burner_technology TEXT DEFAULT 'premix',
         boiler_brand TEXT,
+        boiler_brand_unknown INTEGER NOT NULL DEFAULT 0,
         boiler_model TEXT,
+        boiler_model_unknown INTEGER NOT NULL DEFAULT 0,
         boiler_serial_number TEXT,
+        boiler_serial_number_unknown INTEGER NOT NULL DEFAULT 0,
         boiler_construction_year INTEGER,
+        boiler_construction_year_unknown INTEGER NOT NULL DEFAULT 0,
         boiler_nominal_power_kw REAL,
         boiler_type TEXT,
         burner_brand TEXT,
@@ -94,8 +108,7 @@ abstract final class DatabaseSchema {
         burner_serial_number TEXT,
         burner_construction_year INTEGER,
         burner_type TEXT,
-        fuel_type TEXT NOT NULL,
-        fuel_subtype TEXT,
+        burner_flow_rate TEXT,
         created_at TEXT NOT NULL,
         updated_at TEXT NOT NULL,
         FOREIGN KEY (service_location_id) REFERENCES service_locations (id) ON DELETE CASCADE

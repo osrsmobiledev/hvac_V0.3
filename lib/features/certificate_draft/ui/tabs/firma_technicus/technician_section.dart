@@ -37,7 +37,8 @@ class TechnicianSection extends StatelessWidget {
       try {
         initial = DateTime.parse(dateController.text);
       } catch (e) {
-        debugPrint('[TechnicianSection] parse date "${dateController.text}" failed: $e');
+        debugPrint(
+            '[TechnicianSection] parse date "${dateController.text}" failed: $e');
       }
     }
 
@@ -73,7 +74,7 @@ class TechnicianSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BentoMainSection(
-      title: 'Technicus',
+      title: AppDictionary.headerTechnicus,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -83,7 +84,7 @@ class TechnicianSection extends StatelessWidget {
                 child: FirmaField(
                   label: AppDictionary.lblFirstName,
                   controller: firstNameController,
-                  hint: 'Jan',
+                  hint: AppDictionary.hintTechFirstName,
                   onChanged: onProfileChanged,
                 ),
               ),
@@ -92,7 +93,7 @@ class TechnicianSection extends StatelessWidget {
                 child: FirmaField(
                   label: AppDictionary.lblLastName,
                   controller: lastNameController,
-                  hint: 'Janssens',
+                  hint: AppDictionary.hintTechLastName,
                   onChanged: onProfileChanged,
                 ),
               ),
@@ -105,7 +106,7 @@ class TechnicianSection extends StatelessWidget {
                 child: FirmaField(
                   label: AppDictionary.lblGV,
                   controller: gvController,
-                  hint: 'GV01234',
+                  hint: AppDictionary.hintGvNumber,
                   onChanged: onProfileChanged,
                 ),
               ),
@@ -114,7 +115,7 @@ class TechnicianSection extends StatelessWidget {
                 child: FirmaField(
                   label: AppDictionary.lblTV,
                   controller: tvController,
-                  hint: 'TV01234',
+                  hint: AppDictionary.hintTvNumber,
                   onChanged: onProfileChanged,
                 ),
               ),
@@ -128,7 +129,7 @@ class TechnicianSection extends StatelessWidget {
           FirmaActionField(
             label: AppDictionary.lblDate,
             controller: dateController,
-            hint: 'JJJJ-MM-DD',
+            hint: AppDictionary.hintDateFormat,
             icon: Icons.calendar_month_rounded,
             onTap: () => _selectDate(context),
           ),
@@ -141,7 +142,7 @@ class TechnicianSection extends StatelessWidget {
                 child: FirmaActionField(
                   label: AppDictionary.lblTimeFrom,
                   controller: startTimeController,
-                  hint: '08:00',
+                  hint: AppDictionary.hintTimeStart,
                   icon: Icons.access_time_rounded,
                   onTap: () => showBo2TimeSpinner(
                     context,
@@ -155,7 +156,7 @@ class TechnicianSection extends StatelessWidget {
                 child: FirmaActionField(
                   label: AppDictionary.lblTimeTo,
                   controller: endTimeController,
-                  hint: '10:00',
+                  hint: AppDictionary.hintTimeEnd,
                   icon: Icons.access_time_rounded,
                   onTap: () => showBo2TimeSpinner(
                     context,

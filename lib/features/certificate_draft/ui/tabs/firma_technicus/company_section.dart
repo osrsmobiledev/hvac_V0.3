@@ -43,7 +43,7 @@ class CompanySection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BentoMainSection(
-      title: 'Firma',
+      title: AppDictionary.headerFirma,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -52,7 +52,7 @@ class CompanySection extends StatelessWidget {
             fieldKey: const ValueKey('company_name'),
             label: AppDictionary.lblCompanyName,
             controller: nameController,
-            hint: 'bv. HVAC Solutions BV',
+            hint: AppDictionary.hintCompanyName,
             onChanged: onChanged,
           ),
           const SizedBox(height: 12),
@@ -140,7 +140,7 @@ class CompanySection extends StatelessWidget {
             fieldKey: const ValueKey('company_email'),
             label: AppDictionary.lblEmail,
             controller: emailController,
-            hint: 'info@hvac.be',
+            hint: AppDictionary.hintCompanyEmail,
             keyboardType: TextInputType.emailAddress,
             onChanged: onChanged,
           ),
@@ -154,7 +154,7 @@ class CompanySection extends StatelessWidget {
             prefixText: BelgianFormatters.kboPrefix,
             inputFormatters: BelgianFormatters.kboFormatters,
             validator: BelgianFormatters.validateKbo,
-            hint: '0123.456.789',
+            hint: AppDictionary.hintCompanyKbo,
             keyboardType: TextInputType.number,
             textInputAction: TextInputAction.done,
             onChanged: onChanged,

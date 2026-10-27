@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:path/path.dart' as p;
 import 'package:sqflite/sqflite.dart';
 import 'database_schema.dart';
@@ -43,6 +44,31 @@ class AppDatabase {
           await db.execute(
             'ALTER TABLE technician_profile ADD COLUMN box_number TEXT;',
           );
+        }
+        if (oldVersion < 3) {
+          // Columns added for Slice 3.1: Stooktoestel compliance
+          const newColumns = [
+            'ALTER TABLE boilers ADD COLUMN is_central INTEGER NOT NULL DEFAULT 1;',
+            'ALTER TABLE boilers ADD COLUMN centraal_type TEXT;',
+            'ALTER TABLE boilers ADD COLUMN type_b_text TEXT;',
+            'ALTER TABLE boilers ADD COLUMN type_c_text TEXT;',
+            'ALTER TABLE boilers ADD COLUMN heating_type TEXT DEFAULT "individueel";',
+            'ALTER TABLE boilers ADD COLUMN boiler_operation TEXT DEFAULT "condenserend";',
+            'ALTER TABLE boilers ADD COLUMN fuel_other_text TEXT;',
+            'ALTER TABLE boilers ADD COLUMN burner_technology TEXT DEFAULT "premix";',
+            'ALTER TABLE boilers ADD COLUMN boiler_brand_unknown INTEGER NOT NULL DEFAULT 0;',
+            'ALTER TABLE boilers ADD COLUMN boiler_model_unknown INTEGER NOT NULL DEFAULT 0;',
+            'ALTER TABLE boilers ADD COLUMN boiler_serial_number_unknown INTEGER NOT NULL DEFAULT 0;',
+            'ALTER TABLE boilers ADD COLUMN boiler_construction_year_unknown INTEGER NOT NULL DEFAULT 0;',
+            'ALTER TABLE boilers ADD COLUMN burner_flow_rate TEXT;',
+          ];
+          for (final query in newColumns) {
+            try {
+              await db.execute(query);
+            } catch (e, stack) {
+              debugPrint('[AppDatabase] migration query warning: $e\n$stack');
+            }
+          }
         }
       },
     );

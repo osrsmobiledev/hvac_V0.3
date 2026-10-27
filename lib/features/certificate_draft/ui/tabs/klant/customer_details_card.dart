@@ -47,143 +47,143 @@ class CustomerDetailsCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-            // 1. Bedrijfsnaam / Klant (Optioneel) — Full width
-            KlantFormField(
-              fieldKey: const ValueKey('customer_company'),
-              controller: controllers.company,
-              label: AppDictionary.lblCompanyOrCustomerOptional,
-              hint: AppDictionary.hintCompany,
-              readOnly: readOnly,
-              onChanged: onChanged,
-            ),
-            const SizedBox(height: 12),
-
-            // 2. Voornaam & Achternaam — 2-Column Row (1:1)
-            Row(
-              children: [
-                Expanded(
-                  child: KlantFormField(
-                    fieldKey: const ValueKey('customer_firstName'),
-                    controller: controllers.firstName,
-                    label: AppDictionary.lblFirstName,
-                    hint: AppDictionary.hintFirstName,
-                    readOnly: readOnly,
-                    onChanged: onChanged,
-                  ),
+                // 1. Bedrijfsnaam / Klant (Optioneel) — Full width
+                KlantFormField(
+                  fieldKey: const ValueKey('customer_company'),
+                  controller: controllers.company,
+                  label: AppDictionary.lblCompanyOrCustomerOptional,
+                  hint: AppDictionary.hintCompany,
+                  readOnly: readOnly,
+                  onChanged: onChanged,
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: KlantFormField(
-                    fieldKey: const ValueKey('customer_lastName'),
-                    controller: controllers.lastName,
-                    label: AppDictionary.lblLastName,
-                    hint: AppDictionary.hintLastName,
-                    readOnly: readOnly,
-                    onChanged: onChanged,
-                  ),
+                const SizedBox(height: 12),
+
+                // 2. Voornaam & Achternaam — 2-Column Row (1:1)
+                Row(
+                  children: [
+                    Expanded(
+                      child: KlantFormField(
+                        fieldKey: const ValueKey('customer_firstName'),
+                        controller: controllers.firstName,
+                        label: AppDictionary.lblFirstName,
+                        hint: AppDictionary.hintFirstName,
+                        readOnly: readOnly,
+                        onChanged: onChanged,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: KlantFormField(
+                        fieldKey: const ValueKey('customer_lastName'),
+                        controller: controllers.lastName,
+                        label: AppDictionary.lblLastName,
+                        hint: AppDictionary.hintLastName,
+                        readOnly: readOnly,
+                        onChanged: onChanged,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+
+                // 3. Straat — Full width address input
+                KlantFormField(
+                  fieldKey: const ValueKey('customer_street'),
+                  controller: controllers.street,
+                  label: AppDictionary.lblStreet,
+                  hint: AppDictionary.hintSearchAddress,
+                  readOnly: readOnly,
+                  onChanged: onChanged,
+                ),
+                const SizedBox(height: 12),
+
+                // 4. Nr & Bus — 2-Column Row (1:1)
+                Row(
+                  children: [
+                    Expanded(
+                      child: KlantFormField(
+                        fieldKey: const ValueKey('customer_houseNumber'),
+                        controller: controllers.houseNumber,
+                        label: AppDictionary.lblHouseNumber,
+                        hint: AppDictionary.hintHouseNumber,
+                        keyboardType: TextInputType.streetAddress,
+                        readOnly: readOnly,
+                        onChanged: onChanged,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: KlantFormField(
+                        fieldKey: const ValueKey('customer_boxNumber'),
+                        controller: controllers.boxNumber,
+                        label: AppDictionary.lblBox,
+                        hint: AppDictionary.hintBox,
+                        readOnly: readOnly,
+                        onChanged: onChanged,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+
+                // 5. Postcode & Gemeente — 2-Column Row (1:1)
+                Row(
+                  children: [
+                    Expanded(
+                      child: KlantFormField(
+                        fieldKey: const ValueKey('customer_postalCode'),
+                        controller: controllers.postalCode,
+                        label: AppDictionary.lblPostalCode,
+                        hint: AppDictionary.hintPostalCode,
+                        keyboardType: TextInputType.number,
+                        readOnly: readOnly,
+                        onChanged: onChanged,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: KlantFormField(
+                        fieldKey: const ValueKey('customer_city'),
+                        controller: controllers.city,
+                        label: AppDictionary.lblCity,
+                        hint: AppDictionary.hintCity,
+                        readOnly: readOnly,
+                        onChanged: onChanged,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+
+                // 6. Tel — Full width Belgian phone input
+                KlantFormField(
+                  fieldKey: const ValueKey('customer_phone'),
+                  controller: controllers.phone,
+                  label: AppDictionary.lblPhone,
+                  hint: AppDictionary.hintPhone,
+                  prefixText: BelgianFormatters.phonePrefix,
+                  inputFormatters: BelgianFormatters.phoneFormatters,
+                  validator: BelgianFormatters.validatePhone,
+                  keyboardType: TextInputType.phone,
+                  readOnly: readOnly,
+                  onChanged: onChanged,
+                ),
+                const SizedBox(height: 12),
+
+                // 7. Email — Full width email input
+                KlantFormField(
+                  fieldKey: const ValueKey('customer_email'),
+                  controller: controllers.email,
+                  label: AppDictionary.lblEmail,
+                  hint: AppDictionary.hintEmail,
+                  keyboardType: TextInputType.emailAddress,
+                  textInputAction: TextInputAction.done,
+                  readOnly: readOnly,
+                  onChanged: onChanged,
                 ),
               ],
             ),
-            const SizedBox(height: 12),
-
-            // 3. Straat — Full width address input
-            KlantFormField(
-              fieldKey: const ValueKey('customer_street'),
-              controller: controllers.street,
-              label: AppDictionary.lblStreet,
-              hint: AppDictionary.hintSearchAddress,
-              readOnly: readOnly,
-              onChanged: onChanged,
-            ),
-            const SizedBox(height: 12),
-
-            // 4. Nr & Bus — 2-Column Row (1:1)
-            Row(
-              children: [
-                Expanded(
-                  child: KlantFormField(
-                    fieldKey: const ValueKey('customer_houseNumber'),
-                    controller: controllers.houseNumber,
-                    label: AppDictionary.lblHouseNumber,
-                    hint: AppDictionary.hintHouseNumber,
-                    keyboardType: TextInputType.streetAddress,
-                    readOnly: readOnly,
-                    onChanged: onChanged,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: KlantFormField(
-                    fieldKey: const ValueKey('customer_boxNumber'),
-                    controller: controllers.boxNumber,
-                    label: AppDictionary.lblBox,
-                    hint: AppDictionary.hintBox,
-                    readOnly: readOnly,
-                    onChanged: onChanged,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-
-            // 5. Postcode & Gemeente — 2-Column Row (1:1)
-            Row(
-              children: [
-                Expanded(
-                  child: KlantFormField(
-                    fieldKey: const ValueKey('customer_postalCode'),
-                    controller: controllers.postalCode,
-                    label: AppDictionary.lblPostalCode,
-                    hint: AppDictionary.hintPostalCode,
-                    keyboardType: TextInputType.number,
-                    readOnly: readOnly,
-                    onChanged: onChanged,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: KlantFormField(
-                    fieldKey: const ValueKey('customer_city'),
-                    controller: controllers.city,
-                    label: AppDictionary.lblCity,
-                    hint: AppDictionary.hintCity,
-                    readOnly: readOnly,
-                    onChanged: onChanged,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-
-            // 6. Tel — Full width Belgian phone input
-            KlantFormField(
-              fieldKey: const ValueKey('customer_phone'),
-              controller: controllers.phone,
-              label: AppDictionary.lblPhone,
-              hint: AppDictionary.hintPhone,
-              prefixText: BelgianFormatters.phonePrefix,
-              inputFormatters: BelgianFormatters.phoneFormatters,
-              validator: BelgianFormatters.validatePhone,
-              keyboardType: TextInputType.phone,
-              readOnly: readOnly,
-              onChanged: onChanged,
-            ),
-            const SizedBox(height: 12),
-
-            // 7. Email — Full width email input
-            KlantFormField(
-              fieldKey: const ValueKey('customer_email'),
-              controller: controllers.email,
-              label: AppDictionary.lblEmail,
-              hint: AppDictionary.hintEmail,
-              keyboardType: TextInputType.emailAddress,
-              textInputAction: TextInputAction.done,
-              readOnly: readOnly,
-              onChanged: onChanged,
-            ),
-          ],
-        ),
-      ),
+          ),
         ],
       ),
     );

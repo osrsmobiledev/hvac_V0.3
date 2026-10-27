@@ -97,6 +97,7 @@ class _AppShellScreenState extends State<AppShellScreen> {
                               ? AppDictionary.tooltipCloseMenu
                               : AppDictionary.tooltipOpenMenu,
                           onPressed: () {
+                            FocusManager.instance.primaryFocus?.unfocus();
                             final scaffoldState =
                                 _phoneScaffoldKey.currentState;
                             if (scaffoldState == null) return;
@@ -107,7 +108,7 @@ class _AppShellScreenState extends State<AppShellScreen> {
                             }
                           },
                         ),
-                  title: _buildAppBarTitle(isWideScreen),
+                  title: _AppBarTitle(controller: _controller),
                   bottom: const PreferredSize(
                     preferredSize: Size.fromHeight(1.0),
                     child: Divider(
@@ -137,6 +138,9 @@ class _AppShellScreenState extends State<AppShellScreen> {
                     : Scaffold(
                         key: _phoneScaffoldKey,
                         onDrawerChanged: (isOpen) {
+                          if (isOpen) {
+                            FocusManager.instance.primaryFocus?.unfocus();
+                          }
                           if (_isDrawerOpen != isOpen) {
                             setState(() {
                               _isDrawerOpen = isOpen;
@@ -147,6 +151,7 @@ class _AppShellScreenState extends State<AppShellScreen> {
                           controller: _controller,
                           isPermanent: false,
                           onItemTapped: () {
+                            FocusManager.instance.primaryFocus?.unfocus();
                             if (_phoneScaffoldKey.currentState?.isDrawerOpen ==
                                 true) {
                               _phoneScaffoldKey.currentState?.closeDrawer();
@@ -162,11 +167,18 @@ class _AppShellScreenState extends State<AppShellScreen> {
       },
     );
   }
+}
 
-  /// Builds the persistent AppBar title displaying a clean 1-line title
-  /// auto-scaled with [FittedBox] so it never wraps or cuts off on any screen.
-  Widget _buildAppBarTitle(bool isWideScreen) {
-    if (_controller.activeApplet == AppletType.combustion) {
+/// Displays the persistent AppBar title displaying a clean 1-line title
+/// auto-scaled with [FittedBox] so it never wraps or cuts off on any screen.
+class _AppBarTitle extends StatelessWidget {
+  final AppShellController controller;
+
+  const _AppBarTitle({required this.controller});
+
+  @override
+  Widget build(BuildContext context) {
+    if (controller.activeApplet == AppletType.combustion) {
       return const FittedBox(
         fit: BoxFit.scaleDown,
         child: Text(
@@ -183,7 +195,7 @@ class _AppShellScreenState extends State<AppShellScreen> {
       );
     }
     return Text(
-      _controller.appBarTitle,
+      controller.appBarTitle,
       style: const TextStyle(
         fontFamily: AppTheme.fontFamily,
         fontWeight: FontWeight.w700,

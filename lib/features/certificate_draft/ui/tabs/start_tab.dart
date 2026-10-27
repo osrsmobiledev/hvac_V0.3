@@ -142,7 +142,8 @@ class _StartTabState extends State<StartTab>
                             children: [
                               ActivityOptionTile(
                                 title: AppDictionary.activityCommissioningShort,
-                                isSelected: _activityType == 'eerste_ingebruikname',
+                                isSelected:
+                                    _activityType == 'eerste_ingebruikname',
                                 onTap: () =>
                                     _onActivityChanged('eerste_ingebruikname'),
                               ),

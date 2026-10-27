@@ -55,8 +55,10 @@ void main() {
       expect(find.text(AppDictionary.headerActivity), findsOneWidget);
 
       // Verify Side-by-side Option Buttons
-      expect(find.widgetWithText(ActivityOptionTile, 'Onderhoud'), findsOneWidget);
-      expect(find.widgetWithText(ActivityOptionTile, 'Keuring'), findsOneWidget);
+      expect(
+          find.widgetWithText(ActivityOptionTile, 'Onderhoud'), findsOneWidget);
+      expect(
+          find.widgetWithText(ActivityOptionTile, 'Keuring'), findsOneWidget);
 
       // Verify Caption under Keuring button
       expect(find.text(AppDictionary.captionCommissioning), findsOneWidget);
@@ -171,7 +173,8 @@ void main() {
 
       expect(tester.takeException(), isNull);
       expect(
-        find.widgetWithText(ActivityOptionTile, AppDictionary.activityMaintenance),
+        find.widgetWithText(
+            ActivityOptionTile, AppDictionary.activityMaintenance),
         findsOneWidget,
       );
       expect(

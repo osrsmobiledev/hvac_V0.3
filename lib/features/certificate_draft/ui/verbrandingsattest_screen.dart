@@ -7,6 +7,7 @@ import 'tabs/data_tab.dart';
 import 'tabs/firma_technicus_tab.dart';
 import 'tabs/klant_tab.dart';
 import 'tabs/start_tab.dart';
+import 'tabs/stooktoestel_tab.dart';
 
 /// The 7-tab workflow screen for 'Verbrandingsattest Vlaanderen'.
 ///
@@ -115,12 +116,8 @@ class _VerbrandingsattestScreenState extends State<VerbrandingsattestScreen>
               // Tab 4: Klant (Active in Slice 2.4)
               KlantTab(),
 
-              // Tab 5: Stooktoestel (Slice 3.1)
-              _DraftTabPlaceholder(
-                tabName: 'Stooktoestel',
-                sliceInfo: 'Wordt geïmplementeerd in Slice 3.1',
-                icon: Icons.heat_pump_rounded,
-              ),
+              // Tab 5: Stooktoestel (Active in Slice 3.1)
+              StooktoestelTab(),
 
               // Tab 6: Meting (Slice 3.2)
               _DraftTabPlaceholder(

@@ -28,8 +28,8 @@
 ### Milestone 3: Appliance, Measurements & Final Assessment (Tabs 5 to 7)
 *Goal: Complete the remaining tabs tab-by-tab.*
 
-- [ ] **Slice 3.1 â€” Tab 5 (`Stooktoestel` + Serial Barcode Scanner):** Appliance (`Toestel`) & burner (`Brander`) forms, single authoritative Fuel selector (`Stookolie`, `Aardgas`, `LPG`, etc.), and camera barcode scanner button (`mobile_scanner`) next to `Fabricatienummer` with manual text fallback.
-- [ ] **Slice 3.2 â€” Tab 6 (`Meting` & Eurolyzer Flue-Gas QR):** Flue-gas measurement slots (*VÃ³Ã³r onderhoud*, *Na - Laaglast*, *Na - Hooglast*), QR reading insertion from Tab 1 into active slot, and fuel-driven check visibility.
+- [x] **Slice 3.1 — Tab 5 (`Stooktoestel` + Serial Barcode Scanner):** Appliance (`Toestel`) & burner (`Brander`) forms, single authoritative Fuel selector (`Stookolie`, `Aardgas`, `LPG`, etc.), smart integrated vs separate burner toggle with statutory compliance badge, brand quick-pickers for boiler & burner, full-width inputs with tactical `Onbekend` chips, and camera barcode scanner button (`mobile_scanner`) next to `Fabricatienummer` with manual text fallback.
+- [ ] **Slice 3.2 — Tab 6 (`Meting` & Eurolyzer Flue-Gas QR):** Flue-gas measurement slots (*Vóór onderhoud*, *Na - Laaglast*, *Na - Hooglast*), QR reading insertion from Tab 1 into active slot, and fuel-driven check visibility.
 - [ ] **Slice 3.3 â€” Tab 7 (`Eindbeoordeling` & Signatures):** Dual conclusions (*Goed*/*Niet goed*, *Veilig*/*Niet veilig*), statutory next inspection date, defects/remarks, digital signature pads for technician and customer, and *Afdrukken* trigger.
 
 ### Milestone 4: Re-Wired PDF Generation & Local Completion (`Voltooien`)
@@ -46,29 +46,27 @@
 
 
 
-- **Current Status:** Milestone 1 and Milestone 2 (Slices 2.1, 2.2, 2.3, 2.4) complete, tested, and verified.
-- **Active Slice:** **Slice 2.4 â€” Tab 4 (`Klant` & Installation Location)** â€” awaiting owner sign-off.
-- **Next Slice:** **Slice 3.1 â€” Tab 5 (`Stooktoestel` + Serial Barcode Scanner)** under Milestone 3.
+- **Current Status:** Milestone 1, Milestone 2 (Slices 2.1–2.4), and Milestone 3 (Slice 3.1) complete, tested, and verified.
+- **Active Slice:** **Slice 3.1 — Tab 5 (`Stooktoestel` + Serial Barcode Scanner)** — completed, awaiting owner sign-off.
+- **Next Slice:** **Slice 3.2 — Tab 6 (`Meting` & Eurolyzer Flue-Gas QR)** under Milestone 3.
 - **Immediate Next Step for Agent:**
-  1. Present Slice 2.4 verification results and 3â€“4 testing instructions to the owner.
-  2. Await owner's confirmation before writing code for Milestone 3 / Slice 3.1.
-- **Blockers / Open Questions:** None. Ready to proceed to Slice 3.1 upon owner authorization.
+  1. Present Slice 3.1 verification results and 3–4 testing instructions to the owner.
+  2. Await owner's confirmation before writing code for Milestone 3 / Slice 3.2.
+- **Blockers / Open Questions:** None. Ready to proceed to Slice 3.2 upon owner authorization.
 
 
 ---
 
 ## 2. Current Handoff (Active State for AI Agent)
 
-- **Current Status:** Milestone 1 and Milestone 2 (Slices 2.1–2.4) complete, tested, and verified. UI polish & tactical refinement checkpoint completed. S25 Ultra reference screenshots updated.
-- **UI Refinements Applied (2026-10-25):**
-  - **Single-Line Persistent Title:** `app_shell_screen.dart` tuned to 16.5px in standard 56dp AppBar wrapped in `FittedBox` to prevent cut-off/wrapping.
-  - **Tactical Navigation Ribbon:** Top tab bar tuned to sleek 40dp height (`Tab(height: 40.0)`), 14.5px bold font, and 2.5px gold indicator.
-  - **Tab 4 (Klant) Reorganization:** Integrated action buttons inside the top `CustomerDetailsCard` squircle accordion.
-  - **Subdued Gold Focused Border:** Unified across all dark input boxes using `AppColors.amberGoldBorder` (1.2px, #8A6A1D).
-  - **Reusable Prefix Component:** Extracted `DarkInputPrefix` for uniform styling of `#`, `+32`, and `BE`.
-  - **Reference Screenshots:** Updated `references/legacy/prefered_theme` with real Samsung Galaxy S25 Ultra screenshots.
-- **Active Slice:** **Slice 3.1 — Tab 5 (`Stooktoestel` + Serial Barcode Scanner)** under Milestone 3.
-- **Next Slice:** **Slice 3.1 — Tab 5 (`Stooktoestel` + Serial Barcode Scanner)** (Appliance & Burner form, fuel selector, barcode scanner).
+- **Current Status:** Milestone 1, Milestone 2, and Slice 3.1 complete, tested, and verified.
+- **Slice 3.1 Delivered:**
+  - **Card 1 (`Kenmerken`):** NBN CR 1749 type B/C tactile selection with bottom sheet modal picker, authoritative fuel selector (`Gasvormig`, `Vloeibaar`, `Vast`), dynamic sub-options, operation (`Condenserend` vs `Niet-condenserend`), and heating type (`Individueel` vs `Collectief`).
+  - **Card 2 (`Toestel`):** Full-width input fields with generous breathing room, clean labels (no trailing colons), distinct brand quick-selection ribbon (Vaillant, Viessmann, Remeha, Bulex, Bosch, Junkers, Daikin, Weishaupt, ACV, Buderus, ATAG), tactile `Onbekend` chips for `Bouwjaar` and `Fabricatienummer`, and camera barcode scanner icon with manual fallback.
+  - **Card 3 (`Brander (enkel CV)`):** Smart `TwoWaySlidingBar` for `Geïntegreerd` vs `Afzonderlijke brander`. Integrated mode shows tactical VEKA compliance badge and derives statutory `"/"` strings for the official PDF without cluttering inputs; separate mode reveals burner brand quick-picker, serial, and flow rate (`Debiet`).
+  - **Quality & Performance:** SQLite offline-first persistence with 300ms debounce, all 75 unit/widget tests passing, 0 analyzer issues, all files $\le 250$ lines.
+- **Active Slice:** **Slice 3.1 — Tab 5 (`Stooktoestel` + Serial Barcode Scanner)** — complete and verified.
+- **Next Slice:** **Slice 3.2 — Tab 6 (`Meting` & Eurolyzer Flue-Gas QR)**.
 - **Immediate Next Step for Agent:**
-  1. Await owner's explicit go-ahead before writing any Slice 3.1 code.
-- **Blockers / Open Questions:** None. Ready to proceed to Slice 3.1 upon owner authorization.
+  1. Await owner's explicit go-ahead before writing any Slice 3.2 code.
+- **Blockers / Open Questions:** None. Ready to proceed to Slice 3.2 upon owner authorization.

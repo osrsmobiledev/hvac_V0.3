@@ -45,6 +45,8 @@ class DarkInputBox extends StatelessWidget {
     Widget? prefixIcon,
     Widget? suffixIcon,
     bool readOnly = false,
+    EdgeInsetsGeometry? contentPadding,
+    double? fontSize,
   }) {
     final effectivePrefix = prefixText != null
         ? DarkInputPrefix.text(prefixText, isMuted: readOnly)
@@ -67,11 +69,19 @@ class DarkInputBox extends StatelessWidget {
           ? const BoxConstraints(minWidth: 0, minHeight: 0)
           : null,
       suffixIcon: suffixIcon,
-      contentPadding: EdgeInsets.only(
-        left: prefixText != null ? 4.0 : 14.0,
-        right: 10.0,
-        top: 12.0,
-        bottom: 12.0,
+      contentPadding: contentPadding ??
+          EdgeInsets.only(
+            left: prefixText != null ? 4.0 : 14.0,
+            right: 10.0,
+            top: 12.0,
+            bottom: 12.0,
+          ),
+      disabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(
+          color: restingBorderColor,
+          width: 1.0,
+        ),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
@@ -109,7 +119,7 @@ class DarkInputBox extends StatelessWidget {
       hintText: hintText,
       hintStyle: TextStyle(
         color: readOnly ? Colors.white24 : Colors.white38,
-        fontSize: 15,
+        fontSize: fontSize ?? 15,
       ),
     );
   }

@@ -5,9 +5,8 @@ abstract final class AppDictionary {
   static const String appBrand = 'HVAC';
   static const String appTitle = 'HVAC Field Service';
   static const String dashboardTitle = 'Kies een applet';
-  static const String themePreviewTitle = 'BO2 Tactical HUD Preview';
 
-  // --- Drawer Menu & Section Headers ---
+  // --- Drawer Menu & Navigation ---
   static const String sectionDashboard = 'DASHBOARD';
   static const String sectionApplets = 'APPLETS';
   static const String sectionManage = 'BEHEER';
@@ -22,27 +21,12 @@ abstract final class AppDictionary {
   static const String menuMeasurement = 'Meetrapport';
   static const String menuTechSettings = 'Instellingen Technicus';
   static const String menuImportExport = 'Import / Export';
-  static const String titleCombustionLine1 = 'Verbrandingsattest';
-  static const String titleCombustionLine2 = 'Vlaanderen';
-  static const String lblActive = 'Actief';
   static const String tooltipOpenMenu = 'Menu openen';
   static const String tooltipCloseMenu = 'Menu sluiten';
-
-  // --- Applet Descriptions (Home Dashboard) ---
-  static const String descCombustion =
-      'Gasketel & Stookolie periodieke controle conform VEKA normen.';
-  static const String descCleaning =
-      'Periodiek schoorsteenveeg- en reinigingsattest.';
-  static const String descInspection =
-      'Keuringsrapport voor eerste ingebruikname van installaties.';
-  static const String descMeasurement =
-      'Digitale rookgas- en drukmetingen via Eurolyzer bluetooth.';
 
   // --- Common Actions & Buttons ---
   static const String btnSave = 'Opslaan';
   static const String btnCancel = 'Annuleren';
-  static const String btnConfirm = 'Bevestigen';
-  static const String btnNext = 'Volgende';
   static const String btnBack = 'Vorige';
   static const String btnSearch = 'Zoeken';
   static const String btnNew = 'Nieuw';
@@ -50,14 +34,10 @@ abstract final class AppDictionary {
   static const String btnDelete = 'Wissen';
   static const String btnOk = 'OK';
   static const String btnBackToDashboard = 'Terug naar dashboard';
-
-  // --- Placeholders & Construction ---
   static const String placeholderUnderConstruction =
       'Deze module wordt gebouwd in latere milestones.';
 
   // --- Telemetry & Data Headers ---
-  static const String headerMeasurement = 'Meetgegevens Bluetooth';
-  static const String headerFluegas = 'Rookgas Analyse';
   static const String headerMeetgegevens = 'Meetgegevens';
   static const String headerRookgassen = 'Rookgassen';
   static const String tooltipScanEurolyzerQr = 'Eurolyzer QR scannen';
@@ -70,43 +50,21 @@ abstract final class AppDictionary {
     'Klant',
     'Stooktoestel',
     'Meting',
-    'Eindbeoordeling',
+    'Eindbeoordeling'
   ];
 
   // --- Setup / Start Tab ---
   static const String headerActivity = 'Activiteit';
   static const String lblSequenceNumber = 'Volgnummer Attest';
-  static const String activityCommissioning =
-      'Keuring voor eerste ingebruikname';
   static const String activityCommissioningShort = 'Keuring';
   static const String captionCommissioning = '* vóór 1e ingebruikname';
   static const String activityMaintenance = 'Onderhoud';
 
-  // --- Start Tab Info Section ---
-  static const String headerActivityInfo = 'Info & Regelgeving';
-  static const String infoMaintenanceSubtitle =
-      'Periodieke controle & reiniging';
-  static const String infoMaintenancePoint1 =
-      '2-jaarlijks voor gas (vanaf 20 kW), jaarlijks voor stookolie.';
-  static const String infoMaintenancePoint2 =
-      'Reiniging ketel & schoorsteen + verbrandingsmeting.';
-  static const String infoMaintenancePoint3 =
-      'Resulteert in Reinigings- én Verbrandingsattest.';
-  static const String infoCommissioningSubtitle =
-      'Vóór eerste ingebruikname (VEKA)';
-  static const String infoCommissioningPoint1 =
-      'Wettelijk verplicht bij nieuwe ketel of ketelvervanging.';
-  static const String infoCommissioningPoint2 =
-      'Controle van verluchting, rookgasafvoer en normen.';
-  static const String infoCommissioningPoint3 =
-      'Resulteert in officieel Keuringsrapport vóór opstart.';
-  static const String badgeSelected = 'Actief';
-
   // --- Firma & Technicus Tab ---
+  static const String headerFirma = 'Firma';
+  static const String headerTechnicus = 'Technicus';
   static const String lblCompanyName = 'Naam Firma';
   static const String lblKBO = 'Ondernemingsnummer (KBO)';
-  static const String lblTechFirstName = 'Voornaam';
-  static const String lblTechLastName = 'Achternaam';
   static const String lblGV = 'GV-nummer';
   static const String lblTV = 'TV-nummer';
   static const String lblDate = 'Datum onderhoud';
@@ -115,18 +73,21 @@ abstract final class AppDictionary {
   static const String lblSetTime = 'Tijd instellen';
   static const String lblHours = 'UREN';
   static const String lblMinutes = 'MINUTEN';
+  static const String hintCompanyName = 'bv. HVAC Solutions BV';
+  static const String hintCompanyEmail = 'info@hvac.be';
+  static const String hintCompanyKbo = '0123.456.789';
+  static const String hintTechFirstName = 'bv. Jan';
+  static const String hintTechLastName = 'bv. Janssens';
+  static const String hintGvNumber = 'GV01234';
+  static const String hintTvNumber = 'TV01234';
+  static const String hintDateFormat = 'JJJJ-MM-DD';
+  static const String hintTimeStart = '08:00';
+  static const String hintTimeEnd = '10:00';
 
   // --- Klant & Installatieadres Tab ---
   static const String headerCustomerDetails = 'Klantgegevens';
-  static const String headerInstallationAddress = 'Locatie Toestel';
   static const String headerApplianceLocation = 'Locatie Toestel';
-  static const String subInstallationAddress =
-      '(indien afwijkend van adres klant)';
-  static const String btnChooseCustomer = 'Kies bestaande klant';
-  static const String btnNewCustomer = 'Nieuwe klant';
   static const String searchCustomerHint = 'Zoek klanten';
-  static const String roleOwner = 'Eigenaar';
-  static const String roleTenant = 'Huurder';
   static const String lblSameAsCustomerAddress =
       'Installatieadres is hetzelfde als klantadres';
   static const String lblEffectiveLocation = 'Effectieve installatielocatie';
@@ -135,8 +96,6 @@ abstract final class AppDictionary {
   static const String lblSourceSeparateAddress =
       'Bron: Afzonderlijk installatieadres';
   static const String lblStreetInstallation = 'Straat (Installatie)';
-
-  // --- Klant Field Labels & Hints ---
   static const String lblCompanyOrCustomerOptional =
       'Bedrijfsnaam / Klant (Optioneel)';
   static const String hintCompany = 'Bv. VME Apollo';
@@ -159,7 +118,7 @@ abstract final class AppDictionary {
   static const String lblEmail = 'Email';
   static const String hintEmail = 'klant@mail.be';
 
-  // --- Klant Action Dialogs (Preferred Theme) ---
+  // --- Klant Action Dialogs ---
   static const String dlgNewCustomerTitle = 'Nieuw';
   static const String dlgNewCustomerContent =
       'Wilt u een nieuwe klant aanmaken?';
@@ -186,5 +145,79 @@ abstract final class AppDictionary {
   static const String lblNoCustomersInDb =
       'Geen opgeslagen klanten in de database.';
   static const String lblNoCustomersMatching = 'Geen klanten gevonden voor';
-  static const String lblExistingCustomers = 'Bestaande klanten';
+
+  // --- Stooktoestel Tab (Kenmerken, Toestel, Brander) ---
+  static const String headerKenmerken = 'Kenmerken';
+  static const String lblCentraal = 'Centraal (*)';
+  static const String footnoteCentraal = '* indeling volgens NBN CR 1749';
+  static const String suffixOpen = '(open)';
+  static const String suffixClosed = '(gesloten)';
+  static const String lblConnected = 'aangesloten';
+  static const String lblAsTypeB = 'als type B';
+  static const String lblAsTypeC = 'als type C';
+  static const String hintSubtypeB = '11';
+  static const String hintSubtypeC = '13';
+  static const String lblHeatingType = 'Type verwarming';
+  static const String optIndividual = 'Individueel';
+  static const String optCollective = 'Collectief';
+  static const String optUnknown = 'Onbekend';
+  static const String lblOperation = 'Werking ketel';
+  static const String optCondensing = 'Condenserend';
+  static const String optNonCondensing = 'Niet-condenserend';
+  static const String headerFuel = 'Brandstof';
+  static const String fuelGasShort = 'Gasvormig';
+  static const String fuelLiquidShort = 'Vloeibaar';
+  static const String fuelSolidShort = 'Vast';
+  static const String headerGasDetails = 'Gastype & Brandstofdetail';
+  static const String gasNatural = 'aardgas';
+  static const String gasLpg = 'LPG';
+  static const String gasOther = 'Andere gas';
+  static const String hintSpecifyGas = 'Specifieer gassoort...';
+  static const String headerBurnerTech = 'Brandertechnologie (NBN / VEKA)';
+  static const String techNonPremix = 'niet premix (GI)';
+  static const String techPremix = 'premix (GI)';
+  static const String techFanBurner = 'gasketel met ventilatorbrander (GII)';
+  static const String headerSolidSubtype = 'Vaste brandstof subtype';
+  static const String solidPellets = 'houtpellets';
+  static const String solidLogs = 'houtblokken';
+  static const String solidOther = 'Andere biomassa';
+  static const String hintSpecifySolid = 'Specifieer vaste brandstof...';
+  static const String headerAppliance = 'Toestel';
+  static const String headerBurner = 'Brander';
+  static const String subBurner = '(enkel CV)';
+  static const String optBurnerIntegrated = 'Geïntegreerd';
+  static const String optBurnerSeparate = 'Afzonderlijke brander';
+  static const String lblBurnerIntegratedBadge = 'Geïntegreerde brander';
+  static const String descBurnerIntegrated =
+      'De brander maakt integraal deel uit van de ketel. Gegevens worden automatisch overgenomen voor het attest en VEKA.';
+  static const String lblBrand = 'Merk';
+  static const String lblModel = 'Type / Model';
+  static const String lblConstructionYear = 'Bouwjaar';
+  static const String lblSerialNumber = 'Fabricatienummer';
+  static const String lblNominalPower = 'Nominaal vermogen (kW)';
+  static const String lblFlowRate = 'Debiet (kW of kg/h of l/h of m³/h)';
+  static const String tooltipScanBarcode = 'Scan barcode';
+  static const String barcodeScannerPlaceholder =
+      'Barcode scanner wordt later geactiveerd';
+  static const String hintBoilerBrand = 'bv. Vaillant, Viessmann, Remeha';
+  static const String hintBoilerModel = 'bv. ecoTEC plus VHR';
+  static const String hintBoilerYear = 'bv. 2021';
+  static const String hintBoilerSerial = 'bv. 2119230010023456';
+  static const String hintBoilerPower = 'bv. 24.5';
+  static const String hintBurnerBrand = 'bv. Weishaupt, Riello, Elco';
+  static const String hintBurnerModel = 'bv. WL5/1-B';
+  static const String hintBurnerYear = 'bv. 2019';
+  static const String hintBurnerSerial = 'bv. 893475102';
+  static const String hintBurnerFlowRate = 'bv. 2.4 kg/h of 28 kW';
+
+  // --- Applet Titles & Placeholders ---
+  static const String appletTitleVerbrandingsattest = 'Verbrandingsattest';
+  static const String appletTitleReinigingsattest = 'Reinigingsattest';
+  static const String appletTitleKeuringsrapport = 'Keuringsrapport';
+  static const String appletTitleMeetrapport = 'Meetrapport';
+  static const String appletSubtitleVlaanderen = 'Vlaanderen';
+  static const String hintScanToestelSerial = 'Scan Toestel Fabricatienummer';
+  static const String hintScanBranderSerial = 'Scan Brander Fabricatienummer';
+  static const String placeholderQrScannerPending =
+      'Eurolyzer QR Scanner wordt geactiveerd in Slice 3.2';
 }

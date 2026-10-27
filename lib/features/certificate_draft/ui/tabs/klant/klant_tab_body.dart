@@ -38,44 +38,41 @@ class KlantTabBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () => FocusScope.of(context).unfocus(),
-      behavior: HitTestBehavior.translucent,
-      child: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 600),
-          child: ListView(
-            key: const PageStorageKey<String>('klant_tab_scroll'),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-            children: [
-              CustomerDetailsCard(
-                controllers: controllers,
-                onChanged: onFormChanged,
-                readOnly: !isEditing,
-                actionButtons: KlantActionButtons(
-                  isEditing: isEditing,
-                  hasCustomer: hasCustomer,
-                  onSearch: onSearch,
-                  onNew: onNew,
-                  onEdit: onEdit,
-                  onSave: onSave,
-                  onCancel: onCancel,
-                  onDelete: onDelete,
-                ),
-              ),
-              const SizedBox(height: 14),
-              InstallationLocationCard(
-                controllers: controllers,
-                isSameAsCustomer: isSameAsCustomer,
-                onSameAddressChanged: onSameAddressChanged,
-                onChanged: onFormChanged,
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 600),
+        child: ListView(
+          key: const PageStorageKey<String>('klant_tab_scroll'),
+          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          children: [
+            CustomerDetailsCard(
+              controllers: controllers,
+              onChanged: onFormChanged,
+              readOnly: !isEditing,
+              actionButtons: KlantActionButtons(
                 isEditing: isEditing,
                 hasCustomer: hasCustomer,
-                readOnly: !isEditing,
+                onSearch: onSearch,
+                onNew: onNew,
+                onEdit: onEdit,
+                onSave: onSave,
+                onCancel: onCancel,
+                onDelete: onDelete,
               ),
-              const SizedBox(height: 40),
-            ],
-          ),
+            ),
+            const SizedBox(height: 14),
+            InstallationLocationCard(
+              controllers: controllers,
+              isSameAsCustomer: isSameAsCustomer,
+              onSameAddressChanged: onSameAddressChanged,
+              onChanged: onFormChanged,
+              isEditing: isEditing,
+              hasCustomer: hasCustomer,
+              readOnly: !isEditing,
+            ),
+            const SizedBox(height: 40),
+          ],
         ),
       ),
     );

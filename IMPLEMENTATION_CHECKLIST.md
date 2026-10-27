@@ -16,6 +16,8 @@
 | **6** | **Theme / Component token mismatch** (`hintStyle` 14px in theme vs 15px in `DarkInputBox`) | Inconsistent typography sizes cause jarring visual baseline and scale shifts across inputs. | Aligned `hintStyle` `fontSize: 15` in `app_theme.dart` with `DarkInputBox`. |
 | **7** | **Font styling hacks** (using arbitrary `height: 1.25` multipliers) | Caused uneven vertical alignment and visual rendering bugs with the Libron font. | Removed custom `height` multipliers; unified on standard `DarkInputBox.inputStyle`. |
 | **8** | **Missing DB migration stub** (no `onUpgrade` in `AppDatabase`) | App would have trouble upgrading SQLite schemas for upcoming slices (e.g. `stooktoestel`). | Added an `onUpgrade` stub and migration instructions. |
+| **9** | **Per-field `onTapOutside` hacks & redundant per-screen `GestureDetector` wrappers** | Per-field hacks cause focus bugs when opening drawers, and per-tab wrappers create redundant, conflicting hit-test layers. | Replaced with canonical root `MaterialApp.builder` global tap-to-dismiss, explicit unfocus on drawer open, and `ScrollViewKeyboardDismissBehavior.onDrag` on lists. |
+| **10** | **`_buildX()` helper methods returning widgets** (e.g. `_buildAppBarTitle`) | Helper methods lack their own `BuildContext`, cannot use `const`, and bypass Flutter's widget reconciliation and element tree caching. | Extracted to dedicated private `StatelessWidget` classes with `const` constructors. |
 
 ---
 
@@ -37,16 +39,17 @@ Run through this 7-point checklist before marking any slice complete or handing 
 - [ ] Unexpected exceptions are logged via `debugPrint('[ClassName] method error: $e\n$stack')`.
 - [ ] In UI `catch` blocks, ensure `if (mounted) setState(() => _isLoading = false);` is called so the screen never hangs on a permanent spinner.
 
-### [ ] 3. Flutter Lifecycle & PageStorage Safety
+### [ ] 3. Flutter Architecture, Lifecycle & PageStorage Safety
+- [ ] No `_buildX()` helper methods returning `Widget` — extract small private `StatelessWidget` classes with `const` constructors.
 - [ ] If restoring scroll/expansion state in `didChangeDependencies`, guard it with `_hasRestoredState` so it only executes once.
 - [ ] Keep heavy logic, database queries, and PDF generation out of `build()` methods.
 - [ ] Cancel all active `Timer?` debounce instances in `dispose()`.
 - [ ] Dispose all `TextEditingController` and `ScrollController` instances in `dispose()`.
 
 ### [ ] 4. Dutch UI Text Centralization (`AppDictionary`)
-- [ ] All user-visible labels, headers, hints, buttons, and dialogs are in Dutch (Flemish).
+- [ ] All user-visible labels, headers, hints, placeholders, buttons, and dialogs are in Dutch (Flemish).
 - [ ] All UI strings are defined in `lib/app/localization/app_dictionary.dart`.
-- [ ] No hardcoded string literals inside widget trees (e.g., `'Opslaan'`, `'Annuleren'`, tab names).
+- [ ] No hardcoded string literals anywhere inside widget trees (e.g., `'Opslaan'`, `'Annuleren'`, tab names, hints).
 - [ ] English is strictly reserved for code names, variable names, functions, and `///` comments.
 
 ### [ ] 5. Single Reusable Input Styling (No Hacks)
@@ -54,7 +57,7 @@ Run through this 7-point checklist before marking any slice complete or handing 
 - [ ] All text inputs use `DarkInputBox.decoration(...)` for borders, fills, and hint styles.
 - [ ] Never apply custom `height: 1.xx` hacks to `TextStyle` in input boxes.
 - [ ] Set proper `keyboardType` (text vs numeric/phone) and `textInputAction` (`next` vs `done`).
-- [ ] Form screens wrapped in `GestureDetector(onTap: () => FocusScope.of(context).unfocus())`.
+- [ ] Global tap-to-dismiss via root `MaterialApp.builder` with opaque `GestureDetector`, and `ScrollViewKeyboardDismissBehavior.onDrag` on scrollable form lists (no per-field or per-screen redundant unfocus hacks).
 
 ### [ ] 6. Offline-First Draft Safety & Debouncing
 - [ ] Edits debounce (300ms–500ms) before writing to SQLite to prevent UI lag.

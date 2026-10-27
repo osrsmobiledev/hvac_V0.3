@@ -53,8 +53,8 @@ class DashboardScreen extends StatelessWidget {
               children: [
                 // Row 1, Col 1: Verbrandingsattest Vlaanderen
                 AppletBentoTile(
-                  title: 'Verbrandingsattest',
-                  subtitle: 'Vlaanderen',
+                  title: AppDictionary.appletTitleVerbrandingsattest,
+                  subtitle: AppDictionary.appletSubtitleVlaanderen,
                   icon: Icons.local_fire_department_rounded,
                   accentColor: AppColors.amberGold,
                   borderColor: AppColors.amberGoldBorder,
@@ -62,8 +62,8 @@ class DashboardScreen extends StatelessWidget {
                 ),
                 // Row 1, Col 2: Reinigingsattest Vlaanderen
                 AppletBentoTile(
-                  title: 'Reinigingsattest',
-                  subtitle: 'Vlaanderen',
+                  title: AppDictionary.appletTitleReinigingsattest,
+                  subtitle: AppDictionary.appletSubtitleVlaanderen,
                   icon: Icons.cleaning_services_rounded,
                   accentColor: AppColors.terracotta,
                   borderColor: AppColors.terracottaBorder,
@@ -71,8 +71,8 @@ class DashboardScreen extends StatelessWidget {
                 ),
                 // Row 2, Col 1: Keuringsrapport Vlaanderen
                 AppletBentoTile(
-                  title: 'Keuringsrapport',
-                  subtitle: 'Vlaanderen',
+                  title: AppDictionary.appletTitleKeuringsrapport,
+                  subtitle: AppDictionary.appletSubtitleVlaanderen,
                   icon: Icons.fact_check_rounded,
                   accentColor: AppColors.slate,
                   borderColor: AppColors.slateBorder,
@@ -80,7 +80,7 @@ class DashboardScreen extends StatelessWidget {
                 ),
                 // Row 2, Col 2: Meetrapport
                 AppletBentoTile(
-                  title: 'Meetrapport',
+                  title: AppDictionary.appletTitleMeetrapport,
                   icon: Icons.factory_rounded,
                   accentColor: AppColors.steelMuted,
                   borderColor: AppColors.steelBorder,

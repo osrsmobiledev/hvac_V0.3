@@ -21,7 +21,7 @@ class RookgassenCard extends StatelessWidget {
   void _showScanPlaceholder(BuildContext context) {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('Eurolyzer QR Scanner wordt geactiveerd in Slice 3.2'),
+        content: Text(AppDictionary.placeholderQrScannerPending),
         duration: Duration(seconds: 2),
       ),
     );

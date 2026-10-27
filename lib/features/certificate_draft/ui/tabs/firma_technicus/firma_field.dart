@@ -93,6 +93,8 @@ class FirmaActionField extends StatelessWidget {
             TextField(
               controller: controller,
               readOnly: true,
+              keyboardType: TextInputType.none,
+              textInputAction: TextInputAction.none,
               onTap: onTap,
               textAlign: textAlign,
               style: DarkInputBox.inputStyle,

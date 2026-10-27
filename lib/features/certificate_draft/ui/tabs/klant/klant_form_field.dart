@@ -59,7 +59,8 @@ class KlantFormField extends StatelessWidget {
                   fontWeight: FontWeight.w500,
                 )
               : DarkInputBox.inputStyle,
-          cursorColor: readOnly ? Colors.transparent : AppColors.amberGoldBorder,
+          cursorColor:
+              readOnly ? Colors.transparent : AppColors.amberGoldBorder,
           decoration: DarkInputBox.decoration(
             hintText: hint,
             prefixText: prefixText,

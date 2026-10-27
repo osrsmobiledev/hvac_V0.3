@@ -27,7 +27,8 @@ void main() {
     expect(find.text(AppDictionary.headerMeetgegevens), findsOneWidget);
 
     // Verify direct title 'Rookgassen' is centered without sub-accordion
-    final titleWidget = tester.widget<Text>(find.text(AppDictionary.headerRookgassen));
+    final titleWidget =
+        tester.widget<Text>(find.text(AppDictionary.headerRookgassen));
     expect(titleWidget.textAlign, TextAlign.center);
 
     // Verify QR scan button in the header row
