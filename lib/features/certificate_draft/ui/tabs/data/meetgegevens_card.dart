@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hvac_app/app/localization/app_dictionary.dart';
+import 'package:hvac_app/features/certificate_draft/domain/measurement_slot_draft.dart';
 import '../../widgets/bento_main_section.dart';
 import 'rookgassen_card.dart';
 
@@ -9,11 +10,15 @@ import 'rookgassen_card.dart';
 /// - Reuses [BentoMainSection] for the standardized gold-tinted header and animated dropdown.
 /// - Hosts the [RookgassenCard] underneath without a nested dropdown sub-box.
 class MeetgegevensCard extends StatelessWidget {
+  final MeasurementSlotDraft? measurement;
   final VoidCallback? onScanQrPressed;
+  final VoidCallback? onClearPressed;
 
   const MeetgegevensCard({
     super.key,
+    this.measurement,
     this.onScanQrPressed,
+    this.onClearPressed,
   });
 
   @override
@@ -21,7 +26,9 @@ class MeetgegevensCard extends StatelessWidget {
     return BentoMainSection(
       title: AppDictionary.headerMeetgegevens,
       child: RookgassenCard(
+        measurement: measurement,
         onScanQrPressed: onScanQrPressed,
+        onClearPressed: onClearPressed,
       ),
     );
   }

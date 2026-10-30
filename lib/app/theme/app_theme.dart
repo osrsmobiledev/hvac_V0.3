@@ -21,6 +21,16 @@ abstract final class AppTheme {
     side: const BorderSide(color: AppColors.hairlineBorder, width: 1.0),
   );
 
+  /// Unified responsive padding for all workflow tab views.
+  ///
+  /// Guarantees that the top Bento card header sits at the exact same vertical
+  /// pixel position across all tabs (12px below the top TabBar).
+  static const EdgeInsets tabViewPadding =
+      EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 32.0);
+
+  /// Standard vertical spacing between consecutive Bento cards on a workflow tab.
+  static const double bentoCardSpacing = 14.0;
+
   /// Constructs the global ThemeData using the preferred theme tokens.
   static ThemeData get darkTheme {
     return ThemeData(

@@ -1,6 +1,6 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:hvac_app/app/theme/app_colors.dart';
+import 'package:hvac_app/core/utils/debouncer.dart';
 import 'package:hvac_app/features/certificate_draft/data/draft_repository.dart';
 import 'package:hvac_app/features/customers_installations/data/customer_repository.dart';
 import 'package:hvac_app/features/customers_installations/domain/customer.dart';
@@ -36,7 +36,7 @@ class _KlantTabState extends State<KlantTab>
   int? _draftVisitId;
   bool _isEditing = false;
   bool _isLoading = true;
-  Timer? _debounceTimer;
+  final _debouncer = Debouncer(duration: const Duration(milliseconds: 500));
 
   bool get _hasCustomer =>
       _activeCustomer != null ||
@@ -58,7 +58,7 @@ class _KlantTabState extends State<KlantTab>
 
   @override
   void dispose() {
-    _debounceTimer?.cancel();
+    _debouncer.dispose();
     _controllers.dispose();
     super.dispose();
   }
@@ -91,26 +91,29 @@ class _KlantTabState extends State<KlantTab>
   }
 
   void _onFormChanged() {
-    _debounceTimer?.cancel();
-    _debounceTimer = Timer(const Duration(milliseconds: 500), _saveToDatabase);
+    _debouncer.run(_saveToDatabase);
   }
 
   Future<void> _saveToDatabase() async {
-    final draftId = _draftVisitId ?? (await _coord.loadDraftData()).draftId;
-    _draftVisitId = draftId;
-    final res = await _coord.saveFromControllers(
-      draftId: draftId,
-      controllers: _controllers,
-      activeCustomer: _activeCustomer,
-      activeLocation: _activeLocation,
-      role: _role,
-      isSameAsCustomer: _isSameAsCustomer,
-    );
-    if (res != null && mounted) {
-      setState(() {
-        _activeCustomer = res.customer;
-        _activeLocation = res.location;
-      });
+    try {
+      final draftId = _draftVisitId ?? (await _coord.loadDraftData()).draftId;
+      _draftVisitId = draftId;
+      final res = await _coord.saveFromControllers(
+        draftId: draftId,
+        controllers: _controllers,
+        activeCustomer: _activeCustomer,
+        activeLocation: _activeLocation,
+        role: _role,
+        isSameAsCustomer: _isSameAsCustomer,
+      );
+      if (res != null && mounted) {
+        setState(() {
+          _activeCustomer = res.customer;
+          _activeLocation = res.location;
+        });
+      }
+    } catch (e, stack) {
+      debugPrint('[KlantTab] _saveToDatabase error: $e\n$stack');
     }
   }
 
@@ -128,12 +131,16 @@ class _KlantTabState extends State<KlantTab>
         _controllers.populateCustomer(picked);
         _isEditing = false;
       });
-      final loc = await _coord.linkPickedCustomer(
-        draftId: _draftVisitId,
-        customer: picked,
-      );
-      if (loc != null && mounted) {
-        _applyLocation(loc, picked.street, picked.houseNumber);
+      try {
+        final loc = await _coord.linkPickedCustomer(
+          draftId: _draftVisitId,
+          customer: picked,
+        );
+        if (loc != null && mounted) {
+          _applyLocation(loc, picked.street, picked.houseNumber);
+        }
+      } catch (e, stack) {
+        debugPrint('[KlantTab] linkPickedCustomer error: $e\n$stack');
       }
     }
   }
@@ -192,7 +199,7 @@ class _KlantTabState extends State<KlantTab>
     _snapshot?.restoreInto(_controllers);
   }
 
-  void _clearCustomerForm() {
+  Future<void> _clearCustomerForm() async {
     setState(() {
       _activeCustomer = null;
       _activeLocation = null;
@@ -200,7 +207,13 @@ class _KlantTabState extends State<KlantTab>
       _role = 'owner';
       _isSameAsCustomer = true;
     });
-    if (_draftVisitId != null) _coord.unlinkCustomer(_draftVisitId!);
+    if (_draftVisitId != null) {
+      try {
+        await _coord.unlinkCustomer(_draftVisitId!);
+      } catch (e, stack) {
+        debugPrint('[KlantTab] unlinkCustomer error: $e\n$stack');
+      }
+    }
   }
 
   @override

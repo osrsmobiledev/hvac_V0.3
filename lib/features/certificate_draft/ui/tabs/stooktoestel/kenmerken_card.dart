@@ -34,6 +34,8 @@ class KenmerkenCard extends StatelessWidget {
   final ValueChanged<String> onFuelSubtypeChanged;
   final ValueChanged<String> onFuelOtherTextChanged;
   final ValueChanged<String> onBurnerTechChanged;
+  final ValueChanged<String>? onTypeBCodeChanged;
+  final ValueChanged<String>? onTypeCCodeChanged;
 
   const KenmerkenCard({
     super.key,
@@ -55,6 +57,8 @@ class KenmerkenCard extends StatelessWidget {
     required this.onFuelSubtypeChanged,
     required this.onFuelOtherTextChanged,
     required this.onBurnerTechChanged,
+    this.onTypeBCodeChanged,
+    this.onTypeCCodeChanged,
   });
 
   @override
@@ -80,6 +84,8 @@ class KenmerkenCard extends StatelessWidget {
             typeBController: typeBController,
             typeCController: typeCController,
             onCentraalTypeChanged: onCentraalTypeChanged,
+            onTypeBCodeChanged: onTypeBCodeChanged,
+            onTypeCCodeChanged: onTypeCCodeChanged,
           ),
           const SizedBox(height: 16),
 

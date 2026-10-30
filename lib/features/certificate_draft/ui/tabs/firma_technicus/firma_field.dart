@@ -17,6 +17,7 @@ class FirmaField extends StatelessWidget {
   final TextInputType? keyboardType;
   final TextInputAction textInputAction;
   final VoidCallback onChanged;
+  final ValueChanged<String>? onSubmitted;
 
   const FirmaField({
     super.key,
@@ -31,6 +32,7 @@ class FirmaField extends StatelessWidget {
     this.keyboardType,
     this.textInputAction = TextInputAction.next,
     required this.onChanged,
+    this.onSubmitted,
   });
 
   @override
@@ -44,6 +46,7 @@ class FirmaField extends StatelessWidget {
           key: fieldKey,
           controller: controller,
           onChanged: (_) => onChanged(),
+          onFieldSubmitted: onSubmitted,
           validator: validator,
           autovalidateMode: autovalidateMode,
           keyboardType: keyboardType,

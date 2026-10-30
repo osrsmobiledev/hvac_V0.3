@@ -1,7 +1,9 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:hvac_app/app/theme/app_colors.dart';
+import 'package:hvac_app/app/theme/app_theme.dart';
 import 'package:hvac_app/core/utils/belgian_formatters.dart';
+import 'package:hvac_app/core/utils/debouncer.dart';
+import 'package:hvac_app/core/widgets/workflow_tab_container.dart';
 import '../../data/draft_repository.dart';
 import '../../data/technician_profile_repository.dart';
 import '../../domain/technician_profile.dart';
@@ -16,11 +18,13 @@ import 'firma_technicus/technician_section.dart';
 /// - Persists visit date and BO2 Time Spinner timings to active `maintenance_visits` draft.
 /// - Scroll and form state preserved across tab navigation.
 class FirmaTechnicusTab extends StatefulWidget {
+  final int? visitId;
   final TechnicianProfileRepository? profileRepository;
   final DraftRepository? draftRepository;
 
   const FirmaTechnicusTab({
     super.key,
+    this.visitId,
     this.profileRepository,
     this.draftRepository,
   });
@@ -56,7 +60,7 @@ class _FirmaTechnicusTabState extends State<FirmaTechnicusTab>
 
   int? _visitId;
   bool _isLoading = true;
-  Timer? _profileDebounceTimer;
+  final _debouncer = Debouncer();
 
   @override
   bool get wantKeepAlive => true;
@@ -70,8 +74,16 @@ class _FirmaTechnicusTabState extends State<FirmaTechnicusTab>
   }
 
   @override
+  void didUpdateWidget(FirmaTechnicusTab oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.visitId != widget.visitId) {
+      _loadData();
+    }
+  }
+
+  @override
   void dispose() {
-    _profileDebounceTimer?.cancel();
+    _debouncer.dispose();
     _nameController.dispose();
     _streetController.dispose();
     _houseNumberController.dispose();
@@ -94,7 +106,10 @@ class _FirmaTechnicusTabState extends State<FirmaTechnicusTab>
   Future<void> _loadData() async {
     try {
       final profile = await _profileRepo.getProfile();
-      final draft = await _draftRepo.getOrCreateActiveDraft();
+      final draft = widget.visitId != null
+          ? await _draftRepo.getDraftById(widget.visitId!) ??
+              await _draftRepo.getOrCreateActiveDraft()
+          : await _draftRepo.getOrCreateActiveDraft();
 
       if (mounted) {
         setState(() {
@@ -138,39 +153,44 @@ class _FirmaTechnicusTabState extends State<FirmaTechnicusTab>
   }
 
   void _onProfileChanged() {
-    _profileDebounceTimer?.cancel();
-    _profileDebounceTimer = Timer(const Duration(milliseconds: 300), () {
-      _saveProfile();
-    });
+    _debouncer.run(_saveProfile);
   }
 
   Future<void> _saveProfile() async {
-    final profile = TechnicianProfile(
-      companyName: _nameController.text.trim(),
-      street: _streetController.text.trim(),
-      houseNumber: _houseNumberController.text.trim(),
-      boxNumber: _boxNumberController.text.trim(),
-      postalCode: _postalCodeController.text.trim(),
-      city: _cityController.text.trim(),
-      phone: BelgianFormatters.normalizePhone(_phoneController.text),
-      email: _emailController.text.trim(),
-      kboNumber: BelgianFormatters.normalizeKbo(_kboNumberController.text),
-      technicianFirstName: _firstNameController.text.trim(),
-      technicianLastName: _lastNameController.text.trim(),
-      gvNumber: _gvController.text.trim(),
-      tvNumber: _tvController.text.trim(),
-    );
-    await _profileRepo.saveProfile(profile);
+    try {
+      final profile = TechnicianProfile(
+        companyName: _nameController.text.trim(),
+        street: _streetController.text.trim(),
+        houseNumber: _houseNumberController.text.trim(),
+        boxNumber: _boxNumberController.text.trim(),
+        postalCode: _postalCodeController.text.trim(),
+        city: _cityController.text.trim(),
+        phone: BelgianFormatters.normalizePhone(_phoneController.text),
+        email: _emailController.text.trim(),
+        kboNumber: BelgianFormatters.normalizeKbo(_kboNumberController.text),
+        technicianFirstName: _firstNameController.text.trim(),
+        technicianLastName: _lastNameController.text.trim(),
+        gvNumber: _gvController.text.trim(),
+        tvNumber: _tvController.text.trim(),
+      );
+      await _profileRepo.saveProfile(profile);
+    } catch (e, stack) {
+      debugPrint('[FirmaTechnicusTab] _saveProfile error: $e\n$stack');
+    }
   }
 
   Future<void> _saveTimings() async {
     if (_visitId == null) return;
-    await _draftRepo.updateVisitTimings(
-      visitId: _visitId!,
-      visitDate: _dateController.text.trim(),
-      startTime: _startTimeController.text.trim(),
-      endTime: _endTimeController.text.trim(),
-    );
+    try {
+      await _draftRepo.updateVisitTimings(
+        visitId: _visitId!,
+        visitDate: _dateController.text.trim(),
+        startTime: _startTimeController.text.trim(),
+        endTime: _endTimeController.text.trim(),
+      );
+    } catch (e, stack) {
+      debugPrint('[FirmaTechnicusTab] _saveTimings error: $e\n$stack');
+    }
   }
 
   @override
@@ -183,47 +203,35 @@ class _FirmaTechnicusTabState extends State<FirmaTechnicusTab>
       );
     }
 
-    return GestureDetector(
-      onTap: () => FocusScope.of(context).unfocus(),
-      child: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 600),
-          child: ListView(
-            key: const PageStorageKey<String>('firma_technicus_tab_scroll'),
-            padding: const EdgeInsets.symmetric(
-              horizontal: 16.0,
-              vertical: 16.0,
-            ),
-            children: [
-              CompanySection(
-                nameController: _nameController,
-                streetController: _streetController,
-                houseNumberController: _houseNumberController,
-                boxNumberController: _boxNumberController,
-                postalCodeController: _postalCodeController,
-                cityController: _cityController,
-                phoneController: _phoneController,
-                emailController: _emailController,
-                kboNumberController: _kboNumberController,
-                onChanged: _onProfileChanged,
-              ),
-              const SizedBox(height: 18),
-              TechnicianSection(
-                firstNameController: _firstNameController,
-                lastNameController: _lastNameController,
-                gvController: _gvController,
-                tvController: _tvController,
-                dateController: _dateController,
-                startTimeController: _startTimeController,
-                endTimeController: _endTimeController,
-                onProfileChanged: _onProfileChanged,
-                onTimingsChanged: _saveTimings,
-              ),
-              const SizedBox(height: 32),
-            ],
-          ),
+    return WorkflowTabContainer(
+      scrollKey: 'firma_technicus_tab_scroll',
+      children: [
+        CompanySection(
+          nameController: _nameController,
+          streetController: _streetController,
+          houseNumberController: _houseNumberController,
+          boxNumberController: _boxNumberController,
+          postalCodeController: _postalCodeController,
+          cityController: _cityController,
+          phoneController: _phoneController,
+          emailController: _emailController,
+          kboNumberController: _kboNumberController,
+          onChanged: _onProfileChanged,
+          onSubmitted: _debouncer.flush,
         ),
-      ),
+        const SizedBox(height: AppTheme.bentoCardSpacing),
+        TechnicianSection(
+          firstNameController: _firstNameController,
+          lastNameController: _lastNameController,
+          gvController: _gvController,
+          tvController: _tvController,
+          dateController: _dateController,
+          startTimeController: _startTimeController,
+          endTimeController: _endTimeController,
+          onProfileChanged: _onProfileChanged,
+          onTimingsChanged: _saveTimings,
+        ),
+      ],
     );
   }
 }

@@ -10,7 +10,7 @@ import 'package:sqflite/sqflite.dart';
 /// 5. maintenance_visits (Attest draft, measurements, assessments, PDF & VEKA state)
 /// 6. measurement_captures (Flue gas data captured manually or via Eurolyzer QR)
 abstract final class DatabaseSchema {
-  static const int version = 3;
+  static const int version = 5;
   static const String databaseName = 'hvac_service.db';
 
   /// Executes all CREATE TABLE and CREATE INDEX statements on database initialization.
@@ -129,12 +129,33 @@ abstract final class DatabaseSchema {
         end_time TEXT,
         operating_pressure_bar REAL,
         operating_temp_celsius REAL,
+        gas_pressure_meter_mbar REAL,
+        gas_pressure_block_mbar REAL,
+        gas_pressure_burner_bed_mbar REAL,
+        nozzle_brand_type TEXT,
+        nozzle_flow_rate TEXT,
+        nozzle_angle_degrees REAL,
+        pump_pressure_bar REAL,
+        smoke_index_bacharach INTEGER,
+        smoke_index_ok INTEGER,
+        no_oil_trace_ok INTEGER,
+        no_unwanted_condensation_ok INTEGER,
+        rarely_polluting_smoke_ok INTEGER,
+        flue_pressure_ok INTEGER,
+        flue_tightness_ok INTEGER,
+        fuel_supply_tightness_ok INTEGER,
         safety_valve_ok INTEGER,
         air_supply_ok INTEGER,
         flue_gas_discharge_ok INTEGER,
         ventilation_ok INTEGER,
         overall_assessment TEXT,
         safety_conclusion TEXT,
+        verbrandingscontrole TEXT,
+        stooktoestel_conform TEXT,
+        rookgasafvoerkanaal_conform TEXT,
+        stookplaats_conform TEXT,
+        toestel_werking_goed TEXT,
+        toestel_werking_veilig TEXT,
         next_inspection_date TEXT,
         defects_notes TEXT,
         general_remarks TEXT,
@@ -170,10 +191,13 @@ abstract final class DatabaseSchema {
         co2_percent REAL,
         co_ppm REAL,
         co_corrected_ppm REAL,
+        co_mg_kwh REAL,
+        co_ok INTEGER,
         flue_temp_celsius REAL,
         ambient_temp_celsius REAL,
         net_temp_celsius REAL,
         combustion_efficiency_hi REAL,
+        combustion_efficiency_hi_ok INTEGER,
         combustion_efficiency_hs REAL,
         flue_pressure_pa REAL,
         excess_air REAL,
@@ -197,5 +221,7 @@ abstract final class DatabaseSchema {
         'CREATE INDEX idx_vis_cust ON maintenance_visits (customer_id);');
     await db.execute(
         'CREATE INDEX idx_meas_vis ON measurement_captures (visit_id);');
+    await db.execute(
+        'CREATE UNIQUE INDEX IF NOT EXISTS idx_meas_vis_slot ON measurement_captures (visit_id, slot);');
   }
 }

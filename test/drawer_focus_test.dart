@@ -53,10 +53,15 @@ void main() {
       addTearDown(() => tester.view.resetPhysicalSize());
 
       await tester.pumpWidget(buildTestApp());
+      await tester.runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 60)));
       await tester.pumpAndSettle();
 
       // Navigate to Verbrandingsattest
       await tester.tap(find.text('Verbrandingsattest'));
+      await tester.pump();
+      await tester.runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 100)));
       await tester.pumpAndSettle();
 
       // Scroll TabBar to reveal Stooktoestel tab (Tab 5)
@@ -95,9 +100,14 @@ void main() {
       addTearDown(() => tester.view.resetPhysicalSize());
 
       await tester.pumpWidget(buildTestApp());
+      await tester.runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 60)));
       await tester.pumpAndSettle();
 
       await tester.tap(find.text('Verbrandingsattest'));
+      await tester.pump();
+      await tester.runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 100)));
       await tester.pumpAndSettle();
 
       final stookTab = find.widgetWithText(Tab, 'Stooktoestel');

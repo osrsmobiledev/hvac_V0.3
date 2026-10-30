@@ -53,6 +53,21 @@ class DraftRepository {
     );
   }
 
+  /// Retrieves a specific draft visit by its [visitId], or null if not found.
+  Future<DraftVisit?> getDraftById(int visitId, {Database? dbOverride}) async {
+    final db = dbOverride ?? await _appDatabase.database;
+    final rows = await db.query(
+      'maintenance_visits',
+      where: 'id = ?',
+      whereArgs: [visitId],
+      limit: 1,
+    );
+    if (rows.isNotEmpty) {
+      return DraftVisit.fromMap(rows.first);
+    }
+    return null;
+  }
+
   /// Updates the Tab 2 (Start) fields for the active draft visit.
   Future<void> updateStartTabDraft({
     required int visitId,

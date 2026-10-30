@@ -3,11 +3,14 @@ import 'package:hvac_app/app/localization/app_dictionary.dart';
 import 'package:hvac_app/app/shell/app_shell_controller.dart';
 import 'package:hvac_app/app/theme/app_colors.dart';
 import 'package:hvac_app/app/theme/app_theme.dart';
+import '../data/draft_repository.dart';
+import 'boiler_draft_notifier.dart';
 import 'tabs/data_tab.dart';
 import 'tabs/firma_technicus_tab.dart';
 import 'tabs/klant_tab.dart';
 import 'tabs/start_tab.dart';
 import 'tabs/stooktoestel_tab.dart';
+import 'tabs/meting_tab.dart';
 
 /// The 7-tab workflow screen for 'Verbrandingsattest Vlaanderen'.
 ///
@@ -32,6 +35,9 @@ class VerbrandingsattestScreen extends StatefulWidget {
 class _VerbrandingsattestScreenState extends State<VerbrandingsattestScreen>
     with SingleTickerProviderStateMixin {
   late final TabController _tabController;
+  late final BoilerDraftNotifier _boilerNotifier;
+  final DraftRepository _draftRepository = DraftRepository();
+  int _activeVisitId = 1;
 
   /// Tab titles sourced from [AppDictionary.combustionTabs] to keep UI labels
   /// centralized in the single Dutch dictionary. Edit labels there, not here.
@@ -41,11 +47,26 @@ class _VerbrandingsattestScreenState extends State<VerbrandingsattestScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: _tabTitles.length, vsync: this);
+    _boilerNotifier = BoilerDraftNotifier()..loadInitial();
+    _resolveActiveDraftVisit();
+  }
+
+  Future<void> _resolveActiveDraftVisit() async {
+    try {
+      final draft = await _draftRepository.getOrCreateActiveDraft();
+      if (mounted && draft.id != _activeVisitId) {
+        setState(() => _activeVisitId = draft.id);
+      }
+    } catch (e, stack) {
+      debugPrint(
+          '[VerbrandingsattestScreen] _resolveActiveDraftVisit error: $e\n$stack');
+    }
   }
 
   @override
   void dispose() {
     _tabController.dispose();
+    _boilerNotifier.dispose();
     super.dispose();
   }
 
@@ -103,33 +124,32 @@ class _VerbrandingsattestScreenState extends State<VerbrandingsattestScreen>
         Expanded(
           child: TabBarView(
             controller: _tabController,
-            children: const [
+            children: [
               // Tab 1: Data (Active in Slice 2.1)
-              DataTab(),
+              DataTab(visitId: _activeVisitId),
 
               // Tab 2: Start (Active in Slice 2.2)
-              StartTab(),
+              const StartTab(),
 
               // Tab 3: Firma - Technicus (Active in Slice 2.3)
-              FirmaTechnicusTab(),
+              const FirmaTechnicusTab(),
 
               // Tab 4: Klant (Active in Slice 2.4)
-              KlantTab(),
+              const KlantTab(),
 
               // Tab 5: Stooktoestel (Active in Slice 3.1)
-              StooktoestelTab(),
+              StooktoestelTab(boilerNotifier: _boilerNotifier),
 
-              // Tab 6: Meting (Slice 3.2)
-              _DraftTabPlaceholder(
-                tabName: 'Meting',
-                sliceInfo: 'Wordt geïmplementeerd in Slice 3.2',
-                icon: Icons.speed_rounded,
+              // Tab 6: Meting (Active in Slice 3.2)
+              MetingTab(
+                visitId: _activeVisitId,
+                boilerNotifier: _boilerNotifier,
               ),
 
               // Tab 7: Eindbeoordeling (Slice 3.3)
-              _DraftTabPlaceholder(
-                tabName: 'Eindbeoordeling',
-                sliceInfo: 'Wordt geïmplementeerd in Slice 3.3',
+              const _DraftTabPlaceholder(
+                tabName: AppDictionary.tabEindbeoordeling,
+                sliceInfo: AppDictionary.placeholderEindbeoordelingPending,
                 icon: Icons.verified_rounded,
               ),
             ],

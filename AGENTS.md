@@ -4,7 +4,7 @@
 Do NOT read every Markdown file in the workspace on every turn. Load context selectively:
 1. **Always check first:** Read `ROADMAP.md` (Current Handoff section) to see the active milestone and next slice.
 2. **When changing data models, storage, or packages:** Read `ARCHITECTURE.md`.
-3. **When implementing a specific tab, form field, PDF section, or VEKA rule:** Read only the relevant section of `VERBRANDINGSATTEST_WORKFLOW.md` and `PROJECT_BRIEF.md`.
+3. **When implementing a specific tab, form field, PDF section, or VEKA rule:** Read only the relevant section of `VERBRANDINGSATTEST_WORKFLOW.md`, `PROJECT_BRIEF.md`, and `references/official/FLEMISH_REGULATORY_AND_VEKA_NORMS.md`.
 4. **Reuse `references/legacy/code/` layouts:** The owner likes the visual layout and styling of the legacy PDF builders, time spinner, theme, and localization dictionary. Preserve their visual design while re-wiring their broken data inputs according to `ARCHITECTURE.md`.
 
 ## 2. How to Collaborate with the Owner

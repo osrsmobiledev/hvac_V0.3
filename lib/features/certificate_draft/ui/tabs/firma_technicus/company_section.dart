@@ -25,6 +25,7 @@ class CompanySection extends StatelessWidget {
   final TextEditingController emailController;
   final TextEditingController kboNumberController;
   final VoidCallback onChanged;
+  final VoidCallback? onSubmitted;
 
   const CompanySection({
     super.key,
@@ -38,6 +39,7 @@ class CompanySection extends StatelessWidget {
     required this.emailController,
     required this.kboNumberController,
     required this.onChanged,
+    this.onSubmitted,
   });
 
   @override
@@ -158,6 +160,7 @@ class CompanySection extends StatelessWidget {
             keyboardType: TextInputType.number,
             textInputAction: TextInputAction.done,
             onChanged: onChanged,
+            onSubmitted: onSubmitted != null ? (_) => onSubmitted!() : null,
           ),
         ],
       ),

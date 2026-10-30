@@ -137,7 +137,7 @@ class _NbnTypePickerSheetState extends State<_NbnTypePickerSheet> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Aansluiting Type ${widget.typeLetter} (${isTypeC ? 'Gesloten' : 'Open'})',
+                            '${AppDictionary.nbnModalTitlePrefix} ${widget.typeLetter} (${isTypeC ? AppDictionary.nbnModalClosed : AppDictionary.nbnModalOpen})',
                             style: const TextStyle(
                               fontFamily: AppTheme.fontFamily,
                               color: Colors.white,
@@ -203,7 +203,7 @@ class _NbnTypePickerSheetState extends State<_NbnTypePickerSheet> {
                           keyboardType: TextInputType.text,
                           style: DarkInputBox.inputStyle,
                           decoration: DarkInputBox.decoration(
-                            hintText: 'Ander getal (bv. 63 of 83)...',
+                            hintText: AppDictionary.hintCustomNbnCode,
                             prefixText: widget.typeLetter,
                           ),
                           onChanged: (val) {
@@ -225,7 +225,7 @@ class _NbnTypePickerSheetState extends State<_NbnTypePickerSheet> {
                         ),
                         minimumSize: const Size(64, 44),
                       ),
-                      child: const Text('OK',
+                      child: const Text(AppDictionary.btnOk,
                           style: TextStyle(fontWeight: FontWeight.bold)),
                     ),
                   ],

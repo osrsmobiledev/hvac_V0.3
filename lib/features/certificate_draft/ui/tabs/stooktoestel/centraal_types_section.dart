@@ -10,6 +10,8 @@ class CentraalTypesSection extends StatelessWidget {
   final TextEditingController typeBController;
   final TextEditingController typeCController;
   final ValueChanged<String> onCentraalTypeChanged;
+  final ValueChanged<String>? onTypeBCodeChanged;
+  final ValueChanged<String>? onTypeCCodeChanged;
 
   const CentraalTypesSection({
     super.key,
@@ -18,6 +20,8 @@ class CentraalTypesSection extends StatelessWidget {
     required this.typeBController,
     required this.typeCController,
     required this.onCentraalTypeChanged,
+    this.onTypeBCodeChanged,
+    this.onTypeCCodeChanged,
   });
 
   @override
@@ -45,6 +49,7 @@ class CentraalTypesSection extends StatelessWidget {
             hint: AppDictionary.hintSubtypeB,
             controller: typeBController,
             onSelect: () => onCentraalTypeChanged('B'),
+            onCodeChanged: onTypeBCodeChanged,
           ),
           const SizedBox(height: 8),
 
@@ -58,6 +63,7 @@ class CentraalTypesSection extends StatelessWidget {
             hint: AppDictionary.hintSubtypeC,
             controller: typeCController,
             onSelect: () => onCentraalTypeChanged('C'),
+            onCodeChanged: onTypeCCodeChanged,
           ),
         ],
       ),

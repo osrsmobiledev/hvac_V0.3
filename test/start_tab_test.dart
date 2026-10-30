@@ -196,5 +196,44 @@ void main() {
       final textWidget = tester.widget<Text>(textFinder);
       expect(textWidget.maxLines, equals(1));
     });
+
+    testWidgets(
+        'Submitting sequence number immediately saves without waiting for debounce',
+        (tester) async {
+      await pumpStartTab(tester);
+
+      // Enter text and immediately submit (tap Done on keyboard)
+      await tester.enterText(find.byType(TextField), 'IMMEDIATE-777');
+      await tester.testTextInput.receiveAction(TextInputAction.done);
+      await tester.pump();
+
+      late DraftVisit draft;
+      await tester.runAsync(() async {
+        draft = await repository.getOrCreateActiveDraft();
+      });
+
+      // Should be saved immediately without 300ms wait
+      expect(draft.attestNumber, equals('IMMEDIATE-777'));
+    });
+
+    testWidgets('Disposing StartTab flushes pending debounce input to SQLite',
+        (tester) async {
+      await pumpStartTab(tester);
+
+      // Enter text (triggers 300ms timer)
+      await tester.enterText(find.byType(TextField), 'FLUSH-ON-DISPOSE');
+
+      // Immediately unmount/replace widget BEFORE debounce expires (only 50ms)
+      await tester.pump(const Duration(milliseconds: 50));
+      await tester.pumpWidget(const SizedBox.shrink());
+
+      late DraftVisit draft;
+      await tester.runAsync(() async {
+        draft = await repository.getOrCreateActiveDraft();
+      });
+
+      // Flushed to database during dispose
+      expect(draft.attestNumber, equals('FLUSH-ON-DISPOSE'));
+    });
   });
 }

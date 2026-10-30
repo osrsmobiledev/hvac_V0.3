@@ -5,6 +5,7 @@ import 'package:hvac_app/app/theme/app_theme.dart';
 import 'package:hvac_app/core/widgets/tactical_confirm_dialog.dart';
 import 'package:hvac_app/core/widgets/tactical_dialog_button.dart';
 import 'package:hvac_app/core/widgets/tactical_dialog_window.dart';
+import 'package:hvac_app/core/widgets/tactical_feedback.dart';
 import 'package:hvac_app/core/widgets/tactical_search_bar.dart';
 import 'package:hvac_app/features/customers_installations/data/customer_repository.dart';
 import 'package:hvac_app/features/customers_installations/domain/customer.dart';
@@ -122,42 +123,10 @@ class _CustomerSearchModalState extends State<CustomerSearchModal> {
   }
 
   void _showDeletedToast(String name) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          backgroundColor: const Color(0xFF1E1414),
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-            side: BorderSide(
-              color: AppColors.errorRed.withValues(alpha: 0.6),
-              width: 1.2,
-            ),
-          ),
-          content: Row(
-            children: [
-              const Icon(Icons.delete_sweep_rounded,
-                  color: AppColors.errorRed, size: 22),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  '$name: ${AppDictionary.toastCustomerDeleted}',
-                  style: const TextStyle(
-                    fontFamily: AppTheme.fontFamily,
-                    color: Colors.white,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ],
-          ),
-          duration: const Duration(milliseconds: 2400),
-        ),
-      );
+    TacticalFeedback.showError(
+      context,
+      '$name: ${AppDictionary.toastCustomerDeleted}',
+    );
   }
 
   @override

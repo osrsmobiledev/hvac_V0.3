@@ -9,10 +9,10 @@ class AppColors {
   static const Color oledBase = Color(0xFF0A0A0A);
   static const Color charcoalGlass = Color(0xFF161616);
   static const Color scaffoldBackground = Color(0xFF121212);
-  
+
   // TUNE HERE [UI/UX]: Accent & Focus Elements
   static const Color goldAccent = Color(0xFFFFB300);
-  
+
   // TUNE HERE [UI/UX]: Validation Alerts (Government API Status)
   static const Color errorRed = Color(0xFFFF5252);
   static const Color lockedGreen = Color(0xFF69F0AE);

@@ -43,6 +43,7 @@ class DarkInputBox extends StatelessWidget {
     String? prefixText,
     TextStyle? prefixStyle,
     Widget? prefixIcon,
+    Widget? suffix,
     Widget? suffixIcon,
     bool readOnly = false,
     EdgeInsetsGeometry? contentPadding,
@@ -68,7 +69,11 @@ class DarkInputBox extends StatelessWidget {
       prefixIconConstraints: effectivePrefix != null
           ? const BoxConstraints(minWidth: 0, minHeight: 0)
           : null,
+      suffix: suffix,
       suffixIcon: suffixIcon,
+      suffixIconConstraints: suffixIcon != null
+          ? const BoxConstraints(minWidth: 0, minHeight: 0)
+          : null,
       contentPadding: contentPadding ??
           EdgeInsets.only(
             left: prefixText != null ? 4.0 : 14.0,

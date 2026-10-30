@@ -1,3 +1,5 @@
+export 'meting_dictionary.dart';
+
 /// Centralized Single Source of Truth for Dutch (Flemish) UI strings.
 /// Ensures compliance with official VEKA terminology.
 abstract final class AppDictionary {
@@ -43,6 +45,7 @@ abstract final class AppDictionary {
   static const String tooltipScanEurolyzerQr = 'Eurolyzer QR scannen';
 
   // --- Verbrandingsattest Applet Tabs ---
+  static const String tabEindbeoordeling = 'Eindbeoordeling';
   static const List<String> combustionTabs = [
     'Data',
     'Start',
@@ -50,12 +53,13 @@ abstract final class AppDictionary {
     'Klant',
     'Stooktoestel',
     'Meting',
-    'Eindbeoordeling'
+    tabEindbeoordeling,
   ];
 
   // --- Setup / Start Tab ---
   static const String headerActivity = 'Activiteit';
   static const String lblSequenceNumber = 'Volgnummer Attest';
+  static const String hintSequenceNumber = 'bv. 2026-001';
   static const String activityCommissioningShort = 'Keuring';
   static const String captionCommissioning = '* vóór 1e ingebruikname';
   static const String activityMaintenance = 'Onderhoud';
@@ -220,4 +224,16 @@ abstract final class AppDictionary {
   static const String hintScanBranderSerial = 'Scan Brander Fabricatienummer';
   static const String placeholderQrScannerPending =
       'Eurolyzer QR Scanner wordt geactiveerd in Slice 3.2';
+
+  // --- NBN CR 1749 & Scanner Modal Strings ---
+  static const String nbnModalTitlePrefix = 'Aansluiting Type';
+  static const String nbnModalClosed = 'Gesloten';
+  static const String nbnModalOpen = 'Open';
+  static const String hintCustomNbnCode = 'Ander getal (bv. 63 of 83)...';
+  static const String scannerCameraUnavailable =
+      'Camera niet beschikbaar.\nVoer het nummer handmatig in.';
+  static const String scannerInstruction =
+      'Plaats de barcode of QR-code van het toestel in het kader.';
+  static const String placeholderEindbeoordelingPending =
+      'Wordt geïmplementeerd in Slice 3.3';
 }

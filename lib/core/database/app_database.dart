@@ -70,6 +70,57 @@ class AppDatabase {
             }
           }
         }
+        if (oldVersion < 4) {
+          // Columns added for Slice 3.2: Meting & measurement captures
+          const metingColumns = [
+            'ALTER TABLE maintenance_visits ADD COLUMN gas_pressure_meter_mbar REAL;',
+            'ALTER TABLE maintenance_visits ADD COLUMN gas_pressure_block_mbar REAL;',
+            'ALTER TABLE maintenance_visits ADD COLUMN gas_pressure_burner_bed_mbar REAL;',
+            'ALTER TABLE maintenance_visits ADD COLUMN nozzle_brand_type TEXT;',
+            'ALTER TABLE maintenance_visits ADD COLUMN nozzle_flow_rate TEXT;',
+            'ALTER TABLE maintenance_visits ADD COLUMN nozzle_angle_degrees REAL;',
+            'ALTER TABLE maintenance_visits ADD COLUMN pump_pressure_bar REAL;',
+            'ALTER TABLE maintenance_visits ADD COLUMN smoke_index_bacharach INTEGER;',
+            'ALTER TABLE maintenance_visits ADD COLUMN smoke_index_ok INTEGER;',
+            'ALTER TABLE maintenance_visits ADD COLUMN no_oil_trace_ok INTEGER;',
+            'ALTER TABLE maintenance_visits ADD COLUMN no_unwanted_condensation_ok INTEGER;',
+            'ALTER TABLE maintenance_visits ADD COLUMN rarely_polluting_smoke_ok INTEGER;',
+            'ALTER TABLE maintenance_visits ADD COLUMN flue_pressure_ok INTEGER;',
+            'ALTER TABLE maintenance_visits ADD COLUMN flue_tightness_ok INTEGER;',
+            'ALTER TABLE maintenance_visits ADD COLUMN fuel_supply_tightness_ok INTEGER;',
+            'ALTER TABLE measurement_captures ADD COLUMN co_mg_kwh REAL;',
+            'ALTER TABLE measurement_captures ADD COLUMN co_ok INTEGER;',
+            'ALTER TABLE measurement_captures ADD COLUMN combustion_efficiency_hi_ok INTEGER;',
+            'CREATE UNIQUE INDEX IF NOT EXISTS idx_meas_vis_slot ON measurement_captures (visit_id, slot);',
+          ];
+          for (final query in metingColumns) {
+            try {
+              await db.execute(query);
+            } catch (e, stack) {
+              debugPrint(
+                  '[AppDatabase] v4 migration query warning: $e\n$stack');
+            }
+          }
+        }
+        if (oldVersion < 5) {
+          // Columns added for official VEKA JSON API schema alignment
+          const vekaColumns = [
+            'ALTER TABLE maintenance_visits ADD COLUMN verbrandingscontrole TEXT;',
+            'ALTER TABLE maintenance_visits ADD COLUMN stooktoestel_conform TEXT;',
+            'ALTER TABLE maintenance_visits ADD COLUMN rookgasafvoerkanaal_conform TEXT;',
+            'ALTER TABLE maintenance_visits ADD COLUMN stookplaats_conform TEXT;',
+            'ALTER TABLE maintenance_visits ADD COLUMN toestel_werking_goed TEXT;',
+            'ALTER TABLE maintenance_visits ADD COLUMN toestel_werking_veilig TEXT;',
+          ];
+          for (final query in vekaColumns) {
+            try {
+              await db.execute(query);
+            } catch (e, stack) {
+              debugPrint(
+                  '[AppDatabase] v5 migration query warning: $e\n$stack');
+            }
+          }
+        }
       },
     );
   }

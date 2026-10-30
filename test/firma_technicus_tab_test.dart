@@ -173,5 +173,28 @@ void main() {
       expect(find.text('Claes'), findsOneWidget);
       expect(find.text('GV99999'), findsOneWidget);
     });
+
+    testWidgets(
+        'Disposing FirmaTechnicusTab flushes pending debounced profile to SQLite',
+        (tester) async {
+      await pumpTab(tester);
+
+      // Enter company name (triggers 300ms debounce timer)
+      final nameField = find.widgetWithText(TextField, 'bv. HVAC Solutions BV');
+      await tester.enterText(nameField, 'Emergency Flush BV');
+
+      // Unmount before 300ms expires (e.g. after 50ms)
+      await tester.pump(const Duration(milliseconds: 50));
+      await tester.pumpWidget(const SizedBox.shrink());
+
+      late TechnicianProfile profile;
+      await tester.runAsync(() async {
+        await Future<void>.delayed(const Duration(milliseconds: 100));
+        profile = await profileRepository.getProfile();
+      });
+
+      // Profile was saved during dispose!
+      expect(profile.companyName, equals('Emergency Flush BV'));
+    });
   });
 }

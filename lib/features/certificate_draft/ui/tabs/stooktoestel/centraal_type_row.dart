@@ -16,6 +16,7 @@ class CentraalTypeRow extends StatelessWidget {
   final String hint;
   final TextEditingController controller;
   final VoidCallback onSelect;
+  final ValueChanged<String>? onCodeChanged;
 
   const CentraalTypeRow({
     super.key,
@@ -27,6 +28,7 @@ class CentraalTypeRow extends StatelessWidget {
     required this.hint,
     required this.controller,
     required this.onSelect,
+    this.onCodeChanged,
   });
 
   void _openPicker(BuildContext context) {
@@ -36,6 +38,7 @@ class CentraalTypeRow extends StatelessWidget {
       currentCode: controller.text,
       onSelected: (code) {
         controller.text = code;
+        onCodeChanged?.call(code);
       },
     );
   }
@@ -60,15 +63,18 @@ class CentraalTypeRow extends StatelessWidget {
         // 1. Text button styled like Tab "Start" with 2-line layout
         Expanded(
           child: OutlinedButton(
-            onPressed: isCentral && !isActive
+            onPressed: isCentral
                 ? () {
-                    HapticFeedback.selectionClick();
-                    onSelect();
+                    if (!isActive) {
+                      HapticFeedback.selectionClick();
+                      onSelect();
+                    }
                   }
                 : null,
             style: OutlinedButton.styleFrom(
               minimumSize: const Size.fromHeight(48),
               backgroundColor: backgroundColor,
+              foregroundColor: Colors.white,
               side: BorderSide(
                 color: borderColor,
                 width: isActive ? 1.5 : 1.0,

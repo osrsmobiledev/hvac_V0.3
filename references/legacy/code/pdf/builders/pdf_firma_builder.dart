@@ -6,10 +6,10 @@ import 'package:hvac_field_service/services/pdf/widgets/pdf_components.dart';
 
 class PdfFirmaBuilder {
   static pw.Widget buildFirmaSection(StartProfile start, FirmProfile firma) {
-    // THE MAGIC NUMBER: This perfectly contains "postnummer en gemeente: " 
+    // THE MAGIC NUMBER: This perfectly contains "postnummer en gemeente: "
     // and forces all blue text to start at this exact X-coordinate.
     const double firmaLabelWidth = 95.0;
-    const double technicusLabelWidth = 95.0; 
+    const double technicusLabelWidth = 95.0;
     const double technicusSublabelWidth = 91.5;
 
     // ACTION TRIGGER [LOGIC]: Smart Erkenningsnummer Formatting
@@ -37,7 +37,10 @@ class PdfFirmaBuilder {
             text: pw.TextSpan(
               children: [
                 pw.TextSpan(text: 'Firma ', style: PdfComponents.titleBoldText),
-                pw.TextSpan(text: '(ook invullen indien zelfstandige)', style: PdfComponents.subTitleText), // Using your brilliant subTitleText idea!
+                pw.TextSpan(
+                    text: '(ook invullen indien zelfstandige)',
+                    style: PdfComponents
+                        .subTitleText), // Using your brilliant subTitleText idea!
               ],
             ),
           ),
@@ -48,12 +51,20 @@ class PdfFirmaBuilder {
               crossAxisAlignment: pw.CrossAxisAlignment.start,
               mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
               children: [
-                PdfComponents.buildDynamicLine('naam: ', firma.naam, firmaLabelWidth),
-                PdfComponents.buildAddressLine('straat en nummer: ', firma.straat, firma.nr, firma.bus, firmaLabelWidth),
-                PdfComponents.buildDynamicLine('postnummer en gemeente: ', '${firma.postcode} ${firma.gemeente}'.trim(), firmaLabelWidth),
-                PdfComponents.buildPrefixedLine('tel: ', firma.tel, '+32', firmaLabelWidth),
-                PdfComponents.buildDynamicLine('e-mail: ', firma.email, firmaLabelWidth),
-                PdfComponents.buildPrefixedLine('ondernemingsnummer: ', firma.kbo, 'BE', firmaLabelWidth),
+                PdfComponents.buildDynamicLine(
+                    'naam: ', firma.naam, firmaLabelWidth),
+                PdfComponents.buildAddressLine('straat en nummer: ',
+                    firma.straat, firma.nr, firma.bus, firmaLabelWidth),
+                PdfComponents.buildDynamicLine(
+                    'postnummer en gemeente: ',
+                    '${firma.postcode} ${firma.gemeente}'.trim(),
+                    firmaLabelWidth),
+                PdfComponents.buildPrefixedLine(
+                    'tel: ', firma.tel, '+32', firmaLabelWidth),
+                PdfComponents.buildDynamicLine(
+                    'e-mail: ', firma.email, firmaLabelWidth),
+                PdfComponents.buildPrefixedLine(
+                    'ondernemingsnummer: ', firma.kbo, 'BE', firmaLabelWidth),
               ],
             ),
           ),
@@ -64,24 +75,30 @@ class PdfFirmaBuilder {
 
         // RIGHT COLUMN (Technicus)
         PdfComponents.halfWidthBox(
-          titleContent: pw.Text('Technicus', style: PdfComponents.titleBoldText),
+          titleContent:
+              pw.Text('Technicus', style: PdfComponents.titleBoldText),
           contentHeight: 69.2,
           mainContent: pw.Padding(
-            padding: const pw.EdgeInsets.only(left: 3.6, top: 2.0, bottom: 2.0, right: 3.6),
+            padding: const pw.EdgeInsets.only(
+                left: 3.6, top: 2.0, bottom: 2.0, right: 3.6),
             child: pw.Column(
               crossAxisAlignment: pw.CrossAxisAlignment.start,
               mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
               children: [
                 // ACTION TRIGGER [UI/UX]: Split into two distinct lines for better symmetry
-                PdfComponents.buildDynamicLine('voornaam: ', firma.voornaam, technicusLabelWidth),
-                PdfComponents.buildDynamicLine('achternaam: ', firma.achternaam, technicusLabelWidth),
+                PdfComponents.buildDynamicLine(
+                    'voornaam: ', firma.voornaam, technicusLabelWidth),
+                PdfComponents.buildDynamicLine(
+                    'achternaam: ', firma.achternaam, technicusLabelWidth),
                 // ACTION TRIGGER [LOGIC]: Inject the smart formatted string
-                PdfComponents.buildDynamicLine('erkenningsnummer: ', erkenningsnummerText, technicusLabelWidth),
+                PdfComponents.buildDynamicLine('erkenningsnummer: ',
+                    erkenningsnummerText, technicusLabelWidth),
 
                 // The Highlighted Date/Time Box
                 pw.Container(
                   width: double.infinity,
-                  padding: const pw.EdgeInsets.symmetric(horizontal: 3.6, vertical: 2.0),
+                  padding: const pw.EdgeInsets.symmetric(
+                      horizontal: 3.6, vertical: 2.0),
                   decoration: pw.BoxDecoration(
                     color: PdfColors.grey300,
                     border: pw.Border.all(
@@ -98,10 +115,15 @@ class PdfFirmaBuilder {
                         children: [
                           pw.SizedBox(
                             width: technicusSublabelWidth,
-                            child: pw.Text('Datum onderhoud: ', style: PdfComponents.titleBoldText),
+                            child: pw.Text('Datum onderhoud: ',
+                                style: PdfComponents.titleBoldText),
                           ),
                           pw.Expanded(
-                            child: pw.Text(firma.datum.isNotEmpty ? firma.datum : '_______-________-___________', style: PdfComponents.inputBlue),
+                            child: pw.Text(
+                                firma.datum.isNotEmpty
+                                    ? firma.datum
+                                    : '_______-________-___________',
+                                style: PdfComponents.inputBlue),
                           ),
                         ],
                       ),
@@ -111,16 +133,29 @@ class PdfFirmaBuilder {
                         children: [
                           pw.SizedBox(
                             width: technicusSublabelWidth,
-                            child: pw.Text('Arbeidsduur: ', style: PdfComponents.titleBoldText),
+                            child: pw.Text('Arbeidsduur: ',
+                                style: PdfComponents.titleBoldText),
                           ),
                           pw.Expanded(
                             child: pw.RichText(
                               text: pw.TextSpan(
                                 children: [
-                                  pw.TextSpan(text: 'van ', style: PdfComponents.titleText),
-                                  pw.TextSpan(text: firma.tijdVan.isNotEmpty ? firma.tijdVan : '____________', style: PdfComponents.inputBlue),
-                                  pw.TextSpan(text: ' tot ', style: PdfComponents.titleText),
-                                  pw.TextSpan(text: firma.tijdTot.isNotEmpty ? firma.tijdTot : '______________', style: PdfComponents.inputBlue),
+                                  pw.TextSpan(
+                                      text: 'van ',
+                                      style: PdfComponents.titleText),
+                                  pw.TextSpan(
+                                      text: firma.tijdVan.isNotEmpty
+                                          ? firma.tijdVan
+                                          : '____________',
+                                      style: PdfComponents.inputBlue),
+                                  pw.TextSpan(
+                                      text: ' tot ',
+                                      style: PdfComponents.titleText),
+                                  pw.TextSpan(
+                                      text: firma.tijdTot.isNotEmpty
+                                          ? firma.tijdTot
+                                          : '______________',
+                                      style: PdfComponents.inputBlue),
                                 ],
                               ),
                             ),
@@ -137,5 +172,4 @@ class PdfFirmaBuilder {
       ],
     );
   }
-
 }

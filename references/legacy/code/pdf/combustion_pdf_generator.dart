@@ -34,10 +34,10 @@ class CombustionPdfGenerator {
     required MetingProfile meting,
     required BesluitProfile besluit,
   }) async {
-    
     // 1. Load the Libron fonts securely from the Flutter asset bundle
     final libronData = await rootBundle.load('assets/fonts/libron-regular.ttf');
-    final libronBoldData = await rootBundle.load('assets/fonts/libron-bold.ttf');
+    final libronBoldData =
+        await rootBundle.load('assets/fonts/libron-bold.ttf');
 
     // rootBundle returns ByteData, which pw.Font.ttf accepts directly
     final libronFont = pw.Font.ttf(libronData);
@@ -55,15 +55,15 @@ class CombustionPdfGenerator {
     // 3. Page Structure
     pdf.addPage(
       pw.Page(
-        pageFormat: PdfPageFormat.a4, 
+        pageFormat: PdfPageFormat.a4,
         // Using exact government point measurements for pixel-perfect alignment
         margin: const pw.EdgeInsets.only(
           top: 13.6,
-          left: 24.9, 
+          left: 24.9,
           right: 17.3,
           bottom: 15.0,
-        ), 
-        
+        ),
+
         build: (pw.Context context) {
           return pw.Column(
             crossAxisAlignment: pw.CrossAxisAlignment.start,
@@ -77,7 +77,7 @@ class CombustionPdfGenerator {
 
               pw.SizedBox(height: 1.6), // Gap 3
               PdfToestelKenmerkenBuilder.buildKenmerkenSection(toestel),
-              
+
               pw.SizedBox(height: 1.6), // Gap 4
               PdfToestelApparaatBuilder.buildApparaatSection(toestel),
 
@@ -101,10 +101,10 @@ class CombustionPdfGenerator {
     if (!directory.existsSync()) {
       directory.createSync(recursive: true);
     }
-    
+
     final finalPath = '${directory.path}/$fileName';
     final file = File(finalPath);
-    
+
     await file.writeAsBytes(bytes, flush: true);
     return file.path;
   }

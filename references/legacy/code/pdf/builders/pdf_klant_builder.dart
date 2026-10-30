@@ -5,8 +5,8 @@ import 'package:hvac_field_service/services/pdf/widgets/pdf_components.dart';
 class PdfKlantBuilder {
   static pw.Widget buildKlantSection(KlantProfile klant) {
     const double klantLabelWidth = 95.0;
-    const double installatieLabelWidth = 95.0; 
-    const double boxHeight = 58.0; 
+    const double installatieLabelWidth = 95.0;
+    const double boxHeight = 58.0;
 
     // ACTION TRIGGER [LOGIC]: Smart Formatting for Bedrijf and/or Name
     final bool hasBedrijf = klant.bedrijf.trim().isNotEmpty;
@@ -36,11 +36,18 @@ class PdfKlantBuilder {
               mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
               children: [
                 // ACTION TRIGGER [UI]: Using the smart naamText, and updating the label for clarity
-                PdfComponents.buildDynamicLine('voornaam en achternaam: ', naamText, klantLabelWidth),
-                PdfComponents.buildAddressLine('straat en nummer: ', klant.straat, klant.nr, klant.bus, klantLabelWidth),
-                PdfComponents.buildDynamicLine('postnummer en gemeente: ', '${klant.postcode} ${klant.gemeente}'.trim(), klantLabelWidth),
-                PdfComponents.buildPrefixedLine('tel: ', klant.tel, '+32', klantLabelWidth),
-                PdfComponents.buildDynamicLine('e-mail: ', klant.email, klantLabelWidth),
+                PdfComponents.buildDynamicLine(
+                    'voornaam en achternaam: ', naamText, klantLabelWidth),
+                PdfComponents.buildAddressLine('straat en nummer: ',
+                    klant.straat, klant.nr, klant.bus, klantLabelWidth),
+                PdfComponents.buildDynamicLine(
+                    'postnummer en gemeente: ',
+                    '${klant.postcode} ${klant.gemeente}'.trim(),
+                    klantLabelWidth),
+                PdfComponents.buildPrefixedLine(
+                    'tel: ', klant.tel, '+32', klantLabelWidth),
+                PdfComponents.buildDynamicLine(
+                    'e-mail: ', klant.email, klantLabelWidth),
               ],
             ),
           ),
@@ -52,19 +59,28 @@ class PdfKlantBuilder {
         // RIGHT COLUMN (Installatieadres)
         PdfComponents.halfWidthBox(
           titleContent: pw.Text(
-            '(adres stooktoestel indien verschillend van adres klant)', 
+            '(adres stooktoestel indien verschillend van adres klant)',
             style: PdfComponents.subTitleText,
           ),
           contentHeight: boxHeight,
           mainContent: pw.Padding(
-            padding: const pw.EdgeInsets.only(left: 3.6, top: 2.0, bottom: 2.0, right: 3.6),
+            padding: const pw.EdgeInsets.only(
+                left: 3.6, top: 2.0, bottom: 2.0, right: 3.6),
             child: pw.Column(
               crossAxisAlignment: pw.CrossAxisAlignment.start,
-              mainAxisAlignment: pw.MainAxisAlignment.start, 
+              mainAxisAlignment: pw.MainAxisAlignment.start,
               children: [
-                PdfComponents.buildAddressLine('straat en nummer: ', klant.locatieStraat, klant.locatieNr, klant.locatieBus, installatieLabelWidth),
+                PdfComponents.buildAddressLine(
+                    'straat en nummer: ',
+                    klant.locatieStraat,
+                    klant.locatieNr,
+                    klant.locatieBus,
+                    installatieLabelWidth),
                 pw.SizedBox(height: 6.0),
-                PdfComponents.buildDynamicLine('postnummer en gemeente: ', '${klant.locatiePostcode} ${klant.locatieGemeente}'.trim(), installatieLabelWidth),
+                PdfComponents.buildDynamicLine(
+                    'postnummer en gemeente: ',
+                    '${klant.locatiePostcode} ${klant.locatieGemeente}'.trim(),
+                    installatieLabelWidth),
               ],
             ),
           ),

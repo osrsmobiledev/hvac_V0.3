@@ -5,8 +5,9 @@
 class AppDictionary {
   // TUNE HERE [UI/UX]: General App Shell
   static const String appTitle = 'HVAC Field Service';
-  static const String dashboardTitle = 'Kies een applet'; // "Choose your applet"
-  
+  static const String dashboardTitle =
+      'Kies een applet'; // "Choose your applet"
+
   // TUNE HERE [UI/UX]: Drawer Menu
   static const String menuStart = 'Start';
   static const String menuCombustion = 'Verbrandingsattest Vlaanderen';
@@ -21,14 +22,29 @@ class AppDictionary {
   // TUNE HERE [UI/UX]: Telemetry & Data Tab (Official VEKA/Flemish terminology)
   static const String headerMeasurement = 'Meetgegevens Bluetooth';
   static const String headerFluegas = 'Rookgas Analyse';
-  
+
   // Mapped directly from the official Verbrandingsattest template
   static const List<String> fluegasFields = [
-    'Brandstof', 'Datum', 'Tijd', 'Druk (Pa)', 'Temperatuur 1', 
-    'Temperatuur 2', 'Nettotemperatuur (tg - ta)', 'Zuurstof (O2)', 'Koolstofmonoxide (CO)', 
-    'Stikstofmonoxide (NO)', 'Zwaveldioxide (SO2)', 'Koolstofdioxide (CO2)', 
-    'Verbrandingsrendement (Hi)', 'Luchtoverschot', 'Verlies', 'CO (gecorrigeerd)', 
-    'Dauwpunt', 'Keteltemperatuur', 'Trek', 'Verbrandingsrendement (Hs)'
+    'Brandstof',
+    'Datum',
+    'Tijd',
+    'Druk (Pa)',
+    'Temperatuur 1',
+    'Temperatuur 2',
+    'Nettotemperatuur (tg - ta)',
+    'Zuurstof (O2)',
+    'Koolstofmonoxide (CO)',
+    'Stikstofmonoxide (NO)',
+    'Zwaveldioxide (SO2)',
+    'Koolstofdioxide (CO2)',
+    'Verbrandingsrendement (Hi)',
+    'Luchtoverschot',
+    'Verlies',
+    'CO (gecorrigeerd)',
+    'Dauwpunt',
+    'Keteltemperatuur',
+    'Trek',
+    'Verbrandingsrendement (Hs)'
   ];
 
   // TUNE HERE [UI/UX]: Applet Tab Navigation (Dutch UI)
@@ -44,7 +60,8 @@ class AppDictionary {
 
   // TUNE HERE [UI/UX]: Setup Tab (VEKA API Strict Compliance)
   static const String lblSequenceNumber = 'Volgnummer attest';
-  static const String activityCommissioning = 'Keuring voor eerste ingebruikname';
+  static const String activityCommissioning =
+      'Keuring voor eerste ingebruikname';
   static const String activityMaintenance = 'Onderhoud';
 
   // TUNE HERE [UI/UX]: Firma & Technicus Tab (VEKA Schema)

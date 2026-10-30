@@ -12,16 +12,12 @@ import 'package:hvac_app/app/theme/app_colors.dart';
 /// - Single-line auto-scaled typography matching the crisp 'Brandstof' label style.
 class ActivityOptionTile extends StatelessWidget {
   final String title;
-  final String? subtitle;
-  final IconData? icon;
   final bool isSelected;
   final VoidCallback onTap;
 
   const ActivityOptionTile({
     super.key,
     required this.title,
-    this.subtitle,
-    this.icon,
     required this.isSelected,
     required this.onTap,
   });

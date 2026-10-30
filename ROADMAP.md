@@ -29,44 +29,40 @@
 *Goal: Complete the remaining tabs tab-by-tab.*
 
 - [x] **Slice 3.1 — Tab 5 (`Stooktoestel` + Serial Barcode Scanner):** Appliance (`Toestel`) & burner (`Brander`) forms, single authoritative Fuel selector (`Stookolie`, `Aardgas`, `LPG`, etc.), smart integrated vs separate burner toggle with statutory compliance badge, brand quick-pickers for boiler & burner, full-width inputs with tactical `Onbekend` chips, and camera barcode scanner button (`mobile_scanner`) next to `Fabricatienummer` with manual text fallback.
-- [ ] **Slice 3.2 — Tab 6 (`Meting` & Eurolyzer Flue-Gas QR):** Flue-gas measurement slots (*Vóór onderhoud*, *Na - Laaglast*, *Na - Hooglast*), QR reading insertion from Tab 1 into active slot, and fuel-driven check visibility.
-- [ ] **Slice 3.3 â€” Tab 7 (`Eindbeoordeling` & Signatures):** Dual conclusions (*Goed*/*Niet goed*, *Veilig*/*Niet veilig*), statutory next inspection date, defects/remarks, digital signature pads for technician and customer, and *Afdrukken* trigger.
+- [x] **Slice 3.2 — Tab 6 (`Meting` & Eurolyzer Flue-Gas QR):** Flue-gas measurement slots (*Vóór onderhoud*, *Na - Laaglast*, *Na - Hooglast*), QR reading insertion from Tab 1 into active slot via *"Overnemen uit Data"*, tactical slot indicator dots, smart statutory auto-check (CO and Rendement Hi against VLAREM II/VEKA norms), fuel-driven check visibility, and live *Verbrandingscontrole* compliance badge.
+- [ ] **Slice 3.3 — Tab 7 (`Eindbeoordeling` & Signatures):** Dual conclusions (*Goed*/*Niet goed*, *Veilig*/*Niet veilig*), statutory next inspection date, defects/remarks, digital signature pads for technician and customer, and *Afdrukken* trigger.
 
 ### Milestone 4: Re-Wired PDF Generation & Local Completion (`Voltooien`)
-- [ ] **Slice 4.1 â€” `Voltooien` Pre-Flight Validation:** Build the `Voltooien` checklist showing missing fields with one-tap navigation to fix them. Freeze a `snapshot_json` upon finalization.
-- [ ] **Slice 4.2 â€” Re-Wiring Legacy PDF Builders:** Connect the finalized visit snapshot to the legacy PDF builders. Build the missing bottom `pdf_besluit_builder`. Fix `Laaglast`/`Hooglast` checkboxes, `Pa` binding, and font fallback.
-- [ ] **Slice 4.3 â€” Local PDF Preview, Storage & Email Queue:** Save the PDF via `path_provider`, add an in-app preview/print button, and implement the independent email delivery tracker.
+- [ ] **Slice 4.1 — `Voltooien` Pre-Flight Validation:** Build the `Voltooien` checklist showing missing fields with one-tap navigation to fix them. Freeze a `snapshot_json` upon finalization.
+- [ ] **Slice 4.2 — Re-Wiring Legacy PDF Builders:** Connect the finalized visit snapshot to the legacy PDF builders. Build the missing bottom `pdf_besluit_builder`. Fix `Laaglast`/`Hooglast` checkboxes, `Pa` binding, and font fallback.
+- [ ] **Slice 4.3 — Local PDF Preview, Storage & Email Queue:** Save the PDF via `path_provider`, add an in-app preview/print button, and implement the independent email delivery tracker.
 
 ### Milestone 5: Public API Address Lookup & VEKA Tracking
-- [ ] **Slice 5.1 â€” Basisregisters Vlaanderen Lookup (`Klant` Tab):** Add online address verification with an offline manual fallback.
-- [ ] **Slice 5.2 â€” Independent VEKA Reporting Tracker:** Add VEKA reporting status tracker (`not_submitted`, `reported_manually_portal`, API payload preview).
-- [ ] **Slice 5.3 â€” History & Reminders Dashboard:** Add a view (accessible via the Drawer) to browse past certificates per customer/boiler, and trigger upcoming maintenance reminders.
-
----
-
-
-
-- **Current Status:** Milestone 1, Milestone 2 (Slices 2.1–2.4), and Milestone 3 (Slice 3.1) complete, tested, and verified.
-- **Active Slice:** **Slice 3.1 — Tab 5 (`Stooktoestel` + Serial Barcode Scanner)** — completed, awaiting owner sign-off.
-- **Next Slice:** **Slice 3.2 — Tab 6 (`Meting` & Eurolyzer Flue-Gas QR)** under Milestone 3.
-- **Immediate Next Step for Agent:**
-  1. Present Slice 3.1 verification results and 3–4 testing instructions to the owner.
-  2. Await owner's confirmation before writing code for Milestone 3 / Slice 3.2.
-- **Blockers / Open Questions:** None. Ready to proceed to Slice 3.2 upon owner authorization.
-
+- [ ] **Slice 5.1 — Basisregisters Vlaanderen Lookup (`Klant` Tab):** Add online address verification with an offline manual fallback.
+- [ ] **Slice 5.2 — Independent VEKA Reporting Tracker:** Add VEKA reporting status tracker (`not_submitted`, `reported_manually_portal`, API payload preview).
+- [ ] **Slice 5.3 — History & Reminders Dashboard:** Add a view (accessible via the Drawer) to browse past certificates per customer/boiler, and trigger upcoming maintenance reminders.
 
 ---
 
 ## 2. Current Handoff (Active State for AI Agent)
 
-- **Current Status:** Milestone 1, Milestone 2, and Slice 3.1 complete, tested, and verified.
-- **Slice 3.1 Delivered:**
-  - **Card 1 (`Kenmerken`):** NBN CR 1749 type B/C tactile selection with bottom sheet modal picker, authoritative fuel selector (`Gasvormig`, `Vloeibaar`, `Vast`), dynamic sub-options, operation (`Condenserend` vs `Niet-condenserend`), and heating type (`Individueel` vs `Collectief`).
-  - **Card 2 (`Toestel`):** Full-width input fields with generous breathing room, clean labels (no trailing colons), distinct brand quick-selection ribbon (Vaillant, Viessmann, Remeha, Bulex, Bosch, Junkers, Daikin, Weishaupt, ACV, Buderus, ATAG), tactile `Onbekend` chips for `Bouwjaar` and `Fabricatienummer`, and camera barcode scanner icon with manual fallback.
-  - **Card 3 (`Brander (enkel CV)`):** Smart `TwoWaySlidingBar` for `Geïntegreerd` vs `Afzonderlijke brander`. Integrated mode shows tactical VEKA compliance badge and derives statutory `"/"` strings for the official PDF without cluttering inputs; separate mode reveals burner brand quick-picker, serial, and flow rate (`Debiet`).
-  - **Quality & Performance:** SQLite offline-first persistence with 300ms debounce, all 75 unit/widget tests passing, 0 analyzer issues, all files $\le 250$ lines.
-- **Active Slice:** **Slice 3.1 — Tab 5 (`Stooktoestel` + Serial Barcode Scanner)** — complete and verified.
-- **Next Slice:** **Slice 3.2 — Tab 6 (`Meting` & Eurolyzer Flue-Gas QR)**.
+- **Current Status:** Milestone 1, Milestone 2, Slice 3.1, Slice 3.2 complete, hardened, and verified.
+- **Workflow & Architecture Hardening Delivered:**
+  - **Comprehensive 15-Point Audit Across All 6 Tabs:**
+    - Standardized responsive layout container on [WorkflowTabContainer](file:///c:/Users/Admin/Documents/hvac_V0.3/lib/core/widgets/workflow_tab_container.dart) with `scrollKey` preservation, `maxWidth: 600`, and `keyboardDismissBehavior: onDrag`.
+    - Centralized tactical HUD toasts across all tabs on [TacticalFeedback](file:///c:/Users/Admin/Documents/hvac_V0.3/lib/core/widgets/tactical_feedback.dart) (`showSuccess`, `showInfo`, `showError`).
+    - Standardized 38–40px square action buttons on [TacticalSquareButton](file:///c:/Users/Admin/Documents/hvac_V0.3/lib/core/widgets/tactical_square_button.dart), eliminating bespoke duplicate buttons.
+    - Standardized debouncing with automatic flush on dispose and Done actions on [Debouncer](file:///c:/Users/Admin/Documents/hvac_V0.3/lib/core/utils/debouncer.dart).
+  - **Database & Shell Air-Tightness:**
+    - Dynamic active draft visit ID binding in [VerbrandingsattestScreen](file:///c:/Users/Admin/Documents/hvac_V0.3/lib/features/certificate_draft/ui/verbrandingsattest_screen.dart) passed directly to `DataTab` and `MetingTab`.
+    - Strict draft isolation query in [MeasurementDraftRepository](file:///c:/Users/Admin/Documents/hvac_V0.3/lib/features/certificate_draft/data/measurement_draft_repository.dart) linking active draft visits to their boilers.
+    - Centralized all Tab 7 placeholder text in [AppDictionary](file:///c:/Users/Admin/Documents/hvac_V0.3/lib/app/localization/app_dictionary.dart).
+  - **Quality & Metrics:**
+    - 127 unit and widget tests passing (100% green).
+    - 0 Dart analyzer issues.
+    - All Dart files in `lib/` strictly $\le 245$ lines of code (limit: 250).
+- **Active State:** All 6 tabs, navigation drawer, homepage dashboard, and SQLite database fully inspected, standardized, and airtight.
+- **Next Milestone Step:** **Slice 3.3 — Tab 7 (`Eindbeoordeling` & Signatures)**.
 - **Immediate Next Step for Agent:**
-  1. Await owner's explicit go-ahead before writing any Slice 3.2 code.
-- **Blockers / Open Questions:** None. Ready to proceed to Slice 3.2 upon owner authorization.
+  1. Await owner's review, testing on device/emulator, and checkpoint approval before proceeding to Slice 3.3.
+- **Blockers / Open Questions:** None. Ready for owner checkpoint.

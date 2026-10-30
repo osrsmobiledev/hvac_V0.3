@@ -85,7 +85,7 @@ class _BarcodeScannerModalState extends State<BarcodeScannerModal> {
                         child: Padding(
                           padding: const EdgeInsets.all(16.0),
                           child: Text(
-                            'Camera niet beschikbaar.\nVoer het nummer handmatig in.',
+                            AppDictionary.scannerCameraUnavailable,
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               color: Theme.of(context).colorScheme.error,
@@ -142,7 +142,7 @@ class _BarcodeScannerModalState extends State<BarcodeScannerModal> {
           ),
           const SizedBox(height: 12),
           const Text(
-            'Plaats de barcode of QR-code van het toestel in het kader.',
+            AppDictionary.scannerInstruction,
             textAlign: TextAlign.center,
             style: TextStyle(
               color: AppColors.textSecondary,

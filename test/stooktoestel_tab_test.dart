@@ -3,6 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hvac_app/app/localization/app_dictionary.dart';
 import 'package:hvac_app/app/theme/app_theme.dart';
 import 'package:hvac_app/core/database/app_database.dart';
+import 'package:hvac_app/features/certificate_draft/domain/boiler_draft.dart';
+import 'package:hvac_app/features/certificate_draft/ui/boiler_draft_notifier.dart';
 import 'package:hvac_app/features/certificate_draft/ui/tabs/stooktoestel/brand_quick_picker.dart';
 import 'package:hvac_app/features/certificate_draft/ui/tabs/stooktoestel/unknown_badge.dart';
 import 'package:hvac_app/features/certificate_draft/ui/tabs/stooktoestel_tab.dart';
@@ -242,6 +244,34 @@ void main() {
       await tester.tap(find.text('Junkers'));
       await tester.pumpAndSettle();
       expect(find.widgetWithText(TextFormField, 'Junkers'), findsOneWidget);
+    });
+
+    testWidgets(
+        'StooktoestelTab synchronizes reactively with BoilerDraftNotifier',
+        (tester) async {
+      tester.view.physicalSize = const Size(412, 1800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() => tester.view.resetPhysicalSize());
+
+      final notifier = BoilerDraftNotifier();
+      addTearDown(notifier.dispose);
+      notifier.updateDraft(const BoilerDraft(
+        boilerBrand: 'Viessmann',
+        fuelCategory: 'vloeibaar',
+        centraalType: 'B',
+        typeBText: 'B23',
+      ));
+
+      await tester.pumpWidget(MaterialApp(
+        theme: AppTheme.darkTheme,
+        home: Scaffold(
+          body: StooktoestelTab(boilerNotifier: notifier),
+        ),
+      ));
+      await tester.pump(const Duration(milliseconds: 350));
+      await tester.pumpAndSettle();
+
+      expect(find.widgetWithText(TextFormField, 'Viessmann'), findsOneWidget);
     });
   });
 }

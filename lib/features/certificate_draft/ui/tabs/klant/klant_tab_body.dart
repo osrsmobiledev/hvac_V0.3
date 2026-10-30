@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:hvac_app/app/theme/app_theme.dart';
+import 'package:hvac_app/core/widgets/workflow_tab_container.dart';
 import 'customer_details_card.dart';
 import 'installation_location_card.dart';
 import 'klant_action_buttons.dart';
 import 'klant_form_controllers.dart';
 
 /// Form body for Tab 4 (Klant & Installatieadres).
-/// Centered and constrained to max 600px width for premium tablet presentation.
+/// Wrapped in [WorkflowTabContainer] for responsive 600px max width and scroll persistence.
 class KlantTabBody extends StatelessWidget {
   final bool isEditing;
   final bool hasCustomer;
@@ -38,43 +40,35 @@ class KlantTabBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 600),
-        child: ListView(
-          key: const PageStorageKey<String>('klant_tab_scroll'),
-          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-          children: [
-            CustomerDetailsCard(
-              controllers: controllers,
-              onChanged: onFormChanged,
-              readOnly: !isEditing,
-              actionButtons: KlantActionButtons(
-                isEditing: isEditing,
-                hasCustomer: hasCustomer,
-                onSearch: onSearch,
-                onNew: onNew,
-                onEdit: onEdit,
-                onSave: onSave,
-                onCancel: onCancel,
-                onDelete: onDelete,
-              ),
-            ),
-            const SizedBox(height: 14),
-            InstallationLocationCard(
-              controllers: controllers,
-              isSameAsCustomer: isSameAsCustomer,
-              onSameAddressChanged: onSameAddressChanged,
-              onChanged: onFormChanged,
-              isEditing: isEditing,
-              hasCustomer: hasCustomer,
-              readOnly: !isEditing,
-            ),
-            const SizedBox(height: 40),
-          ],
+    return WorkflowTabContainer(
+      scrollKey: 'klant_tab_scroll',
+      children: [
+        CustomerDetailsCard(
+          controllers: controllers,
+          onChanged: onFormChanged,
+          readOnly: !isEditing,
+          actionButtons: KlantActionButtons(
+            isEditing: isEditing,
+            hasCustomer: hasCustomer,
+            onSearch: onSearch,
+            onNew: onNew,
+            onEdit: onEdit,
+            onSave: onSave,
+            onCancel: onCancel,
+            onDelete: onDelete,
+          ),
         ),
-      ),
+        const SizedBox(height: AppTheme.bentoCardSpacing),
+        InstallationLocationCard(
+          controllers: controllers,
+          isSameAsCustomer: isSameAsCustomer,
+          onSameAddressChanged: onSameAddressChanged,
+          onChanged: onFormChanged,
+          isEditing: isEditing,
+          hasCustomer: hasCustomer,
+          readOnly: !isEditing,
+        ),
+      ],
     );
   }
 }
