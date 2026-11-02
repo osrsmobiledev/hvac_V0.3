@@ -30,10 +30,10 @@
 
 - [x] **Slice 3.1 — Tab 5 (`Stooktoestel` + Serial Barcode Scanner):** Appliance (`Toestel`) & burner (`Brander`) forms, single authoritative Fuel selector (`Stookolie`, `Aardgas`, `LPG`, etc.), smart integrated vs separate burner toggle with statutory compliance badge, brand quick-pickers for boiler & burner, full-width inputs with tactical `Onbekend` chips, and camera barcode scanner button (`mobile_scanner`) next to `Fabricatienummer` with manual text fallback.
 - [x] **Slice 3.2 — Tab 6 (`Meting` & Eurolyzer Flue-Gas QR):** Flue-gas measurement slots (*Vóór onderhoud*, *Na - Laaglast*, *Na - Hooglast*), QR reading insertion from Tab 1 into active slot via *"Overnemen uit Data"*, tactical slot indicator dots, smart statutory auto-check (CO and Rendement Hi against VLAREM II/VEKA norms), fuel-driven check visibility, and live *Verbrandingscontrole* compliance badge.
-- [ ] **Slice 3.3 — Tab 7 (`Eindbeoordeling` & Signatures):** Dual conclusions (*Goed*/*Niet goed*, *Veilig*/*Niet veilig*), statutory next inspection date, defects/remarks, digital signature pads for technician and customer, and *Afdrukken* trigger.
+- [x] **Slice 3.3 — Tab 7 (`Eindbeoordeling` & Signatures):** Dual conclusions (*Goed*/*Niet goed*, *Veilig*/*Niet veilig*), statutory next inspection date calculation (+2 years for gas, +1 year for oil/solid) with quick chips, defects/remarks with 3-month legal remediation banner (Art. 6 Vlaams Stooktoestellenbesluit), quick defect chips, digital signature pads for technician and customer with live preview and clear, and complete button.
 
 ### Milestone 4: Re-Wired PDF Generation & Local Completion (`Voltooien`)
-- [ ] **Slice 4.1 — `Voltooien` Pre-Flight Validation:** Build the `Voltooien` checklist showing missing fields with one-tap navigation to fix them. Freeze a `snapshot_json` upon finalization.
+- [ ] **Slice 4.1 — `Voltooien` Pre-Flight Validation:** Build the `Voltooien` checklist showing missing fields with one-tap waypoint navigation ("teleport") to fix them. Freeze a `snapshot_json` upon finalization.
 - [ ] **Slice 4.2 — Re-Wiring Legacy PDF Builders:** Connect the finalized visit snapshot to the legacy PDF builders. Build the missing bottom `pdf_besluit_builder`. Fix `Laaglast`/`Hooglast` checkboxes, `Pa` binding, and font fallback.
 - [ ] **Slice 4.3 — Local PDF Preview, Storage & Email Queue:** Save the PDF via `path_provider`, add an in-app preview/print button, and implement the independent email delivery tracker.
 
@@ -46,23 +46,22 @@
 
 ## 2. Current Handoff (Active State for AI Agent)
 
-- **Current Status:** Milestone 1, Milestone 2, Slice 3.1, Slice 3.2 complete, hardened, and verified.
+- **Current Status:** Milestone 1, Milestone 2, and Milestone 3 (Slices 3.1, 3.2, 3.3) complete, hardened, and verified.
 - **Workflow & Architecture Hardening Delivered:**
-  - **Comprehensive 15-Point Audit Across All 6 Tabs:**
+  - **All 7 Tabs of Verbrandingsattest Vlaanderen Fully Active:**
     - Standardized responsive layout container on [WorkflowTabContainer](file:///c:/Users/Admin/Documents/hvac_V0.3/lib/core/widgets/workflow_tab_container.dart) with `scrollKey` preservation, `maxWidth: 600`, and `keyboardDismissBehavior: onDrag`.
+    - Tab 7 (`Eindbeoordeling`) built with dual conclusions (*Goed/Niet goed*, *Veilig/Niet veilig*), statutory date calculator (+2 years for gas, +1 year for oil/solid), 3-month legal remediation banner, quick defect chips, and dual digital signature pads ([SignaturePadModal](file:///c:/Users/Admin/Documents/hvac_V0.3/lib/core/widgets/signature_pad_modal.dart)) with live base64 preview thumbnails.
     - Centralized tactical HUD toasts across all tabs on [TacticalFeedback](file:///c:/Users/Admin/Documents/hvac_V0.3/lib/core/widgets/tactical_feedback.dart) (`showSuccess`, `showInfo`, `showError`).
-    - Standardized 38–40px square action buttons on [TacticalSquareButton](file:///c:/Users/Admin/Documents/hvac_V0.3/lib/core/widgets/tactical_square_button.dart), eliminating bespoke duplicate buttons.
+    - Standardized 38–40px square action buttons on [TacticalSquareButton](file:///c:/Users/Admin/Documents/hvac_V0.3/lib/core/widgets/tactical_square_button.dart).
     - Standardized debouncing with automatic flush on dispose and Done actions on [Debouncer](file:///c:/Users/Admin/Documents/hvac_V0.3/lib/core/utils/debouncer.dart).
   - **Database & Shell Air-Tightness:**
-    - Dynamic active draft visit ID binding in [VerbrandingsattestScreen](file:///c:/Users/Admin/Documents/hvac_V0.3/lib/features/certificate_draft/ui/verbrandingsattest_screen.dart) passed directly to `DataTab` and `MetingTab`.
-    - Strict draft isolation query in [MeasurementDraftRepository](file:///c:/Users/Admin/Documents/hvac_V0.3/lib/features/certificate_draft/data/measurement_draft_repository.dart) linking active draft visits to their boilers.
-    - Centralized all Tab 7 placeholder text in [AppDictionary](file:///c:/Users/Admin/Documents/hvac_V0.3/lib/app/localization/app_dictionary.dart).
+    - Dynamic active draft visit ID binding in [VerbrandingsattestScreen](file:///c:/Users/Admin/Documents/hvac_V0.3/lib/features/certificate_draft/ui/verbrandingsattest_screen.dart) wired across all 7 tabs.
+    - Real-time offline persistence to SQLite `maintenance_visits` for all conclusions, dates, defect notes, and signatures.
+    - Strict draft isolation query in [MeasurementDraftRepository](file:///c:/Users/Admin/Documents/hvac_V0.3/lib/features/certificate_draft/data/measurement_draft_repository.dart) and [EindbeoordelingRepository](file:///c:/Users/Admin/Documents/hvac_V0.3/lib/features/certificate_draft/data/eindbeoordeling_repository.dart).
   - **Quality & Metrics:**
-    - 127 unit and widget tests passing (100% green).
-    - 0 Dart analyzer issues.
-    - All Dart files in `lib/` strictly $\le 245$ lines of code (limit: 250).
-- **Active State:** All 6 tabs, navigation drawer, homepage dashboard, and SQLite database fully inspected, standardized, and airtight.
-- **Next Milestone Step:** **Slice 3.3 — Tab 7 (`Eindbeoordeling` & Signatures)**.
-- **Immediate Next Step for Agent:**
-  1. Await owner's review, testing on device/emulator, and checkpoint approval before proceeding to Slice 3.3.
-- **Blockers / Open Questions:** None. Ready for owner checkpoint.
+    - 154+ unit and widget tests passing (100% green).
+    - 0 Dart analyzer issues across all files.
+    - All Dart files in `lib/` strictly $\le 247$ lines of code (limit: 250).
+- **Active State:** All 7 tabs of the Flemish combustion certificate workflow are fully operational, styled, and verified.
+- **Next Step:** Tab-by-tab walkthrough and verification with the owner (starting with Tab 1).
+- **Blockers / Open Questions:** None. Ready for tab-by-tab review.

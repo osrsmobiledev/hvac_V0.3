@@ -160,7 +160,7 @@ class _BentoSubSectionState extends State<BentoSubSection> {
           ),
         ),
 
-        // --- Animated Size for Inner Fields ---
+        // --- Smooth Accordion Animated Expansion for Inner Fields ---
         ClipRect(
           child: AnimatedSize(
             duration: const Duration(milliseconds: 260),

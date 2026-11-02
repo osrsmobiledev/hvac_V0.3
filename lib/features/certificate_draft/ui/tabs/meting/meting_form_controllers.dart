@@ -104,6 +104,23 @@ class MetingFormControllers {
       verbrandingscontroleOverride ??
       autoCombustionConform(isLiquidFuel: isLiquidFuel);
 
+  /// Evaluates whether all statutory boiler-room & flue safety checks passed.
+  bool? safetyChecksConform(OperatingConditionsDraft draft, BoilerDraft boiler) {
+    final isLiquid = boiler.fuelCategory == 'vloeibaar';
+    final checks = [
+      draft.fluePressureOk,
+      draft.ventilationOk,
+      if (boiler.fuelCategory == 'gas') draft.fuelSupplyTightnessOk,
+      if (boiler.centraalType == 'C') draft.flueTightnessOk,
+      if (boiler.centraalType == 'B') draft.noUnwantedCondensationOk,
+      if (isLiquid) draft.noOilTraceOk,
+      if (boiler.fuelCategory == 'vast') draft.rarelyPollutingSmokeOk,
+    ];
+    if (checks.any((c) => c == false)) return false;
+    if (checks.isNotEmpty && checks.every((c) => c == true)) return true;
+    return null;
+  }
+
   /// Derives official VEKA [verbrandingscontrole] string ('OK' / 'NOK').
   String? deriveVerbrandingscontrole({bool isLiquidFuel = false}) {
     final status = decisiveCombustionConform(isLiquidFuel: isLiquidFuel);

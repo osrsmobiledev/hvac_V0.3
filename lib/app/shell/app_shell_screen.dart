@@ -28,6 +28,7 @@ class _AppShellScreenState extends State<AppShellScreen> {
   final AppShellController _controller = AppShellController();
   final GlobalKey<ScaffoldState> _phoneScaffoldKey = GlobalKey<ScaffoldState>();
   bool _isDrawerOpen = false;
+  bool _hasOpenedCombustion = true;
 
   @override
   void didChangeDependencies() {
@@ -61,15 +62,33 @@ class _AppShellScreenState extends State<AppShellScreen> {
             final isWideScreen = isTablet && constraints.maxWidth >= 720;
             final isHome = _controller.activeApplet == AppletType.home;
 
-            final Widget currentBody = switch (_controller.activeApplet) {
-              AppletType.home => DashboardScreen(controller: _controller),
-              AppletType.combustion =>
-                VerbrandingsattestScreen(controller: _controller),
-              _ => AppletContentPlaceholder(
+            if (_controller.activeApplet == AppletType.combustion) {
+              _hasOpenedCombustion = true;
+            }
+
+            final int bodyIndex;
+            if (_controller.activeApplet == AppletType.home) {
+              bodyIndex = 0;
+            } else if (_controller.activeApplet == AppletType.combustion) {
+              bodyIndex = 1;
+            } else {
+              bodyIndex = 2;
+            }
+
+            final Widget currentBody = IndexedStack(
+              index: bodyIndex,
+              children: [
+                DashboardScreen(controller: _controller),
+                _hasOpenedCombustion
+                    ? VerbrandingsattestScreen(controller: _controller)
+                    : const SizedBox.shrink(),
+                AppletContentPlaceholder(
                   appBarTitle: _controller.appBarTitle,
-                  onBackToHome: () => _controller.selectApplet(AppletType.home),
+                  onBackToHome: () =>
+                      _controller.selectApplet(AppletType.home),
                 ),
-            };
+              ],
+            );
 
             return PopScope(
               canPop: isHome && !_isDrawerOpen,
@@ -137,6 +156,7 @@ class _AppShellScreenState extends State<AppShellScreen> {
                     // Phone layout: inner Scaffold whose drawer opens underneath the persistent AppBar
                     : Scaffold(
                         key: _phoneScaffoldKey,
+                        drawerEnableOpenDragGesture: false,
                         onDrawerChanged: (isOpen) {
                           if (isOpen) {
                             FocusManager.instance.primaryFocus?.unfocus();

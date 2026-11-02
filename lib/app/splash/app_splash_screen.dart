@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/services/app_warmup_service.dart';
 import '../localization/app_dictionary.dart';
 import '../shell/app_shell_screen.dart';
 import '../theme/app_colors.dart';
@@ -35,9 +36,11 @@ class _AppSplashScreenState extends State<AppSplashScreen>
   @override
   void initState() {
     super.initState();
+    final isAlreadyWarm = AppWarmupService.instance.isWarmedUp;
+
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1100),
+      duration: Duration(milliseconds: isAlreadyWarm ? 100 : 450),
     );
 
     // Phase 1: Logo entry (0.0 -> 0.4)
@@ -66,7 +69,38 @@ class _AppSplashScreenState extends State<AppSplashScreen>
       ),
     );
 
-    _controller.forward().then((_) => _onBootComplete());
+    _startBootSequence(isAlreadyWarm);
+  }
+
+  void _startBootSequence(bool isAlreadyWarm) async {
+    if (isAlreadyWarm) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _onBootComplete();
+      });
+      return;
+    }
+
+    // Start visual inward bracket merge immediately
+    _controller.forward();
+
+    // Perform true engine & RAM warmup concurrently
+    try {
+      await AppWarmupService.instance.warmup();
+    } catch (e, stack) {
+      debugPrint('[AppSplashScreen] boot sequence error: $e\n$stack');
+    }
+
+    if (!mounted) return;
+
+    // As soon as real engine warmup is ready, smoothly finish laser lock and dissolve
+    if (_controller.value < 1.0) {
+      await _controller.animateTo(
+        1.0,
+        duration: const Duration(milliseconds: 140),
+        curve: Curves.easeOut,
+      );
+    }
+    _onBootComplete();
   }
 
   void _onBootComplete() {

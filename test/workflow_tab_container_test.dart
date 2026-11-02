@@ -32,16 +32,25 @@ void main() {
         tester.widget<ConstrainedBox>(constrainedFinder.first);
     expect(constrainedBox.constraints.maxWidth, equals(600.0));
 
-    // Verify ListView configuration
-    final listFinder = find.byType(ListView);
-    expect(listFinder, findsOneWidget);
+    // Verify SingleChildScrollView configuration
+    final scrollFinder = find.byType(SingleChildScrollView);
+    expect(scrollFinder, findsOneWidget);
 
-    final listView = tester.widget<ListView>(listFinder);
-    expect(listView.keyboardDismissBehavior,
+    final scrollView = tester.widget<SingleChildScrollView>(scrollFinder);
+    expect(scrollView.keyboardDismissBehavior,
         equals(ScrollViewKeyboardDismissBehavior.onDrag));
-    expect(listView.padding, equals(AppTheme.tabViewPadding));
+    expect(scrollView.padding, equals(AppTheme.tabViewPadding));
     expect(
-        listView.key, equals(const PageStorageKey<String>('test_scroll_key')));
+        scrollView.key, equals(const PageStorageKey<String>('test_scroll_key')));
+
+    // Verify top-aligned layout (so collapsed cards/short forms never float in the middle)
+    final alignFinder = find.descendant(
+      of: find.byType(WorkflowTabContainer),
+      matching: find.byType(Align),
+    );
+    expect(alignFinder, findsOneWidget);
+    final align = tester.widget<Align>(alignFinder);
+    expect(align.alignment, equals(Alignment.topCenter));
 
     // Verify children rendered
     expect(find.text('Child Item 1'), findsOneWidget);

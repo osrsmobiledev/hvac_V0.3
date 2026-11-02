@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import '../../../core/services/app_warmup_service.dart';
 import '../../../core/utils/debouncer.dart';
 import '../data/boiler_draft_repository.dart';
 import '../domain/boiler_draft.dart';
@@ -24,6 +25,14 @@ class BoilerDraftNotifier extends ChangeNotifier {
 
   /// Loads the initial boiler draft from SQLite when entering the certificate.
   Future<void> loadInitial() async {
+    final cached = AppWarmupService.instance.cachedResult?.activeBoiler;
+    if (cached != null) {
+      _draft = cached;
+      _isLoading = false;
+      notifyListeners();
+      return;
+    }
+
     try {
       final loaded = await _repository.getOrCreateActiveBoiler();
       if (_isDisposed) return;

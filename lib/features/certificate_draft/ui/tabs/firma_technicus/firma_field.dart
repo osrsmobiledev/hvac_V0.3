@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hvac_app/app/theme/app_colors.dart';
+import '../../widgets/dark_action_field.dart';
 import '../../widgets/dark_input_box.dart';
 import '../../widgets/dark_input_label.dart';
 
@@ -85,46 +86,13 @@ class FirmaActionField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        DarkInputLabel(label),
-        Stack(
-          alignment: Alignment.center,
-          children: [
-            TextField(
-              controller: controller,
-              readOnly: true,
-              keyboardType: TextInputType.none,
-              textInputAction: TextInputAction.none,
-              onTap: onTap,
-              textAlign: textAlign,
-              style: DarkInputBox.inputStyle,
-              decoration: DarkInputBox.decoration(
-                hintText: hint,
-              ).copyWith(
-                // Symmetrical 36px horizontal padding guarantees true geometric centering
-                // while reserving a safe buffer so text never touches the right icon.
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 36.0,
-                  vertical: 12.0,
-                ),
-              ),
-            ),
-            Positioned(
-              right: 12,
-              child: IgnorePointer(
-                child: Icon(
-                  icon,
-                  color: AppColors.amberGold,
-                  size: 20,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ],
+    return DarkActionField(
+      label: label,
+      controller: controller,
+      hint: hint,
+      icon: icon,
+      onTap: onTap,
+      textAlign: textAlign,
     );
   }
 }

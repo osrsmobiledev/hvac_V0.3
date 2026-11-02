@@ -154,7 +154,7 @@ class _BentoMainSectionState extends State<BentoMainSection> {
           ),
         ),
 
-        // --- Smooth Animated Expansion for Separated Sub-Box ---
+        // --- Smooth Accordion Animated Expansion for Separated Sub-Box ---
         ClipRect(
           child: AnimatedSize(
             duration: const Duration(milliseconds: 260),

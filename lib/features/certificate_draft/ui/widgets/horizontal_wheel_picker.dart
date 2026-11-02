@@ -106,9 +106,7 @@ class _HorizontalWheelPickerState extends State<HorizontalWheelPicker> {
     final index = widget.items.indexOf(widget.controller.text.trim());
     if (index >= 0 && index != _currentIndex && _scrollController.hasClients) {
       _currentIndex = index;
-      _scrollController.animateToItem(index,
-          duration: const Duration(milliseconds: 250),
-          curve: Curves.easeOutCubic);
+      _scrollController.jumpToItem(index);
       setState(() {});
     }
   }

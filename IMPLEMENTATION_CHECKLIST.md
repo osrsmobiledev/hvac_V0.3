@@ -23,12 +23,13 @@
 | **13** | **Duplicate 40x40 square icon-button container** (`rookgassen_card.dart` QR + Delete buttons) | The Delete and QR Scan buttons in Tab 1 manually built their own 40x40 `Container` with rounded border and colored icon. | Created `lib/core/widgets/tactical_square_button.dart` to unify all 40x40 square action buttons. |
 | **14** | **Hardcoded inline Dutch strings inside widget trees** | Inline strings like camera error messages and modal slot titles bypassed the dictionary. | Added missing strings to `MetingDictionary` and `AppDictionary`; zero inline Dutch strings allowed in widgets. |
 | **15** | **Manual `Center > ConstrainedBox > ListView` boilerplate duplicated in Tabs 4, 5, 6** | `klant_tab_body.dart`, `stooktoestel_tab_body.dart`, and `meting_tab.dart` each repeated the same scroll-container boilerplate instead of using `WorkflowTabContainer`. | Replaced manual boilerplate with shared `WorkflowTabContainer(scrollKey: '...')`. |
+| **16** | **Uncoordinated SQLite queries during gestures & cold applet teardown** | Caused dropped frames (jank/lag) during the first tab swipe on physical devices because tabs independently read SQLite mid-gesture, and navigating to Home destroyed the screen. | Implemented parallel startup pre-warm (`AppWarmupService`), synchronous Frame-1 `visitId` injection to tabs, and `IndexedStack` screen preservation in `AppShellScreen`. |
 
 ---
 
-## 2. 15-Point Post-Implementation Checklist
+## 2. 16-Point Post-Implementation Checklist
 
-Run through these exact 15 verification checks before marking any tab or slice complete:
+Run through these exact 16 verification checks before marking any tab, applet, or slice complete:
 
 ### [ ] 1. File Length Limit ($\le$ 250 Lines)
 - [ ] No Dart file in `lib/` exceeds **250 lines**. Split large widgets into small, private `StatelessWidget` classes or sibling files.
@@ -100,6 +101,12 @@ Run through these exact 15 verification checks before marking any tab or slice c
 ### [ ] 15. Standard Workflow Tab Container (Responsive 600px)
 - [ ] Every workflow tab's scrollable body must use `WorkflowTabContainer(scrollKey: '...')`.
 - [ ] Never write manual `Center → ConstrainedBox(maxWidth: 600) → ListView` boilerplate in tab body files.
+
+### [ ] 16. Startup Pre-Warming & Gesture-Safe Data Flow (Zero I/O During Swipes)
+- [ ] Multi-tab workflows must receive their active document/visit ID synchronously on Frame 1 from the shell or warmup cache.
+- [ ] Individual tabs must **never** fire uncoordinated background database queries (`getOrCreateActiveDraft`, profile fetches) mid-gesture during swipe animations.
+- [ ] Active workflow applets must be preserved in memory via `IndexedStack` (or `AutomaticKeepAliveClientMixin`) to prevent cold teardowns when navigating between Home and the applet.
+- [ ] Core SQLite engine opening and shared profiles must be pre-warmed during startup (`AppWarmupService`) while the splash animation plays.
 
 ---
 

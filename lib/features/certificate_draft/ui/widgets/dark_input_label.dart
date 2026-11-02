@@ -11,11 +11,13 @@ import 'package:hvac_app/app/theme/app_colors.dart';
 class DarkInputLabel extends StatelessWidget {
   final String text;
   final bool isMuted;
+  final int? maxLines;
 
   const DarkInputLabel(
     this.text, {
     super.key,
     this.isMuted = false,
+    this.maxLines = 1,
   });
 
   /// The standard label text style used across all workflow forms.
@@ -27,17 +29,23 @@ class DarkInputLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 6.0),
-      child: FittedBox(
+    Widget content = Text(
+      text,
+      maxLines: maxLines,
+      style: style(isMuted: isMuted),
+    );
+
+    if (maxLines == 1) {
+      content = FittedBox(
         fit: BoxFit.scaleDown,
         alignment: Alignment.centerLeft,
-        child: Text(
-          text,
-          maxLines: 1,
-          style: style(isMuted: isMuted),
-        ),
-      ),
+        child: content,
+      );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6.0),
+      child: content,
     );
   }
 }

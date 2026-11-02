@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hvac_app/app/localization/app_dictionary.dart';
+import 'package:hvac_app/core/services/app_warmup_service.dart';
 import 'package:hvac_app/core/widgets/tactical_confirm_dialog.dart';
 import 'package:hvac_app/core/widgets/tactical_feedback.dart';
 import 'package:hvac_app/core/widgets/workflow_tab_container.dart';
@@ -44,7 +45,13 @@ class _DataTabState extends State<DataTab> with AutomaticKeepAliveClientMixin {
   void initState() {
     super.initState();
     _repository = widget.repository ?? MeasurementDraftRepository();
-    _loadTab1Measurement();
+    final cached =
+        AppWarmupService.instance.cachedResult?.tab1RawMeasurement;
+    if (cached != null && widget.repository == null) {
+      _measurement = cached;
+    } else {
+      _loadTab1Measurement();
+    }
   }
 
   @override

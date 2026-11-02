@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hvac_app/app/localization/app_dictionary.dart';
+import 'package:hvac_app/core/services/app_warmup_service.dart';
 import 'package:hvac_app/core/utils/debouncer.dart';
 import 'package:hvac_app/core/widgets/tactical_feedback.dart';
 import 'package:hvac_app/features/certificate_draft/data/boiler_draft_repository.dart';
@@ -48,7 +49,14 @@ class _StooktoestelTabState extends State<StooktoestelTab>
     super.initState();
     _repository = widget.repository ?? BoilerDraftRepository();
     widget.boilerNotifier?.addListener(_onBoilerNotifierChanged);
-    _loadBoilerDraft();
+    final initialDraft = (widget.boilerNotifier != null && !widget.boilerNotifier!.isLoading)
+        ? widget.boilerNotifier!.draft
+        : AppWarmupService.instance.cachedResult?.activeBoiler;
+    if (initialDraft != null && widget.repository == null) {
+      _applyDraftToUi(initialDraft);
+    } else {
+      _loadBoilerDraft();
+    }
   }
 
   @override
@@ -226,18 +234,12 @@ class _StooktoestelTabState extends State<StooktoestelTab>
       onTypeCCodeChanged: (_) => _syncDraft(immediate: true),
       onSerialUnknownChanged: (val) => _update(() => _serialUnknown = val),
       onYearUnknownChanged: (val) => _update(() => _yearUnknown = val),
-      onBurnerSerialUnknownChanged: (val) =>
-          _update(() => _burnerSerialUnknown = val),
-      onBurnerYearUnknownChanged: (val) =>
-          _update(() => _burnerYearUnknown = val),
-      onScanToestelBarcode: () => _scanBarcode(
-        _controllers.toestelSerial,
-        AppDictionary.hintScanToestelSerial,
-      ),
-      onScanBranderBarcode: () => _scanBarcode(
-        _controllers.branderSerial,
-        AppDictionary.hintScanBranderSerial,
-      ),
+      onBurnerSerialUnknownChanged: (val) => _update(() => _burnerSerialUnknown = val),
+      onBurnerYearUnknownChanged: (val) => _update(() => _burnerYearUnknown = val),
+      onScanToestelBarcode: () =>
+          _scanBarcode(_controllers.toestelSerial, AppDictionary.hintScanToestelSerial),
+      onScanBranderBarcode: () =>
+          _scanBarcode(_controllers.branderSerial, AppDictionary.hintScanBranderSerial),
       onFormChanged: _onFormChanged,
     );
   }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hvac_app/app/localization/app_dictionary.dart';
 import 'package:hvac_app/app/theme/app_colors.dart';
+import 'package:hvac_app/core/services/app_warmup_service.dart';
 import 'package:hvac_app/core/utils/debouncer.dart';
 import 'package:hvac_app/core/widgets/workflow_tab_container.dart';
 import '../../data/draft_repository.dart';
@@ -45,7 +46,15 @@ class _StartTabState extends State<StartTab>
   void initState() {
     super.initState();
     _repository = widget.draftRepository ?? DraftRepository();
-    _loadDraft();
+    final cachedDraft = AppWarmupService.instance.cachedResult?.activeDraft;
+    if (cachedDraft != null && widget.draftRepository == null) {
+      _visitId = cachedDraft.id;
+      _activityType = cachedDraft.activityType;
+      _attestNumberController.text = cachedDraft.attestNumber;
+      _isLoading = false;
+    } else {
+      _loadDraft();
+    }
   }
 
   @override

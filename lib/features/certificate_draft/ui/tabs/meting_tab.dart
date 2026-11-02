@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:hvac_app/app/theme/app_colors.dart';
 import 'package:hvac_app/app/theme/app_theme.dart';
+import 'package:hvac_app/core/services/app_warmup_service.dart';
 import 'package:hvac_app/core/utils/debouncer.dart';
 import 'package:hvac_app/core/widgets/workflow_tab_container.dart';
 import 'package:hvac_app/features/certificate_draft/data/measurement_draft_repository.dart';
 import 'package:hvac_app/features/certificate_draft/domain/boiler_draft.dart';
+import 'package:hvac_app/features/certificate_draft/domain/measurement_slot_draft.dart';
 import 'package:hvac_app/features/certificate_draft/domain/operating_conditions_draft.dart';
 import '../boiler_draft_notifier.dart';
+import '../measurement_assessment_notifier.dart';
 import 'meting/measurement_slots_card.dart';
 import 'meting/meting_form_controllers.dart';
 import 'meting/meting_fuel_banner.dart';
@@ -17,14 +20,14 @@ import 'meting/safety_checks_card.dart';
 /// Tab 6: Meting (Combustion measurements & safety checks).
 class MetingTab extends StatefulWidget {
   final int visitId;
-  final TabController? tabController;
   final BoilerDraftNotifier? boilerNotifier;
+  final MeasurementAssessmentNotifier? assessmentNotifier;
 
   const MetingTab({
     super.key,
     this.visitId = 1,
-    this.tabController,
     this.boilerNotifier,
+    this.assessmentNotifier,
   });
 
   @override
@@ -42,7 +45,6 @@ class _MetingTabState extends State<MetingTab>
   String _activeSlot = 'proef1';
   final _debouncer = Debouncer();
   bool _isLoading = true;
-  int _lastKnownTabIndex = -1;
 
   @override
   bool get wantKeepAlive => true;
@@ -50,18 +52,35 @@ class _MetingTabState extends State<MetingTab>
   @override
   void initState() {
     super.initState();
-    widget.tabController?.addListener(_onTabChanged);
     widget.boilerNotifier?.addListener(_onBoilerChanged);
-    _loadInitialData();
+    final cached = AppWarmupService.instance.cachedResult;
+    if (cached?.operatingConditions != null && cached?.measurementSlots != null) {
+      final boiler = widget.boilerNotifier?.draft ??
+          cached!.activeBoiler ??
+          BoilerDraft.initial();
+      _populateInitialData(boiler, cached!.operatingConditions!, cached.measurementSlots!);
+    } else {
+      _loadInitialData();
+    }
+  }
+
+  void _populateInitialData(
+    BoilerDraft boiler,
+    OperatingConditionsDraft conditions,
+    Map<String, MeasurementSlotDraft> slots,
+  ) {
+    _boiler = boiler;
+    _operatingConditions = conditions;
+    _controllers.populateOperatingConditions(conditions);
+    slots.forEach((k, v) => _controllers.slots[k]?.populate(v));
+    _controllers.autoEvaluateAllSlots(_boiler);
+    _isLoading = false;
+    _syncAssessment();
   }
 
   @override
   void didUpdateWidget(covariant MetingTab oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.tabController != widget.tabController) {
-      oldWidget.tabController?.removeListener(_onTabChanged);
-      widget.tabController?.addListener(_onTabChanged);
-    }
     if (oldWidget.boilerNotifier != widget.boilerNotifier) {
       oldWidget.boilerNotifier?.removeListener(_onBoilerChanged);
       widget.boilerNotifier?.addListener(_onBoilerChanged);
@@ -70,7 +89,6 @@ class _MetingTabState extends State<MetingTab>
 
   @override
   void dispose() {
-    widget.tabController?.removeListener(_onTabChanged);
     widget.boilerNotifier?.removeListener(_onBoilerChanged);
     _debouncer.dispose();
     _controllers.dispose();
@@ -83,25 +101,16 @@ class _MetingTabState extends State<MetingTab>
         _boiler = widget.boilerNotifier!.draft;
         _controllers.autoEvaluateAllSlots(_boiler);
       });
+      _syncAssessment();
     }
   }
 
-  void _onTabChanged() {
-    final c = widget.tabController;
-    if (c == null || widget.boilerNotifier != null) return;
-    if (c.index == 5 && _lastKnownTabIndex != 5) {
-      _lastKnownTabIndex = 5;
-      _repository.loadActiveBoilerDraft().then((b) {
-        if (mounted) {
-          setState(() {
-            _boiler = b;
-            _controllers.autoEvaluateAllSlots(_boiler);
-          });
-        }
-      }).catchError((e) => debugPrint('[MetingTab] tab sync error: $e'));
-    } else {
-      _lastKnownTabIndex = c.index;
-    }
+  void _syncAssessment() {
+    final isLiquid = _boiler.fuelCategory == 'vloeibaar';
+    widget.assessmentNotifier?.updateAssessment(
+      combustionPassed: _controllers.decisiveCombustionConform(isLiquidFuel: isLiquid),
+      safetyChecksPassed: _controllers.safetyChecksConform(_operatingConditions, _boiler),
+    );
   }
 
   Future<void> _loadInitialData() async {
@@ -112,14 +121,7 @@ class _MetingTabState extends State<MetingTab>
           await _repository.loadOperatingConditions(widget.visitId);
       final slots = await _repository.loadMeasurementSlots(widget.visitId);
       if (!mounted) return;
-      setState(() {
-        _boiler = boiler;
-        _operatingConditions = conditions;
-        _controllers.populateOperatingConditions(conditions);
-        slots.forEach((k, v) => _controllers.slots[k]?.populate(v));
-        _controllers.autoEvaluateAllSlots(_boiler);
-        _isLoading = false;
-      });
+      setState(() => _populateInitialData(boiler, conditions, slots));
     } catch (e, stack) {
       debugPrint('[MetingTab] _loadInitialData error: $e\n$stack');
       if (mounted) setState(() => _isLoading = false);
@@ -128,6 +130,7 @@ class _MetingTabState extends State<MetingTab>
 
   void _onFormChanged() {
     _controllers.autoEvaluateAllSlots(_boiler);
+    _syncAssessment();
     if (mounted) setState(() {});
     _debouncer.run(_saveToDatabase);
   }

@@ -3,14 +3,18 @@ import 'package:hvac_app/app/localization/app_dictionary.dart';
 import 'package:hvac_app/app/shell/app_shell_controller.dart';
 import 'package:hvac_app/app/theme/app_colors.dart';
 import 'package:hvac_app/app/theme/app_theme.dart';
+import 'package:hvac_app/core/services/app_warmup_service.dart';
 import '../data/draft_repository.dart';
 import 'boiler_draft_notifier.dart';
+import 'measurement_assessment_notifier.dart';
 import 'tabs/data_tab.dart';
 import 'tabs/firma_technicus_tab.dart';
 import 'tabs/klant_tab.dart';
 import 'tabs/start_tab.dart';
 import 'tabs/stooktoestel_tab.dart';
 import 'tabs/meting_tab.dart';
+import 'tabs/eindbeoordeling_tab.dart';
+import 'widgets/tab_nav_overlay.dart';
 
 /// The 7-tab workflow screen for 'Verbrandingsattest Vlaanderen'.
 ///
@@ -36,8 +40,10 @@ class _VerbrandingsattestScreenState extends State<VerbrandingsattestScreen>
     with SingleTickerProviderStateMixin {
   late final TabController _tabController;
   late final BoilerDraftNotifier _boilerNotifier;
+  late final MeasurementAssessmentNotifier _assessmentNotifier;
   final DraftRepository _draftRepository = DraftRepository();
-  int _activeVisitId = 1;
+  int _activeVisitId =
+      AppWarmupService.instance.cachedResult?.activeDraft?.id ?? 1;
 
   /// Tab titles sourced from [AppDictionary.combustionTabs] to keep UI labels
   /// centralized in the single Dutch dictionary. Edit labels there, not here.
@@ -48,6 +54,7 @@ class _VerbrandingsattestScreenState extends State<VerbrandingsattestScreen>
     super.initState();
     _tabController = TabController(length: _tabTitles.length, vsync: this);
     _boilerNotifier = BoilerDraftNotifier()..loadInitial();
+    _assessmentNotifier = MeasurementAssessmentNotifier();
     _resolveActiveDraftVisit();
   }
 
@@ -67,6 +74,7 @@ class _VerbrandingsattestScreenState extends State<VerbrandingsattestScreen>
   void dispose() {
     _tabController.dispose();
     _boilerNotifier.dispose();
+    _assessmentNotifier.dispose();
     super.dispose();
   }
 
@@ -120,104 +128,59 @@ class _VerbrandingsattestScreenState extends State<VerbrandingsattestScreen>
           ),
         ),
 
-        // Swipable Tab Content Views
+        // Tactical Tab Content Views with Floating Navigation Arrows
         Expanded(
-          child: TabBarView(
-            controller: _tabController,
+          child: Stack(
+            fit: StackFit.expand,
             children: [
-              // Tab 1: Data (Active in Slice 2.1)
-              DataTab(visitId: _activeVisitId),
+              TabBarView(
+                controller: _tabController,
+                physics: const NeverScrollableScrollPhysics(),
+                children: [
+                  // Tab 1: Data (Active in Slice 2.1)
+                  RepaintBoundary(child: DataTab(visitId: _activeVisitId)),
 
-              // Tab 2: Start (Active in Slice 2.2)
-              const StartTab(),
+                  // Tab 2: Start (Active in Slice 2.2)
+                  RepaintBoundary(child: StartTab(visitId: _activeVisitId)),
 
-              // Tab 3: Firma - Technicus (Active in Slice 2.3)
-              const FirmaTechnicusTab(),
+                  // Tab 3: Firma - Technicus (Active in Slice 2.3)
+                  const RepaintBoundary(child: FirmaTechnicusTab()),
 
-              // Tab 4: Klant (Active in Slice 2.4)
-              const KlantTab(),
+                  // Tab 4: Klant (Active in Slice 2.4)
+                  const RepaintBoundary(child: KlantTab()),
 
-              // Tab 5: Stooktoestel (Active in Slice 3.1)
-              StooktoestelTab(boilerNotifier: _boilerNotifier),
+                  // Tab 5: Stooktoestel (Active in Slice 3.1)
+                  RepaintBoundary(
+                    child: StooktoestelTab(boilerNotifier: _boilerNotifier),
+                  ),
 
-              // Tab 6: Meting (Active in Slice 3.2)
-              MetingTab(
-                visitId: _activeVisitId,
-                boilerNotifier: _boilerNotifier,
+                  // Tab 6: Meting (Active in Slice 3.2)
+                  RepaintBoundary(
+                    child: MetingTab(
+                      visitId: _activeVisitId,
+                      boilerNotifier: _boilerNotifier,
+                      assessmentNotifier: _assessmentNotifier,
+                    ),
+                  ),
+
+                  // Tab 7: Eindbeoordeling (Slice 3.3)
+                  RepaintBoundary(
+                    child: EindbeoordelingTab(
+                      visitId: _activeVisitId,
+                      boilerNotifier: _boilerNotifier,
+                      assessmentNotifier: _assessmentNotifier,
+                    ),
+                  ),
+                ],
               ),
-
-              // Tab 7: Eindbeoordeling (Slice 3.3)
-              const _DraftTabPlaceholder(
-                tabName: AppDictionary.tabEindbeoordeling,
-                sliceInfo: AppDictionary.placeholderEindbeoordelingPending,
-                icon: Icons.verified_rounded,
+              TabNavOverlay(
+                controller: _tabController,
+                tabCount: _tabTitles.length,
               ),
             ],
           ),
         ),
       ],
-    );
-  }
-}
-
-/// Simple clean placeholder displayed on unbuilt tabs until their slice is reached.
-class _DraftTabPlaceholder extends StatelessWidget {
-  final String tabName;
-  final String sliceInfo;
-  final IconData icon;
-
-  const _DraftTabPlaceholder({
-    required this.tabName,
-    required this.sliceInfo,
-    required this.icon,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 420),
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 56,
-                height: 56,
-                decoration: BoxDecoration(
-                  color: AppColors.carbonCard,
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: AppColors.amberGold.withValues(alpha: 0.3),
-                  ),
-                ),
-                child: Icon(icon, color: AppColors.amberGold, size: 26),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                tabName,
-                style: const TextStyle(
-                  fontFamily: AppTheme.fontFamily,
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                sliceInfo,
-                style: const TextStyle(
-                  color: AppColors.textSecondary,
-                  fontSize: 13,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
-        ),
-      ),
     );
   }
 }

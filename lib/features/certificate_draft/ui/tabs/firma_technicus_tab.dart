@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:hvac_app/app/theme/app_colors.dart';
 import 'package:hvac_app/app/theme/app_theme.dart';
+import 'package:hvac_app/core/services/app_warmup_service.dart';
 import 'package:hvac_app/core/utils/belgian_formatters.dart';
 import 'package:hvac_app/core/utils/debouncer.dart';
 import 'package:hvac_app/core/widgets/workflow_tab_container.dart';
 import '../../data/draft_repository.dart';
 import '../../data/technician_profile_repository.dart';
+import '../../domain/draft_visit.dart';
 import '../../domain/technician_profile.dart';
 import 'firma_technicus/company_section.dart';
 import 'firma_technicus/technician_section.dart';
@@ -70,7 +72,41 @@ class _FirmaTechnicusTabState extends State<FirmaTechnicusTab>
     super.initState();
     _profileRepo = widget.profileRepository ?? TechnicianProfileRepository();
     _draftRepo = widget.draftRepository ?? DraftRepository();
-    _loadData();
+    final cachedProfile = AppWarmupService.instance.cachedResult?.profile;
+    final cachedDraft = AppWarmupService.instance.cachedResult?.activeDraft;
+    if (cachedProfile != null &&
+        cachedDraft != null &&
+        widget.profileRepository == null &&
+        widget.draftRepository == null) {
+      _populateFields(cachedProfile, cachedDraft);
+    } else {
+      _loadData();
+    }
+  }
+
+  void _populateFields(TechnicianProfile profile, DraftVisit draft) {
+    _visitId = draft.id;
+    _nameController.text = profile.companyName;
+    _streetController.text = profile.street;
+    _houseNumberController.text = profile.houseNumber;
+    _boxNumberController.text = profile.boxNumber;
+    _postalCodeController.text = profile.postalCode;
+    _cityController.text = profile.city;
+    _phoneController.text = BelgianFormatters.stripPhonePrefix(profile.phone);
+    _emailController.text = profile.email;
+    _kboNumberController.text =
+        BelgianFormatters.stripKboPrefix(profile.kboNumber);
+    _firstNameController.text = profile.technicianFirstName;
+    _lastNameController.text = profile.technicianLastName;
+    _gvController.text = profile.gvNumber;
+    _tvController.text = profile.tvNumber;
+    final today = draft.visitDate.isNotEmpty
+        ? draft.visitDate
+        : DateTime.now().toIso8601String().substring(0, 10);
+    _dateController.text = today;
+    _startTimeController.text = draft.startTime;
+    _endTimeController.text = draft.endTime;
+    _isLoading = false;
   }
 
   @override
@@ -112,37 +148,7 @@ class _FirmaTechnicusTabState extends State<FirmaTechnicusTab>
           : await _draftRepo.getOrCreateActiveDraft();
 
       if (mounted) {
-        setState(() {
-          _visitId = draft.id;
-          // Populate company fields
-          _nameController.text = profile.companyName;
-          _streetController.text = profile.street;
-          _houseNumberController.text = profile.houseNumber;
-          _boxNumberController.text = profile.boxNumber;
-          _postalCodeController.text = profile.postalCode;
-          _cityController.text = profile.city;
-          _phoneController.text =
-              BelgianFormatters.stripPhonePrefix(profile.phone);
-          _emailController.text = profile.email;
-          _kboNumberController.text =
-              BelgianFormatters.stripKboPrefix(profile.kboNumber);
-
-          // Populate technician fields
-          _firstNameController.text = profile.technicianFirstName;
-          _lastNameController.text = profile.technicianLastName;
-          _gvController.text = profile.gvNumber;
-          _tvController.text = profile.tvNumber;
-
-          // Populate visit timing fields (default date to today if empty)
-          final today = draft.visitDate.isNotEmpty
-              ? draft.visitDate
-              : DateTime.now().toIso8601String().substring(0, 10);
-          _dateController.text = today;
-          _startTimeController.text = draft.startTime;
-          _endTimeController.text = draft.endTime;
-
-          _isLoading = false;
-        });
+        setState(() => _populateFields(profile, draft));
       }
     } catch (e, stack) {
       // Log unexpected errors so they are visible during development.
