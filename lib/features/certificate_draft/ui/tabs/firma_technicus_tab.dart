@@ -202,11 +202,9 @@ class _FirmaTechnicusTabState extends State<FirmaTechnicusTab>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-
     if (_isLoading) {
       return const Center(
-        child: CircularProgressIndicator(color: AppColors.amberGold),
-      );
+          child: CircularProgressIndicator(color: AppColors.amberGold));
     }
 
     return WorkflowTabContainer(

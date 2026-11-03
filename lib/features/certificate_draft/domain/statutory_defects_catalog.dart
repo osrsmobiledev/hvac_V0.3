@@ -11,7 +11,8 @@ export 'fuel_combustion_defects.dart';
 export 'hydraulic_defects.dart';
 
 /// Complete curated catalog ordered strictly from most common to rare across all categories.
-final List<StatutoryDefectPreset> statutoryDefectsCatalog = _buildOrderedCatalog();
+final List<StatutoryDefectPreset> statutoryDefectsCatalog =
+    _buildOrderedCatalog();
 
 List<StatutoryDefectPreset> _buildOrderedCatalog() {
   final Map<String, StatutoryDefectPreset> byId = {

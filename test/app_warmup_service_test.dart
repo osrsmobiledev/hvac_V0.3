@@ -115,7 +115,8 @@ void main() {
       expect(fakeProfileRepo.callCount, 1);
     });
 
-    test('Warm boot returns cached result immediately without redundant queries',
+    test(
+        'Warm boot returns cached result immediately without redundant queries',
         () async {
       final fakeDb = FakeAppDatabase();
       final fakeDraftRepo = FakeDraftRepository();

@@ -4,6 +4,7 @@ import 'package:hvac_app/app/localization/app_dictionary.dart';
 import 'package:hvac_app/app/shell/app_shell_screen.dart';
 import 'package:hvac_app/app/theme/app_theme.dart';
 import 'package:hvac_app/core/database/app_database.dart';
+import 'package:hvac_app/core/services/app_warmup_service.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 void main() {
@@ -17,6 +18,15 @@ void main() {
       customPath: inMemoryDatabasePath,
     );
     AppDatabase.instance.setDatabaseForTesting(db);
+    await db.insert('maintenance_visits', {
+      'id': 1,
+      'activity_type': 'onderhoud',
+      'visit_date': '2026-10-27',
+      'is_draft': 1,
+      'created_at': DateTime.now().toIso8601String(),
+      'updated_at': DateTime.now().toIso8601String(),
+    });
+    await AppWarmupService.instance.warmup();
   });
 
   tearDown(() async {
@@ -70,6 +80,8 @@ void main() {
       await tester.pumpAndSettle();
 
       await tester.tap(stookTab);
+      await tester.runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 150)));
       await tester.pumpAndSettle();
 
       // Find an active input field (boiler brand)
@@ -115,6 +127,8 @@ void main() {
       await tester.pumpAndSettle();
 
       await tester.tap(stookTab);
+      await tester.runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 150)));
       await tester.pumpAndSettle();
 
       // Focus active EditableText

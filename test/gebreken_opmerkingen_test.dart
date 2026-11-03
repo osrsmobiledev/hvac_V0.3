@@ -31,7 +31,8 @@ void main() {
   }
 
   group('GebrekenOpmerkingenCard layout and side-by-side positioning', () {
-    testWidgets('Renders defect title and SnelselectieButton side by side in a Row',
+    testWidgets(
+        'Renders defect title and SnelselectieButton side by side in a Row',
         (tester) async {
       final defectsController = TextEditingController();
       final remarksController = TextEditingController();
@@ -47,16 +48,19 @@ void main() {
       await tester.pumpAndSettle();
 
       // Find the defects title text and lightbulb icon
-      final titleFinder = find.text(EindbeoordelingDictionary.lblGebrekenNietWeggewerkt);
+      final titleFinder =
+          find.text(EindbeoordelingDictionary.lblGebrekenNietWeggewerkt);
       final lampFinder = find.byType(SnelselectieButton);
 
       expect(titleFinder, findsOneWidget);
       expect(lampFinder, findsOneWidget);
 
       // Verify both title and lamp button are children of the same Row (side by side)
-      final rowFinder = find.ancestor(of: titleFinder, matching: find.byType(Row));
+      final rowFinder =
+          find.ancestor(of: titleFinder, matching: find.byType(Row));
       expect(rowFinder, findsOneWidget);
-      expect(find.descendant(of: rowFinder, matching: lampFinder), findsOneWidget);
+      expect(
+          find.descendant(of: rowFinder, matching: lampFinder), findsOneWidget);
 
       // Verify horizontal positions: title on the left, lamp icon on the right
       final titleTopLeft = tester.getTopLeft(titleFinder);
@@ -83,10 +87,12 @@ void main() {
       await tester.pumpAndSettle();
 
       // Modal title is displayed
-      expect(find.text(EindbeoordelingDictionary.modalTitleSnelselectie), findsOneWidget);
+      expect(find.text(EindbeoordelingDictionary.modalTitleSnelselectie),
+          findsOneWidget);
     });
 
-    testWidgets('Embedded clear button appears in top-right of input box when text is entered',
+    testWidgets(
+        'Embedded clear button appears in top-right of input box when text is entered',
         (tester) async {
       final defectsController = TextEditingController();
       final remarksController = TextEditingController();
@@ -114,7 +120,8 @@ void main() {
       expect(find.byIcon(Icons.close), findsOneWidget);
 
       // Verify the delete button is embedded inside TacticalMultilineInput Stack
-      final inputFinder = find.ancestor(of: closeFinder, matching: find.byType(TacticalMultilineInput));
+      final inputFinder = find.ancestor(
+          of: closeFinder, matching: find.byType(TacticalMultilineInput));
       expect(inputFinder, findsOneWidget);
     });
   });

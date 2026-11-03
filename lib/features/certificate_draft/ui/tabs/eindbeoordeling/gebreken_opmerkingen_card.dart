@@ -41,7 +41,8 @@ class GebrekenOpmerkingenCard extends StatelessWidget {
     );
   }
 
-  void _applyPresets(BuildContext context, List<StatutoryDefectPreset> presets) {
+  void _applyPresets(
+      BuildContext context, List<StatutoryDefectPreset> presets) {
     if (presets.isEmpty) return;
 
     final existingDefects = defectsController.text.trim();
@@ -51,8 +52,9 @@ class GebrekenOpmerkingenCard extends StatelessWidget {
 
     final existingRemarks = remarksController.text.trim();
     final newMeasures = presets.map((p) => '• ${p.measureText}').join('\n');
-    remarksController.text =
-        existingRemarks.isEmpty ? newMeasures : '$existingRemarks\n$newMeasures';
+    remarksController.text = existingRemarks.isEmpty
+        ? newMeasures
+        : '$existingRemarks\n$newMeasures';
 
     onChanged();
     TacticalFeedback.showSuccess(

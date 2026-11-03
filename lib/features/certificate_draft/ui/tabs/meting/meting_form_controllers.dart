@@ -105,7 +105,8 @@ class MetingFormControllers {
       autoCombustionConform(isLiquidFuel: isLiquidFuel);
 
   /// Evaluates whether all statutory boiler-room & flue safety checks passed.
-  bool? safetyChecksConform(OperatingConditionsDraft draft, BoilerDraft boiler) {
+  bool? safetyChecksConform(
+      OperatingConditionsDraft draft, BoilerDraft boiler) {
     final isLiquid = boiler.fuelCategory == 'vloeibaar';
     final checks = [
       draft.fluePressureOk,

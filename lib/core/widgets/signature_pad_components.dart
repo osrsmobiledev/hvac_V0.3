@@ -29,7 +29,8 @@ class SignatureModalHeader extends StatelessWidget {
           ),
         ),
         IconButton(
-          icon: const Icon(Icons.close, color: AppColors.textSecondary, size: 20),
+          icon:
+              const Icon(Icons.close, color: AppColors.textSecondary, size: 20),
           onPressed: () => Navigator.of(context).pop(),
           tooltip: EindbeoordelingDictionary.btnAnnuleren,
         ),

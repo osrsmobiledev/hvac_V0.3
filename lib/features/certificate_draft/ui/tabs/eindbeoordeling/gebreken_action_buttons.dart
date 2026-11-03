@@ -130,7 +130,8 @@ class RemediationBanner extends StatelessWidget {
       child: const Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(Icons.warning_amber_rounded, color: AppColors.terracotta, size: 18),
+          Icon(Icons.warning_amber_rounded,
+              color: AppColors.terracotta, size: 18),
           SizedBox(width: 8),
           Expanded(
             child: Text(

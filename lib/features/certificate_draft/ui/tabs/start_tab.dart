@@ -36,7 +36,6 @@ class _StartTabState extends State<StartTab>
 
   int? _visitId;
   String _activityType = 'onderhoud';
-  bool _isLoading = true;
   final _debouncer = Debouncer();
 
   @override
@@ -51,7 +50,6 @@ class _StartTabState extends State<StartTab>
       _visitId = cachedDraft.id;
       _activityType = cachedDraft.activityType;
       _attestNumberController.text = cachedDraft.attestNumber;
-      _isLoading = false;
     } else {
       _loadDraft();
     }
@@ -84,12 +82,10 @@ class _StartTabState extends State<StartTab>
           _visitId = draft.id;
           _activityType = draft.activityType;
           _attestNumberController.text = draft.attestNumber;
-          _isLoading = false;
         });
       }
     } catch (e, stack) {
       debugPrint('[StartTab] _loadDraft error: $e\n$stack');
-      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -129,12 +125,6 @@ class _StartTabState extends State<StartTab>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-
-    if (_isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(color: AppColors.amberGold),
-      );
-    }
 
     return WorkflowTabContainer(
       scrollKey: 'start_tab_scroll',

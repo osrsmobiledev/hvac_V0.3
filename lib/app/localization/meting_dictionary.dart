@@ -36,7 +36,7 @@ abstract final class MetingDictionary {
   static const String btnUndo = 'Herstellen';
   static const String dlgConfirmClearTitle = 'Meting wissen';
   static const String dlgConfirmClearDataTab =
-      'Weet u zeker dat u de meetgegevens op Tab 1 (Data) wilt wissen?';
+      'Wilt u de meetgegevens in Data wissen?';
   static const String dlgConfirmClearBody =
       'Weet u zeker dat u alle meetwaarden van dit slot wilt wissen?';
   static String dlgConfirmClearBodyWithTitle(String title) =>
@@ -47,13 +47,19 @@ abstract final class MetingDictionary {
   static const String dlgConfirmOverwriteTitle = 'Meting overschrijven?';
   static const String dlgConfirmOverwriteBody =
       'Er staan al meetwaarden in dit slot. Wilt u deze overschrijven?';
+  static const String dlgConfirmOverwriteBodyDataTab =
+      'Er staan al meetgegevens in Data. Wilt u deze overschrijven?';
+  static const String btnOverwrite = 'Overschrijven';
   static const String dlgNoTab1DataTitle = 'Geen meetgegevens in Data';
   static const String dlgNoTab1DataBody =
       'Er zijn nog geen rookgasmetingen opgeslagen in de tab \'Data\'.\n\nWilt u nu rechtstreeks een Eurolyzer QR-code scannen?';
   static const String btnScanDirect = 'Direct QR Scannen';
-  static const String btnSimulateEurolyzer = '⚡ Test-meting simuleren';
-  static const String titleEurolyzerScanner = 'Eurolyzer QR Scanner';
-  static const String slotTitleDataTab = 'Data (Meetgegevens)';
+  static const String btnSimulateEurolyzer = 'Test-meting simuleren';
+  static const String titleEurolyzerScanner = 'Eurolyzer S1';
+  static const String slotTitleDataTab = 'Rookgassen intake';
+  static const String lblScanInstruction = 'Plaats QR-code in kader';
+  static const String lblEurolyzerInstruction =
+      'Richt de camera op de QR-code op het scherm van de Eurolyzer.';
   static const String lblCameraUnavailable =
       'Camera niet beschikbaar.\nGebruik de simulatie-knop hieronder.';
 

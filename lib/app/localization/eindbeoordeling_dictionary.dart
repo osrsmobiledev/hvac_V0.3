@@ -53,8 +53,7 @@ abstract final class EindbeoordelingDictionary {
   // --- Quick Statutory Defect Presets ---
   static const String btnSnelselectie = 'Snelselectie';
   static const String tooltipSnelselectie = 'Snelselectie suggesties';
-  static const String modalTitleSnelselectie =
-      'Gebreken & maatregelen';
+  static const String modalTitleSnelselectie = 'Gebreken & maatregelen';
   static const String filterCatAll = 'Aanbevolen';
   static const String filterCatFlueVent = 'Rookgas & Verluchting';
   static const String filterCatFuel = 'Brandstof & Brander';

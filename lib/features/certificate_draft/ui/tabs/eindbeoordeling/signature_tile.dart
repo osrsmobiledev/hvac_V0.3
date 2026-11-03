@@ -121,10 +121,18 @@ class _SignaturePreviewStack extends StatelessWidget {
     if (signatureData.startsWith('data:image/png;base64,')) {
       final base64Content =
           signatureData.substring('data:image/png;base64,'.length);
-      imageWidget = Image.memory(
-        base64Decode(base64Content),
-        fit: BoxFit.contain,
-      );
+      try {
+        imageWidget = Image.memory(
+          base64Decode(base64Content),
+          fit: BoxFit.contain,
+        );
+      } catch (_) {
+        imageWidget = const Icon(
+          Icons.check_circle_outline,
+          color: AppColors.antiqueGold,
+          size: 32,
+        );
+      }
     } else {
       imageWidget = const Icon(
         Icons.check_circle_outline,

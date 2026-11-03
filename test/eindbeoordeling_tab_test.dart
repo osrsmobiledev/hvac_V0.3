@@ -66,8 +66,8 @@ class FakeEindbeoordelingRepository implements EindbeoordelingRepository {
         ? notifierFuel
         : summary.fuelType;
     final visitDt = EindbeoordelingDraft.parseDate(summary.visitDate);
-    final hasConclusions = draft.toestelWerkingGoed != null ||
-        draft.toestelWerkingVeilig != null;
+    final hasConclusions =
+        draft.toestelWerkingGoed != null || draft.toestelWerkingVeilig != null;
 
     if (!hasConclusions) {
       return draft.withAssessmentState(
@@ -338,7 +338,8 @@ void main() {
       expect(find.text('25/10/2027'), findsOneWidget);
 
       // Verify +3 Maanden button exists and tap it
-      expect(find.text(EindbeoordelingDictionary.chipPlus3Months), findsOneWidget);
+      expect(
+          find.text(EindbeoordelingDictionary.chipPlus3Months), findsOneWidget);
       await tester.tap(find.text(EindbeoordelingDictionary.chipPlus3Months));
       await tester.pumpAndSettle();
 
@@ -362,7 +363,8 @@ void main() {
       // Tapping +3 Maanden again deselects to empty
       await tester.tap(find.text(EindbeoordelingDictionary.chipPlus3Months));
       await tester.pumpAndSettle();
-      expect(find.text(EindbeoordelingDictionary.datePlaceholder), findsOneWidget);
+      expect(
+          find.text(EindbeoordelingDictionary.datePlaceholder), findsOneWidget);
       expect(repo.draft.nextInspectionDate, '');
     });
 

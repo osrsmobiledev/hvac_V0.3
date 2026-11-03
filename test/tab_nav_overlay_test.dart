@@ -17,8 +17,7 @@ Widget buildTestApp() {
 
 void main() {
   group('Floating TabNavOverlay Widget Tests', () {
-    testWidgets(
-        'Left arrow hidden on Tab 1, right arrow navigates to Tab 2',
+    testWidgets('Left arrow hidden on Tab 1, right arrow navigates to Tab 2',
         (tester) async {
       tester.view.physicalSize = const Size(390, 844);
       tester.view.devicePixelRatio = 1.0;

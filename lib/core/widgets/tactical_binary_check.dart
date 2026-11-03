@@ -10,7 +10,8 @@ import 'tactical_check_button.dart';
 
 /// Centralized BO2 Tactical binary toggle with haptic feedback and tap-to-deselect.
 class TacticalBinaryCheck extends StatelessWidget {
-  final bool? value; // true = positive/first, false = negative/second, null = unselected
+  final bool?
+      value; // true = positive/first, false = negative/second, null = unselected
   final ValueChanged<bool?> onChanged;
   final String? positiveLabel;
   final String? negativeLabel;

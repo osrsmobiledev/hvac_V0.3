@@ -10,8 +10,11 @@ import 'package:hvac_app/features/certificate_draft/ui/tabs/eindbeoordeling/gebr
 
 void main() {
   group('StatutoryDefectPreset Domain Logic Tests', () {
-    test('Gas + Type C returns concentric flue and gas presets, excludes oil & Type B', () {
-      final presets = StatutoryDefectPreset.filter(fuel: 'gas', boilerType: 'C');
+    test(
+        'Gas + Type C returns concentric flue and gas presets, excludes oil & Type B',
+        () {
+      final presets =
+          StatutoryDefectPreset.filter(fuel: 'gas', boilerType: 'C');
       final ids = presets.map((p) => p.id).toSet();
 
       // Must include Type C & Gas & Hydraulic
@@ -35,7 +38,9 @@ void main() {
       expect(ids.contains('solid_creosote_flue'), isFalse);
     });
 
-    test('Stookolie + Type B returns ventilation & oil presets, excludes Type C & gas', () {
+    test(
+        'Stookolie + Type B returns ventilation & oil presets, excludes Type C & gas',
+        () {
       final presets =
           StatutoryDefectPreset.filter(fuel: 'vloeibaar', boilerType: 'B');
       final ids = presets.map((p) => p.id).toSet();
@@ -70,7 +75,8 @@ void main() {
     });
 
     test('Presets are ordered strictly from most common to rare', () {
-      final gasPresets = StatutoryDefectPreset.filter(fuel: 'gas', boilerType: 'C');
+      final gasPresets =
+          StatutoryDefectPreset.filter(fuel: 'gas', boilerType: 'C');
       final ids = gasPresets.map((p) => p.id).toList();
 
       final idxExpVessel = ids.indexOf('expansion_vessel_depleted');
@@ -91,7 +97,8 @@ void main() {
   });
 
   group('GebrekenOpmerkingenCard & StatutoryDefectsModal Widget Tests', () {
-    testWidgets('Tapping Snelselectie opens modal, multi-selects and applies defect & remedy',
+    testWidgets(
+        'Tapping Snelselectie opens modal, multi-selects and applies defect & remedy',
         (tester) async {
       final defectsCtrl = TextEditingController(text: 'Bestaande opmerking');
       final remarksCtrl = TextEditingController();
@@ -127,8 +134,7 @@ void main() {
       expect(find.text('Aardgas • Type C (Gesloten)'), findsOneWidget);
 
       // Tap the top preset (Expansievat defect)
-      final presetTitleFinder =
-          find.text('Expansievat defect');
+      final presetTitleFinder = find.text('Expansievat defect');
       expect(presetTitleFinder, findsOneWidget);
       await tester.tap(presetTitleFinder);
       await tester.pumpAndSettle();
@@ -143,10 +149,8 @@ void main() {
       // Modal closed, text formatted cleanly with bullets
       expect(changed, isTrue);
       expect(defectsCtrl.text, contains('Bestaande opmerking'));
-      expect(defectsCtrl.text,
-          contains('• Expansievat membraan gescheurd'));
-      expect(remarksCtrl.text,
-          contains('• Expansievat vervangen'));
+      expect(defectsCtrl.text, contains('• Expansievat membraan gescheurd'));
+      expect(remarksCtrl.text, contains('• Expansievat vervangen'));
     });
 
     testWidgets('Tapping Wis button opens confirm dialog and clears field',
@@ -174,10 +178,12 @@ void main() {
       );
 
       // Two clear buttons are visible because both controllers have text
-      expect(find.text(EindbeoordelingDictionary.btnWissen), findsNWidgets(2));
+      expect(find.byTooltip(EindbeoordelingDictionary.btnWissen),
+          findsNWidgets(2));
 
       // Tap the first clear button (for defects)
-      await tester.tap(find.text(EindbeoordelingDictionary.btnWissen).first);
+      await tester
+          .tap(find.byTooltip(EindbeoordelingDictionary.btnWissen).first);
       await tester.pumpAndSettle();
 
       // Dialog is shown

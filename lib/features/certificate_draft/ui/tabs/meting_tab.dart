@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:hvac_app/app/theme/app_colors.dart';
 import 'package:hvac_app/app/theme/app_theme.dart';
 import 'package:hvac_app/core/services/app_warmup_service.dart';
 import 'package:hvac_app/core/utils/debouncer.dart';
@@ -43,8 +42,8 @@ class _MetingTabState extends State<MetingTab>
   OperatingConditionsDraft _operatingConditions =
       OperatingConditionsDraft.empty();
   String _activeSlot = 'proef1';
-  final _debouncer = Debouncer();
   bool _isLoading = true;
+  final _debouncer = Debouncer();
 
   @override
   bool get wantKeepAlive => true;
@@ -54,11 +53,13 @@ class _MetingTabState extends State<MetingTab>
     super.initState();
     widget.boilerNotifier?.addListener(_onBoilerChanged);
     final cached = AppWarmupService.instance.cachedResult;
-    if (cached?.operatingConditions != null && cached?.measurementSlots != null) {
+    if (cached?.operatingConditions != null &&
+        cached?.measurementSlots != null) {
       final boiler = widget.boilerNotifier?.draft ??
           cached!.activeBoiler ??
           BoilerDraft.initial();
-      _populateInitialData(boiler, cached!.operatingConditions!, cached.measurementSlots!);
+      _populateInitialData(
+          boiler, cached!.operatingConditions!, cached.measurementSlots!);
     } else {
       _loadInitialData();
     }
@@ -74,8 +75,8 @@ class _MetingTabState extends State<MetingTab>
     _controllers.populateOperatingConditions(conditions);
     slots.forEach((k, v) => _controllers.slots[k]?.populate(v));
     _controllers.autoEvaluateAllSlots(_boiler);
-    _isLoading = false;
     _syncAssessment();
+    _isLoading = false;
   }
 
   @override
@@ -108,8 +109,10 @@ class _MetingTabState extends State<MetingTab>
   void _syncAssessment() {
     final isLiquid = _boiler.fuelCategory == 'vloeibaar';
     widget.assessmentNotifier?.updateAssessment(
-      combustionPassed: _controllers.decisiveCombustionConform(isLiquidFuel: isLiquid),
-      safetyChecksPassed: _controllers.safetyChecksConform(_operatingConditions, _boiler),
+      combustionPassed:
+          _controllers.decisiveCombustionConform(isLiquidFuel: isLiquid),
+      safetyChecksPassed:
+          _controllers.safetyChecksConform(_operatingConditions, _boiler),
     );
   }
 
@@ -168,8 +171,7 @@ class _MetingTabState extends State<MetingTab>
   Widget build(BuildContext context) {
     super.build(context);
     if (_isLoading) {
-      return const Center(
-          child: CircularProgressIndicator(color: AppColors.amberGold));
+      return const Center(child: CircularProgressIndicator());
     }
     final slotCtrl =
         _controllers.slots[_activeSlot] ?? _controllers.slots['proef1']!;

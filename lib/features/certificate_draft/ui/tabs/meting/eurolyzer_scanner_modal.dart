@@ -1,14 +1,17 @@
+// File: lib/features/certificate_draft/ui/tabs/meting/eurolyzer_scanner_modal.dart
+// Responsibility: Sleek, high-precision BO2 tactical HUD camera scanner for Eurolyzer flue-gas QR codes.
+
 import 'package:flutter/material.dart';
 import 'package:hvac_app/app/localization/app_dictionary.dart';
 import 'package:hvac_app/app/theme/app_colors.dart';
-import 'package:hvac_app/app/theme/app_theme.dart';
-import 'package:hvac_app/core/widgets/tactical_dialog_button.dart';
 import 'package:hvac_app/core/widgets/tactical_dialog_window.dart';
+import 'package:hvac_app/core/widgets/tactical_header_circle_button.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import '../../../data/eurolyzer_qr_parser.dart';
 import '../../../domain/measurement_slot_draft.dart';
+import 'eurolyzer_camera_box.dart';
 
-/// Tactical HUD modal camera scanner for Eurolyzer flue-gas QR codes.
+/// Sleek tactical HUD modal camera scanner for Eurolyzer flue-gas QR codes.
 class EurolyzerScannerModal extends StatefulWidget {
   final String slotKey;
   final String slotTitle;
@@ -79,117 +82,30 @@ class _EurolyzerScannerModalState extends State<EurolyzerScannerModal> {
   @override
   Widget build(BuildContext context) {
     return TacticalDialogWindow(
-      title: '${MetingDictionary.titleEurolyzerScanner}\n(${widget.slotTitle})',
-      maxWidth: 380,
-      actions: TacticalDialogActions.single(
-        label: AppDictionary.btnCancel,
-        onPressed: () => Navigator.of(context).pop(),
+      title: MetingDictionary.titleEurolyzerScanner,
+      onClose: () => Navigator.of(context).pop(),
+      showDivider: false,
+      maxWidth: 360,
+      leading: TacticalHeaderCircleButton(
+        key: const Key('simulate_eurolyzer_qr_button'),
+        tooltip: MetingDictionary.btnSimulateEurolyzer,
+        icon: const Icon(
+          Icons.science_rounded,
+          color: AppColors.antiqueGold,
+        ),
+        onPressed: _simulateSampleScan,
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Stack(
-            alignment: Alignment.center,
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(16),
-                child: SizedBox(
-                  height: 240,
-                  width: double.infinity,
-                  child: MobileScanner(
-                    controller: _controller,
-                    onDetect: _onDetect,
-                    errorBuilder: (context, error) {
-                      return Center(
-                        child: Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: Text(
-                            MetingDictionary.lblCameraUnavailable,
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: Theme.of(context).colorScheme.error,
-                              fontSize: 13,
-                              fontFamily: AppTheme.fontFamily,
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ),
-
-              // Tactical amber reticle viewfinder overlay
-              Container(
-                height: 150,
-                width: 150,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: AppColors.amberGold.withValues(alpha: 0.85),
-                    width: 2.0,
-                  ),
-                ),
-              ),
-
-              // Torch toggle button in top right
-              Positioned(
-                top: 8,
-                right: 8,
-                child: Material(
-                  color: Colors.black.withValues(alpha: 0.6),
-                  shape: const CircleBorder(),
-                  child: IconButton(
-                    icon: Icon(
-                      _isTorchOn
-                          ? Icons.flash_on_rounded
-                          : Icons.flash_off_rounded,
-                      color: _isTorchOn
-                          ? AppColors.amberGold
-                          : AppColors.textSecondary,
-                    ),
-                    onPressed: () async {
-                      await _controller.toggleTorch();
-                      setState(() {
-                        _isTorchOn = !_isTorchOn;
-                      });
-                    },
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-
-          // Simulation fallback action
-          OutlinedButton.icon(
-            key: const ValueKey('simulate_eurolyzer_qr_button'),
-            onPressed: _simulateSampleScan,
-            icon: const Icon(Icons.bolt_rounded,
-                color: AppColors.antiqueGold, size: 18),
-            label: const Text(
-              MetingDictionary.btnSimulateEurolyzer,
-              style: TextStyle(
-                fontFamily: AppTheme.fontFamily,
-                fontSize: 12.5,
-                fontWeight: FontWeight.bold,
-                color: AppColors.antiqueGold,
-              ),
-            ),
-            style: OutlinedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-              side: BorderSide(
-                color: AppColors.amberGoldBorder.withValues(alpha: 0.6),
-                width: 1.0,
-              ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
-              ),
-              backgroundColor: const Color(0xFF191919),
-            ),
-          ),
-          const SizedBox(height: 8),
-        ],
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 18),
+        child: EurolyzerCameraBox(
+          controller: _controller,
+          isTorchOn: _isTorchOn,
+          onDetect: _onDetect,
+          onToggleTorch: () async {
+            await _controller.toggleTorch();
+            setState(() => _isTorchOn = !_isTorchOn);
+          },
+        ),
       ),
     );
   }

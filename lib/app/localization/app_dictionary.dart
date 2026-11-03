@@ -1,3 +1,4 @@
+export 'data_tab_dictionary.dart';
 export 'meting_dictionary.dart';
 
 /// Centralized Single Source of Truth for Dutch (Flemish) UI strings.
@@ -236,4 +237,7 @@ abstract final class AppDictionary {
       'Plaats de barcode of QR-code van het toestel in het kader.';
   static const String placeholderEindbeoordelingPending =
       'Wordt geïmplementeerd in Slice 3.3';
+  static const String loadingAppletTitle = 'Werkbon initialiseren...';
+  static const String loadingAppletSubtitle =
+      'Formulieren en metingen voorbereiden';
 }

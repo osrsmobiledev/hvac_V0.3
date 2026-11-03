@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hvac_app/app/theme/app_colors.dart';
 import 'package:hvac_app/app/theme/app_theme.dart';
+import 'tactical_header_circle_button.dart';
 
 /// Centralized, reusable BO2 Tactical pop-up window shell.
 ///
@@ -15,13 +16,22 @@ class TacticalDialogWindow extends StatelessWidget {
     required this.title,
     required this.child,
     this.actions,
+    this.leading,
+    this.onClose,
     this.isDestructive = false,
+    this.showDivider = true,
     this.maxWidth = 360.0,
     this.maxHeight,
   });
 
   /// The header text displayed at the top of the pop-up window.
   final String title;
+
+  /// Optional leading widget rendered at top-left of header.
+  final Widget? leading;
+
+  /// Optional callback when top-right close icon is tapped.
+  final VoidCallback? onClose;
 
   /// The custom body content rendered between the laser divider and the actions.
   final Widget child;
@@ -31,6 +41,9 @@ class TacticalDialogWindow extends StatelessWidget {
 
   /// Whether this window represents a destructive action (changes border & laser to red).
   final bool isDestructive;
+
+  /// Whether to render the hairline laser divider under the title.
+  final bool showDivider;
 
   /// Maximum layout width constraint (defaults to 360px).
   final double maxWidth;
@@ -44,6 +57,7 @@ class TacticalDialogWindow extends StatelessWidget {
     required String title,
     required Widget child,
     Widget? actions,
+    Widget? leading,
     bool isDestructive = false,
     bool barrierDismissible = true,
     double maxWidth = 360.0,
@@ -55,6 +69,7 @@ class TacticalDialogWindow extends StatelessWidget {
       builder: (_) => TacticalDialogWindow(
         title: title,
         actions: actions,
+        leading: leading,
         isDestructive: isDestructive,
         maxWidth: maxWidth,
         maxHeight: maxHeight,
@@ -97,20 +112,55 @@ class TacticalDialogWindow extends StatelessWidget {
             mainAxisSize:
                 maxHeight != null ? MainAxisSize.max : MainAxisSize.min,
             children: [
-              Padding(
-                padding: const EdgeInsets.only(top: 22, bottom: 14),
-                child: Text(
-                  title,
-                  style: const TextStyle(
-                    fontFamily: AppTheme.fontFamily,
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 0.3,
-                  ),
+              SizedBox(
+                width: double.infinity,
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(
+                        top: 18,
+                        bottom: 10,
+                        left: 52,
+                        right: 52,
+                      ),
+                      child: Text(
+                        title,
+                        textAlign: TextAlign.center,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontFamily: AppTheme.fontFamily,
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.3,
+                        ),
+                      ),
+                    ),
+                    if (leading != null)
+                      Positioned(
+                        top: 10,
+                        left: 12,
+                        child: leading!,
+                      ),
+                    if (onClose != null)
+                      Positioned(
+                        top: 10,
+                        right: 12,
+                        child: TacticalHeaderCircleButton(
+                          tooltip: 'Sluiten',
+                          icon: const Icon(
+                            Icons.close_rounded,
+                            color: AppColors.textPrimary,
+                          ),
+                          onPressed: onClose!,
+                        ),
+                      ),
+                  ],
                 ),
               ),
-              TacticalLaserDivider(accentColor: accentColor),
+              if (showDivider) TacticalLaserDivider(accentColor: accentColor),
               if (maxHeight != null) Expanded(child: child) else child,
               if (actions != null) actions!,
             ],

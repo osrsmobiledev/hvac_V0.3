@@ -1,11 +1,15 @@
+// File: lib/features/certificate_draft/domain/flue_gas_field.dart
+// Responsibility: 19 flue-gas parameter domain models ordered according to the official Flemish certificate.
+
+import 'package:hvac_app/app/localization/data_tab_dictionary.dart';
 import 'measurement_slot_draft.dart';
 
 /// Represents a single flue-gas measurement reading on Tab 1 (Data).
 ///
-/// Contains the localized Dutch parameter name (with units in brackets)
+/// Contains the statutory Flemish regulatory parameter name (with units in brackets)
 /// and the captured measurement string or null if empty.
 class FlueGasField {
-  /// The Dutch parameter label (e.g. 'Druk [hPa]', 'O₂ [Vol. %]').
+  /// The official Dutch parameter label (e.g. 'Druk [hPa]', 'Zuurstof (O₂) [Vol. %]').
   final String label;
 
   /// The recorded measurement string or null when not yet captured.
@@ -16,33 +20,36 @@ class FlueGasField {
     this.value,
   });
 
-  /// The full ordered list of 21 flue-gas parameters matching the legacy
-  /// Eurolyzer instrument data specification and preferred theme screenshots.
+  /// The full ordered list of 19 flue-gas parameters matching the official
+  /// Flemish Combustion Certificate table sequence, followed by telemetry diagnostics.
   static const List<FlueGasField> defaultFields = [
-    FlueGasField(label: 'Brandstof'),
-    FlueGasField(label: 'Datum'),
-    FlueGasField(label: 'Tijd'),
-    FlueGasField(label: 'Druk [hPa]'),
-    FlueGasField(label: 'Temperatuur 1 [°C]'),
-    FlueGasField(label: 'Temperatuur 2 [°C]'),
-    FlueGasField(label: 'Temperatuurverschil [°C]'),
-    FlueGasField(label: 'O₂ [Vol. %]'),
-    FlueGasField(label: 'CO [ppm]'),
-    FlueGasField(label: 'NO [ppm]'),
-    FlueGasField(label: 'SO₂ [ppm]'),
-    FlueGasField(label: 'CO₂ [Vol. %]'),
-    FlueGasField(label: 'Rendement Hi [%]'),
-    FlueGasField(label: 'Luchtovermaat'),
-    FlueGasField(label: 'Verliezen [%]'),
-    FlueGasField(label: 'CO (referentie) [ppm]'),
-    FlueGasField(label: 'Dauwpunt [°C]'),
-    FlueGasField(label: 'Keteltemperatuur [°C]'),
-    FlueGasField(label: 'Druk [Pa]'),
-    FlueGasField(label: 'Rendement Hs [%]'),
-    FlueGasField(label: 'CO (referentie) [mg/kWh]'),
+    // --- 1. Algemene meetgegevens (Brandstof) ---
+    FlueGasField(label: DataTabDictionary.lblBrandstof),
+
+    // --- 2. Statutaire Vlaamse attesteisen (Volgorde officieel attest) ---
+    FlueGasField(label: DataTabDictionary.lblBoilerTemp),
+    FlueGasField(label: DataTabDictionary.lblO2),
+    FlueGasField(label: DataTabDictionary.lblCo2),
+    FlueGasField(label: DataTabDictionary.lblCoMgKwh),
+    FlueGasField(label: DataTabDictionary.lblFlueTempTg),
+    FlueGasField(label: DataTabDictionary.lblAirTempTa),
+    FlueGasField(label: DataTabDictionary.lblNetTemp),
+    FlueGasField(label: DataTabDictionary.lblEfficiencyHi),
+    FlueGasField(label: DataTabDictionary.lblEfficiencyHs),
+    FlueGasField(label: DataTabDictionary.lblFluePressurePa),
+
+    // --- 3. Telemetrie & branderdiagnose ---
+    FlueGasField(label: DataTabDictionary.lblDrukHpa),
+    FlueGasField(label: DataTabDictionary.lblCoPpm),
+    FlueGasField(label: DataTabDictionary.lblCoRefPpm),
+    FlueGasField(label: DataTabDictionary.lblExcessAirLambda),
+    FlueGasField(label: DataTabDictionary.lblLossesQa),
+    FlueGasField(label: DataTabDictionary.lblDewPoint),
+    FlueGasField(label: DataTabDictionary.lblNoPpm),
+    FlueGasField(label: DataTabDictionary.lblSo2Ppm),
   ];
 
-  /// Populates the 21 fields using the telemetry in [draft].
+  /// Populates the 19 fields using the telemetry in [draft].
   static List<FlueGasField> fromMeasurement(MeasurementSlotDraft? draft) {
     if (draft == null) return defaultFields;
 
@@ -61,56 +68,73 @@ class FlueGasField {
     }
 
     return [
-      const FlueGasField(label: 'Brandstof', value: 'Aardgas'),
+      // --- 1. Algemene meetgegevens (Brandstof) ---
+      const FlueGasField(
+          label: DataTabDictionary.lblBrandstof, value: 'Aardgas'),
+
+      // --- 2. Statutaire Vlaamse attesteisen (Volgorde officieel attest) ---
+      const FlueGasField(label: DataTabDictionary.lblBoilerTemp),
       FlueGasField(
-        label: 'Datum',
-        value: DateTime.now().toIso8601String().substring(0, 10),
+        label: DataTabDictionary.lblO2,
+        value: fmt(draft.o2Percent),
       ),
       FlueGasField(
-        label: 'Tijd',
-        value:
-            '${DateTime.now().hour.toString().padLeft(2, '0')}:${DateTime.now().minute.toString().padLeft(2, '0')}',
+        label: DataTabDictionary.lblCo2,
+        value: fmt(draft.co2Percent),
       ),
       FlueGasField(
-        label: 'Druk [hPa]',
+        label: DataTabDictionary.lblCoMgKwh,
+        value: fmt(draft.coMgKwh),
+      ),
+      FlueGasField(
+        label: DataTabDictionary.lblFlueTempTg,
+        value: fmt(draft.flueTempTg),
+      ),
+      FlueGasField(
+        label: DataTabDictionary.lblAirTempTa,
+        value: fmt(draft.ambientTempTa),
+      ),
+      FlueGasField(
+        label: DataTabDictionary.lblNetTemp,
+        value: fmt(draft.effectiveNetTemp),
+      ),
+      FlueGasField(
+        label: DataTabDictionary.lblEfficiencyHi,
+        value: fmt(draft.efficiencyHi),
+      ),
+      FlueGasField(
+        label: DataTabDictionary.lblEfficiencyHs,
+        value: fmt(draft.efficiencyHs),
+      ),
+      FlueGasField(
+        label: DataTabDictionary.lblFluePressurePa,
+        value: fmt(draft.fluePressurePa),
+      ),
+
+      // --- 3. Telemetrie & branderdiagnose ---
+      FlueGasField(
+        label: DataTabDictionary.lblDrukHpa,
         value: draft.fluePressurePa != null
             ? (draft.fluePressurePa! / 100).toStringAsFixed(2)
             : null,
       ),
-      FlueGasField(label: 'Temperatuur 1 [°C]', value: fmt(draft.flueTempTg)),
       FlueGasField(
-          label: 'Temperatuur 2 [°C]', value: fmt(draft.ambientTempTa)),
-      FlueGasField(
-        label: 'Temperatuurverschil [°C]',
-        value: fmt(draft.effectiveNetTemp),
-      ),
-      FlueGasField(label: 'O₂ [Vol. %]', value: fmt(draft.o2Percent)),
-      FlueGasField(
-        label: 'CO [ppm]',
+        label: DataTabDictionary.lblCoPpm,
         value: draft.coMgKwh != null
             ? (draft.coMgKwh! / 1.25).toStringAsFixed(0)
             : null,
       ),
-      const FlueGasField(label: 'NO [ppm]'),
-      const FlueGasField(label: 'SO₂ [ppm]'),
-      FlueGasField(label: 'CO₂ [Vol. %]', value: fmt(draft.co2Percent)),
-      FlueGasField(label: 'Rendement Hi [%]', value: fmt(draft.efficiencyHi)),
-      FlueGasField(label: 'Luchtovermaat', value: lambda),
-      FlueGasField(label: 'Verliezen [%]', value: losses),
       FlueGasField(
-        label: 'CO (referentie) [ppm]',
+        label: DataTabDictionary.lblCoRefPpm,
         value: draft.coMgKwh != null
             ? (draft.coMgKwh! / 1.25).toStringAsFixed(0)
             : null,
       ),
-      const FlueGasField(label: 'Dauwpunt [°C]'),
-      const FlueGasField(label: 'Keteltemperatuur [°C]'),
-      FlueGasField(label: 'Druk [Pa]', value: fmt(draft.fluePressurePa)),
-      FlueGasField(label: 'Rendement Hs [%]', value: fmt(draft.efficiencyHs)),
-      FlueGasField(
-        label: 'CO (referentie) [mg/kWh]',
-        value: fmt(draft.coMgKwh),
-      ),
+      FlueGasField(label: DataTabDictionary.lblExcessAirLambda, value: lambda),
+      FlueGasField(label: DataTabDictionary.lblLossesQa, value: losses),
+      const FlueGasField(label: DataTabDictionary.lblDewPoint),
+      const FlueGasField(label: DataTabDictionary.lblNoPpm),
+      const FlueGasField(label: DataTabDictionary.lblSo2Ppm),
     ];
   }
 }

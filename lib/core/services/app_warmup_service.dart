@@ -14,11 +14,16 @@ import 'package:hvac_app/features/certificate_draft/domain/eindbeoordeling_draft
 import 'package:hvac_app/features/certificate_draft/domain/measurement_slot_draft.dart';
 import 'package:hvac_app/features/certificate_draft/domain/operating_conditions_draft.dart';
 import 'package:hvac_app/features/certificate_draft/domain/technician_profile.dart';
+import 'package:hvac_app/features/customers_installations/data/customer_repository.dart';
+import 'package:hvac_app/features/customers_installations/domain/customer.dart';
+import 'package:hvac_app/features/customers_installations/domain/service_location.dart';
 
 /// Result snapshot returned when core engine warmup completes.
 class WarmupResult {
   final DraftVisit? activeDraft;
   final TechnicianProfile? profile;
+  final Customer? activeCustomer;
+  final ServiceLocation? activeServiceLocation;
   final BoilerDraft? activeBoiler;
   final OperatingConditionsDraft? operatingConditions;
   final Map<String, MeasurementSlotDraft>? measurementSlots;
@@ -29,6 +34,8 @@ class WarmupResult {
   const WarmupResult({
     this.activeDraft,
     this.profile,
+    this.activeCustomer,
+    this.activeServiceLocation,
     this.activeBoiler,
     this.operatingConditions,
     this.measurementSlots,
@@ -65,6 +72,8 @@ class AppWarmupService {
     final stopwatch = Stopwatch()..start();
     DraftVisit? draft;
     TechnicianProfile? profile;
+    Customer? customer;
+    ServiceLocation? serviceLocation;
     BoilerDraft? boiler;
     OperatingConditionsDraft? operatingConditions;
     Map<String, MeasurementSlotDraft>? measurementSlots;
@@ -79,32 +88,36 @@ class AppWarmupService {
       final profileRepo =
           profileRepoOverride ?? TechnicianProfileRepository(appDatabase: db);
 
-      // Pre-fetch draft visit and technician profile in parallel
-      final results = await Future.wait([
-        draftRepo.getOrCreateActiveDraft(),
-        profileRepo.getProfile(),
-      ]);
+      draft = await draftRepo.getOrCreateActiveDraft();
+      profile = await profileRepo.getProfile();
 
-      draft = results[0] as DraftVisit;
-      profile = results[1] as TechnicianProfile;
-
-      // Warm up and cache all workflow models into RAM concurrently
+      // Sequentially load each tab model to eliminate SQLite connection lock contention
       if (draft.id > 0) {
+        final activeDraft = draft;
         final measurementRepo = MeasurementDraftRepository(dbProvider: db);
-        final tabResults = await Future.wait([
-          BoilerDraftRepository(appDatabase: db).getOrCreateActiveBoiler(),
-          measurementRepo.loadOperatingConditions(draft.id),
-          measurementRepo.loadMeasurementSlots(draft.id),
-          measurementRepo.loadTab1RawMeasurement(draft.id),
-          EindbeoordelingRepository(appDatabase: db)
-              .loadDraft(visitId: draft.id),
-        ]);
+        final customerRepo = CustomerRepository(db);
 
-        boiler = tabResults[0] as BoilerDraft?;
-        operatingConditions = tabResults[1] as OperatingConditionsDraft?;
-        measurementSlots = tabResults[2] as Map<String, MeasurementSlotDraft>?;
-        tab1Raw = tabResults[3] as MeasurementSlotDraft?;
-        eindbeoordeling = tabResults[4] as EindbeoordelingDraft?;
+        boiler = await BoilerDraftRepository(appDatabase: db)
+            .getOrCreateActiveBoiler();
+        operatingConditions =
+            await measurementRepo.loadOperatingConditions(activeDraft.id);
+        measurementSlots =
+            await measurementRepo.loadMeasurementSlots(activeDraft.id);
+        tab1Raw = await measurementRepo.loadTab1RawMeasurement(activeDraft.id);
+        eindbeoordeling = await EindbeoordelingRepository(appDatabase: db)
+            .loadDraft(visitId: activeDraft.id);
+
+        if (activeDraft.customerId != null) {
+          customer =
+              await customerRepo.getCustomerById(activeDraft.customerId!);
+          if (activeDraft.serviceLocationId != null) {
+            final locs = await customerRepo
+                .getLocationsForCustomer(activeDraft.customerId!);
+            serviceLocation = locs
+                .where((l) => l.id == activeDraft.serviceLocationId)
+                .firstOrNull;
+          }
+        }
       }
     } catch (e, stack) {
       debugPrint('[AppWarmupService] warmup error: $e\n$stack');
@@ -116,6 +129,8 @@ class AppWarmupService {
     _cachedResult = WarmupResult(
       activeDraft: draft,
       profile: profile,
+      activeCustomer: customer,
+      activeServiceLocation: serviceLocation,
       activeBoiler: boiler,
       operatingConditions: operatingConditions,
       measurementSlots: measurementSlots,

@@ -45,8 +45,7 @@ class _DataTabState extends State<DataTab> with AutomaticKeepAliveClientMixin {
   void initState() {
     super.initState();
     _repository = widget.repository ?? MeasurementDraftRepository();
-    final cached =
-        AppWarmupService.instance.cachedResult?.tab1RawMeasurement;
+    final cached = AppWarmupService.instance.cachedResult?.tab1RawMeasurement;
     if (cached != null && widget.repository == null) {
       _measurement = cached;
     } else {
@@ -72,7 +71,25 @@ class _DataTabState extends State<DataTab> with AutomaticKeepAliveClientMixin {
     }
   }
 
+  bool _hasMeasurementData(MeasurementSlotDraft measurement) {
+    return measurement.o2Percent != null ||
+        measurement.co2Percent != null ||
+        measurement.coMgKwh != null ||
+        measurement.flueTempTg != null;
+  }
+
   Future<void> _scanEurolyzer() async {
+    if (_measurement != null && _hasMeasurementData(_measurement!)) {
+      final shouldOverwrite = await TacticalConfirmDialog.show(
+        context: context,
+        title: MetingDictionary.dlgConfirmOverwriteTitle,
+        content: MetingDictionary.dlgConfirmOverwriteBodyDataTab,
+        confirmLabel: MetingDictionary.btnOverwrite,
+        cancelLabel: AppDictionary.btnCancel,
+      );
+      if (shouldOverwrite != true || !mounted) return;
+    }
+
     final scanned = await EurolyzerScannerModal.scan(
       context,
       slotKey: 'tab1_raw',

@@ -48,20 +48,27 @@
 
 - **Current Status:** Milestone 1, Milestone 2, and Milestone 3 (Slices 3.1, 3.2, 3.3) complete, hardened, and verified.
 - **Workflow & Architecture Hardening Delivered:**
-  - **All 7 Tabs of Verbrandingsattest Vlaanderen Fully Active:**
+  - **All 7 Tabs of Verbrandingsattest Vlaanderen Fully Active & Lag-Free:**
+    - High-performance GPU viewport pre-caching on [TacticalTabBarView](file:///c:/Users/Admin/Documents/hvac_V0.3/lib/core/widgets/tactical_tab_bar_view.dart) (`allowImplicitScrolling: true`, `scrollCacheExtent: 7.0`) paired with [VerbrandingsattestLoadingOverlay](file:///c:/Users/Admin/Documents/hvac_V0.3/lib/features/certificate_draft/ui/widgets/verbrandingsattest_loading_overlay.dart), eliminating initial tab transition lag.
     - Standardized responsive layout container on [WorkflowTabContainer](file:///c:/Users/Admin/Documents/hvac_V0.3/lib/core/widgets/workflow_tab_container.dart) with `scrollKey` preservation, `maxWidth: 600`, and `keyboardDismissBehavior: onDrag`.
     - Tab 7 (`Eindbeoordeling`) built with dual conclusions (*Goed/Niet goed*, *Veilig/Niet veilig*), statutory date calculator (+2 years for gas, +1 year for oil/solid), 3-month legal remediation banner, quick defect chips, and dual digital signature pads ([SignaturePadModal](file:///c:/Users/Admin/Documents/hvac_V0.3/lib/core/widgets/signature_pad_modal.dart)) with live base64 preview thumbnails.
     - Centralized tactical HUD toasts across all tabs on [TacticalFeedback](file:///c:/Users/Admin/Documents/hvac_V0.3/lib/core/widgets/tactical_feedback.dart) (`showSuccess`, `showInfo`, `showError`).
     - Standardized 38–40px square action buttons on [TacticalSquareButton](file:///c:/Users/Admin/Documents/hvac_V0.3/lib/core/widgets/tactical_square_button.dart).
     - Standardized debouncing with automatic flush on dispose and Done actions on [Debouncer](file:///c:/Users/Admin/Documents/hvac_V0.3/lib/core/utils/debouncer.dart).
+  - **Eurolyzer S1 & Telemetry Modal Hardening:**
+    - Symmetrical HUD modal header with glass circular buttons: golden simulation beaker on top-left, title `"Eurolyzer S1"` centered, and close `"X"` on top-right via [TacticalHeaderCircleButton](file:///c:/Users/Admin/Documents/hvac_V0.3/lib/core/widgets/tactical_header_circle_button.dart).
+    - Clean camera viewfinder in [EurolyzerCameraBox](file:///c:/Users/Admin/Documents/hvac_V0.3/lib/features/certificate_draft/ui/tabs/meting/eurolyzer_camera_box.dart) with reticle, torch toggle, and zero floating text overlays.
+    - Overwrite protection dialog (*"Meting overschrijven?"*) preventing accidental data replacement when scanning.
+    - Clean, concise deletion confirmation (*"Meting wissen"* / *"Wilt u de meetgegevens in Data wissen?"*).
+    - Airtight camera lifecycle management with single-fire detection latch and guaranteed `dispose()`.
   - **Database & Shell Air-Tightness:**
     - Dynamic active draft visit ID binding in [VerbrandingsattestScreen](file:///c:/Users/Admin/Documents/hvac_V0.3/lib/features/certificate_draft/ui/verbrandingsattest_screen.dart) wired across all 7 tabs.
     - Real-time offline persistence to SQLite `maintenance_visits` for all conclusions, dates, defect notes, and signatures.
     - Strict draft isolation query in [MeasurementDraftRepository](file:///c:/Users/Admin/Documents/hvac_V0.3/lib/features/certificate_draft/data/measurement_draft_repository.dart) and [EindbeoordelingRepository](file:///c:/Users/Admin/Documents/hvac_V0.3/lib/features/certificate_draft/data/eindbeoordeling_repository.dart).
   - **Quality & Metrics:**
-    - 154+ unit and widget tests passing (100% green).
+    - 158 unit and widget tests passing (100% green).
     - 0 Dart analyzer issues across all files.
-    - All Dart files in `lib/` strictly $\le 247$ lines of code (limit: 250).
-- **Active State:** All 7 tabs of the Flemish combustion certificate workflow are fully operational, styled, and verified.
-- **Next Step:** Tab-by-tab walkthrough and verification with the owner (starting with Tab 1).
-- **Blockers / Open Questions:** None. Ready for tab-by-tab review.
+    - All Dart files in `lib/` strictly $\le 250$ lines of code.
+- **Active State:** All 7 tabs of the Flemish combustion certificate workflow are fully operational, styled, lag-free, and verified.
+- **Next Step:** Tab-by-tab review or proceeding with Milestone 4 (PDF Generation & Certificate Finalization).
+- **Blockers / Open Questions:** None. Ready for next step.

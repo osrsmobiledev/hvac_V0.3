@@ -105,7 +105,7 @@ class EindbeoordelingRepository {
       final db = dbOverride ?? await _appDatabase.database;
       final rows = await db.rawQuery(
         '''
-        SELECT mv.visit_date, b.fuel_type, c.name, c.forename,
+        SELECT mv.visit_date, b.fuel_type, c.first_name, c.last_name, c.company_name,
                mv.verbrandingscontrole,
                mv.flue_pressure_ok, mv.ventilation_ok, mv.fuel_supply_tightness_ok,
                mv.flue_tightness_ok, mv.no_unwanted_condensation_ok, mv.no_oil_trace_ok,
@@ -130,9 +130,12 @@ class EindbeoordelingRepository {
       final row = rows.first;
       final fuel = (row['fuel_type'] as String?) ?? 'gas';
       final date = (row['visit_date'] as String?) ?? '';
-      final name = (row['name'] as String?) ?? '';
-      final forename = (row['forename'] as String?) ?? '';
-      final fullName = [forename, name].where((s) => s.isNotEmpty).join(' ');
+      final firstName = (row['first_name'] as String?) ?? '';
+      final lastName = (row['last_name'] as String?) ?? '';
+      final company = (row['company_name'] as String?) ?? '';
+      final fullName =
+          [firstName, lastName].where((s) => s.isNotEmpty).join(' ');
+      final customerName = fullName.isNotEmpty ? fullName : company;
 
       bool? combustionPassed;
       final vb = row['verbrandingscontrole'] as String?;
@@ -159,7 +162,7 @@ class EindbeoordelingRepository {
       return VisitContextSummary(
         fuelType: fuel,
         visitDate: date,
-        customerName: fullName,
+        customerName: customerName,
         combustionPassed: combustionPassed,
         safetyChecksPassed: safetyChecksPassed,
       );

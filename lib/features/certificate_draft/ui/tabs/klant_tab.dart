@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hvac_app/app/theme/app_colors.dart';
+import 'package:hvac_app/core/services/app_warmup_service.dart';
 import 'package:hvac_app/core/utils/debouncer.dart';
 import 'package:hvac_app/features/certificate_draft/data/draft_repository.dart';
 import 'package:hvac_app/features/customers_installations/data/customer_repository.dart';
@@ -25,17 +26,18 @@ class KlantTab extends StatefulWidget {
 
 class _KlantTabState extends State<KlantTab>
     with AutomaticKeepAliveClientMixin {
-  late final KlantDataCoordinator _coord;
+  late final KlantDataCoordinator _coord = KlantDataCoordinator(
+    customerRepository: widget.customerRepository,
+    draftRepository: widget.draftRepository,
+  );
   final _controllers = KlantFormControllers();
 
   Customer? _activeCustomer;
   ServiceLocation? _activeLocation;
   KlantFormSnapshot? _snapshot;
   String _role = 'owner';
-  bool _isSameAsCustomer = true;
+  bool _isSameAsCustomer = true, _isEditing = false, _isLoading = true;
   int? _draftVisitId;
-  bool _isEditing = false;
-  bool _isLoading = true;
   final _debouncer = Debouncer(duration: const Duration(milliseconds: 500));
 
   bool get _hasCustomer =>
@@ -49,11 +51,19 @@ class _KlantTabState extends State<KlantTab>
   @override
   void initState() {
     super.initState();
-    _coord = KlantDataCoordinator(
-      customerRepository: widget.customerRepository,
-      draftRepository: widget.draftRepository,
-    );
-    _loadInitialData();
+    final c = AppWarmupService.instance.cachedResult;
+    if (c?.activeDraft != null &&
+        widget.customerRepository == null &&
+        widget.draftRepository == null) {
+      _draftVisitId = c!.activeDraft!.id;
+      if (c.activeCustomer != null) {
+        _controllers.populateCustomer(_activeCustomer = c.activeCustomer!);
+      }
+      if (c.activeServiceLocation != null) _applyLocation(c.activeServiceLocation!);
+      _isLoading = false;
+    } else {
+      _loadInitialData();
+    }
   }
 
   @override
@@ -67,12 +77,13 @@ class _KlantTabState extends State<KlantTab>
     try {
       final res = await _coord.loadDraftData();
       _draftVisitId = res.draftId;
-      if (res.customer != null && mounted) {
-        setState(() => _activeCustomer = res.customer);
-        _controllers.populateCustomer(res.customer!);
+      if (mounted) {
+        if (res.customer != null) {
+          _controllers.populateCustomer(_activeCustomer = res.customer!);
+        }
+        if (res.location != null) _applyLocation(res.location!);
+        setState(() => _isLoading = false);
       }
-      if (res.location != null && mounted) _applyLocation(res.location!);
-      if (mounted) setState(() => _isLoading = false);
     } catch (e, stack) {
       debugPrint('[KlantTab] _loadInitialData error: $e\n$stack');
       if (mounted) setState(() => _isLoading = false);
@@ -90,9 +101,7 @@ class _KlantTabState extends State<KlantTab>
     });
   }
 
-  void _onFormChanged() {
-    _debouncer.run(_saveToDatabase);
-  }
+  void _onFormChanged() => _debouncer.run(_saveToDatabase);
 
   Future<void> _saveToDatabase() async {
     try {
@@ -125,70 +134,68 @@ class _KlantTabState extends State<KlantTab>
         if (_activeCustomer?.id == deletedId) _clearCustomerForm();
       },
     );
-    if (picked != null && mounted) {
-      setState(() {
-        _activeCustomer = picked;
-        _controllers.populateCustomer(picked);
-        _isEditing = false;
-      });
-      try {
-        final loc = await _coord.linkPickedCustomer(
-          draftId: _draftVisitId,
-          customer: picked,
-        );
-        if (loc != null && mounted) {
-          _applyLocation(loc, picked.street, picked.houseNumber);
-        }
-      } catch (e, stack) {
-        debugPrint('[KlantTab] linkPickedCustomer error: $e\n$stack');
+    if (picked == null || !mounted) return;
+    setState(() {
+      _activeCustomer = picked;
+      _controllers.populateCustomer(picked);
+      _isEditing = false;
+    });
+    _coord
+        .linkPickedCustomer(draftId: _draftVisitId, customer: picked)
+        .then((loc) {
+      if (loc != null && mounted) {
+        _applyLocation(loc, picked.street, picked.houseNumber);
       }
-    }
+    }).catchError((e, s) {
+      debugPrint('[KlantTab] linkPickedCustomer error: $e\n$s');
+    });
   }
 
   Future<void> _onNewPressed() async {
-    if (await KlantActionDialogs.confirmNewCustomer(context) && mounted) {
-      _takeSnapshot();
-      _clearCustomerForm();
-      setState(() => _isEditing = true);
+    if (!await KlantActionDialogs.confirmNewCustomer(context) || !mounted) {
+      return;
     }
+    _takeSnapshot();
+    _clearCustomerForm();
+    setState(() => _isEditing = true);
   }
 
   Future<void> _onEditPressed() async {
-    if (await KlantActionDialogs.confirmEditCustomer(context) && mounted) {
-      _takeSnapshot();
-      setState(() => _isEditing = true);
+    if (!await KlantActionDialogs.confirmEditCustomer(context) || !mounted) {
+      return;
     }
+    _takeSnapshot();
+    setState(() => _isEditing = true);
   }
 
   Future<void> _onSavePressed() async {
     await _saveToDatabase();
-    if (mounted) {
-      setState(() => _isEditing = false);
-      KlantActionDialogs.showSavedFeedback(context);
-    }
+    if (!mounted) return;
+    setState(() => _isEditing = false);
+    KlantActionDialogs.showSavedFeedback(context);
   }
 
   Future<void> _onCancelPressed() async {
-    if (await KlantActionDialogs.confirmCancelEdit(context) && mounted) {
-      setState(() {
-        _restoreSnapshot();
-        _isEditing = false;
-      });
+    if (!await KlantActionDialogs.confirmCancelEdit(context) || !mounted) {
+      return;
     }
+    setState(() {
+      _restoreSnapshot();
+      _isEditing = false;
+    });
   }
 
   Future<void> _onDeletePressed() async {
-    if (await KlantActionDialogs.confirmDeleteCustomer(context) && mounted) {
-      _clearCustomerForm();
-      setState(() => _isEditing = false);
+    if (!await KlantActionDialogs.confirmDeleteCustomer(context) || !mounted) {
+      return;
     }
+    _clearCustomerForm();
+    setState(() => _isEditing = false);
   }
 
   void _takeSnapshot() => _snapshot = KlantFormSnapshot(
-        customer: _activeCustomer,
-        location: _activeLocation,
-        role: _role,
-        isSameAsCustomer: _isSameAsCustomer,
+        customer: _activeCustomer, location: _activeLocation,
+        role: _role, isSameAsCustomer: _isSameAsCustomer,
       );
 
   void _restoreSnapshot() {
@@ -199,7 +206,7 @@ class _KlantTabState extends State<KlantTab>
     _snapshot?.restoreInto(_controllers);
   }
 
-  Future<void> _clearCustomerForm() async {
+  void _clearCustomerForm() {
     setState(() {
       _activeCustomer = null;
       _activeLocation = null;
@@ -208,11 +215,9 @@ class _KlantTabState extends State<KlantTab>
       _isSameAsCustomer = true;
     });
     if (_draftVisitId != null) {
-      try {
-        await _coord.unlinkCustomer(_draftVisitId!);
-      } catch (e, stack) {
-        debugPrint('[KlantTab] unlinkCustomer error: $e\n$stack');
-      }
+      _coord.unlinkCustomer(_draftVisitId!).catchError((e, s) {
+        debugPrint('[KlantTab] unlinkCustomer error: $e\n$s');
+      });
     }
   }
 
@@ -229,10 +234,10 @@ class _KlantTabState extends State<KlantTab>
       isSameAsCustomer: _isSameAsCustomer,
       controllers: _controllers,
       onFormChanged: _onFormChanged,
-      onSameAddressChanged: (s) {
-        setState(() => _isSameAsCustomer = s);
+      onSameAddressChanged: (s) => setState(() {
+        _isSameAsCustomer = s;
         _onFormChanged();
-      },
+      }),
       onSearch: _onSearchPressed,
       onNew: _onNewPressed,
       onEdit: _onEditPressed,

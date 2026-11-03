@@ -40,8 +40,8 @@ void main() {
     expect(scrollView.keyboardDismissBehavior,
         equals(ScrollViewKeyboardDismissBehavior.onDrag));
     expect(scrollView.padding, equals(AppTheme.tabViewPadding));
-    expect(
-        scrollView.key, equals(const PageStorageKey<String>('test_scroll_key')));
+    expect(scrollView.key,
+        equals(const PageStorageKey<String>('test_scroll_key')));
 
     // Verify top-aligned layout (so collapsed cards/short forms never float in the middle)
     final alignFinder = find.descendant(

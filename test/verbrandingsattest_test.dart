@@ -71,7 +71,7 @@ void main() {
     });
 
     testWidgets(
-        'Tab 1 (Data) contains Meetgegevens, Rookgassen, QR button, and all 21 flue gas fields',
+        'Tab 1 (Data) contains Meetgegevens, Rookgassen, QR button, and all 19 flue gas fields',
         (tester) async {
       tester.view.physicalSize = const Size(390, 1400);
       tester.view.devicePixelRatio = 1.0;
@@ -91,14 +91,13 @@ void main() {
       // Verify QR button is present
       expect(find.byIcon(Icons.qr_code_scanner_rounded), findsOneWidget);
 
-      // Verify flue gas domain list has 21 fields
-      expect(FlueGasField.defaultFields.length, equals(21));
+      // Verify flue gas domain list has 19 fields
+      expect(FlueGasField.defaultFields.length, equals(19));
 
       // Verify initial fields are rendered
-      expect(find.text('Brandstof'), findsOneWidget);
-      expect(find.text('Datum'), findsOneWidget);
-      expect(find.text('Tijd'), findsOneWidget);
-      expect(find.text('Druk [hPa]'), findsOneWidget);
+      expect(find.text(DataTabDictionary.lblBrandstof), findsOneWidget);
+      expect(find.text(DataTabDictionary.lblBoilerTemp), findsOneWidget);
+      expect(find.text(DataTabDictionary.lblDrukHpa), findsOneWidget);
     });
 
     testWidgets(
@@ -117,7 +116,7 @@ void main() {
       // Initially expanded: headers, QR icon button, and fields are visible
       expect(find.text('Meetgegevens'), findsOneWidget);
       expect(find.text('Rookgassen'), findsOneWidget);
-      expect(find.text('Brandstof'), findsOneWidget);
+      expect(find.text(DataTabDictionary.lblBrandstof), findsOneWidget);
       expect(find.byIcon(Icons.qr_code_scanner_rounded), findsOneWidget);
 
       // Tap Meetgegevens header to collapse everything
@@ -126,7 +125,7 @@ void main() {
 
       // Now Rookgassen card, fields, and QR button are hidden
       expect(find.text('Rookgassen'), findsNothing);
-      expect(find.text('Brandstof'), findsNothing);
+      expect(find.text(DataTabDictionary.lblBrandstof), findsNothing);
       expect(find.byIcon(Icons.qr_code_scanner_rounded), findsNothing);
 
       // Tap Meetgegevens again to re-expand
@@ -135,7 +134,7 @@ void main() {
 
       // Now Rookgassen, fields and QR button reappear
       expect(find.text('Rookgassen'), findsOneWidget);
-      expect(find.text('Brandstof'), findsOneWidget);
+      expect(find.text(DataTabDictionary.lblBrandstof), findsOneWidget);
       expect(find.byIcon(Icons.qr_code_scanner_rounded), findsOneWidget);
     });
 
@@ -153,10 +152,11 @@ void main() {
 
       // Scroll down on Data tab
       final scrollFinder = find.byType(Scrollable).first;
-      await tester.scrollUntilVisible(find.text('Druk [Pa]'), 200,
+      await tester.scrollUntilVisible(
+          find.text(DataTabDictionary.lblFluePressurePa), 200,
           scrollable: scrollFinder);
       await tester.pumpAndSettle();
-      expect(find.text('Druk [Pa]'), findsOneWidget);
+      expect(find.text(DataTabDictionary.lblFluePressurePa), findsOneWidget);
 
       // Switch to Start tab
       await tester.tap(find.text('Start'));
@@ -166,8 +166,8 @@ void main() {
       await tester.tap(find.text('Data'));
       await tester.pumpAndSettle();
 
-      // Verify still at scrolled position (Druk [Pa] is still visible)
-      expect(find.text('Druk [Pa]'), findsOneWidget);
+      // Verify still at scrolled position (Druk rookgasafvoerkanaal [Pa] is still visible)
+      expect(find.text(DataTabDictionary.lblFluePressurePa), findsOneWidget);
     });
 
     testWidgets(

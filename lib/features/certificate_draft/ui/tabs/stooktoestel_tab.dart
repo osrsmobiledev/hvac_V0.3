@@ -49,9 +49,10 @@ class _StooktoestelTabState extends State<StooktoestelTab>
     super.initState();
     _repository = widget.repository ?? BoilerDraftRepository();
     widget.boilerNotifier?.addListener(_onBoilerNotifierChanged);
-    final initialDraft = (widget.boilerNotifier != null && !widget.boilerNotifier!.isLoading)
-        ? widget.boilerNotifier!.draft
-        : AppWarmupService.instance.cachedResult?.activeBoiler;
+    final initialDraft =
+        (widget.boilerNotifier != null && !widget.boilerNotifier!.isLoading)
+            ? widget.boilerNotifier!.draft
+            : AppWarmupService.instance.cachedResult?.activeBoiler;
     if (initialDraft != null && widget.repository == null) {
       _applyDraftToUi(initialDraft);
     } else {
@@ -234,12 +235,14 @@ class _StooktoestelTabState extends State<StooktoestelTab>
       onTypeCCodeChanged: (_) => _syncDraft(immediate: true),
       onSerialUnknownChanged: (val) => _update(() => _serialUnknown = val),
       onYearUnknownChanged: (val) => _update(() => _yearUnknown = val),
-      onBurnerSerialUnknownChanged: (val) => _update(() => _burnerSerialUnknown = val),
-      onBurnerYearUnknownChanged: (val) => _update(() => _burnerYearUnknown = val),
-      onScanToestelBarcode: () =>
-          _scanBarcode(_controllers.toestelSerial, AppDictionary.hintScanToestelSerial),
-      onScanBranderBarcode: () =>
-          _scanBarcode(_controllers.branderSerial, AppDictionary.hintScanBranderSerial),
+      onBurnerSerialUnknownChanged: (val) =>
+          _update(() => _burnerSerialUnknown = val),
+      onBurnerYearUnknownChanged: (val) =>
+          _update(() => _burnerYearUnknown = val),
+      onScanToestelBarcode: () => _scanBarcode(
+          _controllers.toestelSerial, AppDictionary.hintScanToestelSerial),
+      onScanBranderBarcode: () => _scanBarcode(
+          _controllers.branderSerial, AppDictionary.hintScanBranderSerial),
       onFormChanged: _onFormChanged,
     );
   }

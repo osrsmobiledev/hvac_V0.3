@@ -10,7 +10,8 @@ class StatutoryDefectPreset {
   final String defectText;
   final String measureText;
   final String category; // 'flue_vent', 'fuel', 'hydraulic'
-  final List<String> applicableFuels; // 'gas', 'vloeibaar', 'vast', or empty for all
+  final List<String>
+      applicableFuels; // 'gas', 'vloeibaar', 'vast', or empty for all
   final List<String> applicableBoilerTypes; // 'B', 'C', or empty for all
 
   const StatutoryDefectPreset({

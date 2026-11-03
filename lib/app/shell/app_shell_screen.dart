@@ -84,8 +84,7 @@ class _AppShellScreenState extends State<AppShellScreen> {
                     : const SizedBox.shrink(),
                 AppletContentPlaceholder(
                   appBarTitle: _controller.appBarTitle,
-                  onBackToHome: () =>
-                      _controller.selectApplet(AppletType.home),
+                  onBackToHome: () => _controller.selectApplet(AppletType.home),
                 ),
               ],
             );

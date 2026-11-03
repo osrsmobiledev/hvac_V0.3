@@ -3,7 +3,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:hvac_app/app/localization/eindbeoordeling_dictionary.dart';
-import 'package:hvac_app/app/theme/app_colors.dart';
 import 'package:hvac_app/core/services/app_warmup_service.dart';
 import 'package:hvac_app/core/utils/debouncer.dart';
 import 'package:hvac_app/core/widgets/tactical_feedback.dart';
@@ -44,7 +43,6 @@ class _EindbeoordelingTabState extends State<EindbeoordelingTab>
   EindbeoordelingDraft _draft = const EindbeoordelingDraft();
   String _fuelType = 'gas';
   String _visitDate = '';
-  bool _isLoading = true;
 
   @override
   bool get wantKeepAlive => true;
@@ -83,7 +81,6 @@ class _EindbeoordelingTabState extends State<EindbeoordelingTab>
     _draft = loaded;
     _defectsController.text = loaded.defectsNotes ?? '';
     _remarksController.text = loaded.generalRemarks ?? '';
-    _isLoading = false;
   }
 
   @override
@@ -150,7 +147,8 @@ class _EindbeoordelingTabState extends State<EindbeoordelingTab>
 
       if (mounted) {
         final nFuel = widget.boilerNotifier?.draft.fuelCategory;
-        final f = (nFuel != null && nFuel.isNotEmpty) ? nFuel : summary.fuelType;
+        final f =
+            (nFuel != null && nFuel.isNotEmpty) ? nFuel : summary.fuelType;
         setState(() {
           _applyInitialDraft(
             draft,
@@ -162,7 +160,6 @@ class _EindbeoordelingTabState extends State<EindbeoordelingTab>
       }
     } catch (e, stack) {
       debugPrint('[EindbeoordelingTab] _loadInitialData error: $e\n$stack');
-      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -208,11 +205,6 @@ class _EindbeoordelingTabState extends State<EindbeoordelingTab>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    if (_isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(color: AppColors.amberGold),
-      );
-    }
 
     return EindbeoordelingTabBody(
       draft: _draft,
