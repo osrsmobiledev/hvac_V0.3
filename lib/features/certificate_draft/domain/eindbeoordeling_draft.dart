@@ -40,12 +40,15 @@ class EindbeoordelingDraft {
   /// Calculates statutory next inspection date per Flemish regulations:
   /// - Gas: +2 years from inspection date
   /// - Liquid (Stookolie) & Solid: +1 year from inspection date
-  static String calculateStatutoryNextDate({
+  /// Returns null if fuelType is empty (zero fake defaults).
+  static String? calculateStatutoryNextDate({
     required String fuelType,
     DateTime? fromDate,
   }) {
+    final trimmed = fuelType.trim();
+    if (trimmed.isEmpty) return null;
     final base = fromDate ?? DateTime.now();
-    final isGas = fuelType.toLowerCase().contains('gas');
+    final isGas = trimmed.toLowerCase().contains('gas');
     final yearsToAdd = isGas ? 2 : 1;
     final nextDate = DateTime(base.year + yearsToAdd, base.month, base.day);
     return formatDateDmy(nextDate);
@@ -59,6 +62,38 @@ class EindbeoordelingDraft {
     return formatDateDmy(nextDate);
   }
 
+  static String _resolveNextDate({
+    required bool willFail,
+    required bool wasFailing,
+    required bool isCompliant,
+    required bool hasFuel,
+    required String fuelType,
+    required String? currentDate,
+    DateTime? visitDate,
+  }) {
+    if (!hasFuel) return '';
+    if (willFail) {
+      if (!wasFailing || currentDate == null || currentDate.isEmpty) {
+        return calculateRemediationNextDate(fromDate: visitDate);
+      }
+      return currentDate;
+    }
+    if (wasFailing) {
+      return isCompliant
+          ? (calculateStatutoryNextDate(
+                  fuelType: fuelType, fromDate: visitDate) ??
+              '')
+          : '';
+    }
+    if (isCompliant && (currentDate == null || currentDate.isEmpty)) {
+      return calculateStatutoryNextDate(
+              fuelType: fuelType, fromDate: visitDate) ??
+          '';
+    }
+    if (!isCompliant) return '';
+    return currentDate ?? '';
+  }
+
   /// Returns a copy of the draft with updated conclusions and reactive
   /// statutory interval recalculation (3 months for failing, statutory for compliant).
   EindbeoordelingDraft withUpdatedConclusions({
@@ -70,18 +105,15 @@ class EindbeoordelingDraft {
   }) {
     final newGoed = isGoed ? goed : toestelWerkingGoed;
     final newVeilig = !isGoed ? veilig : toestelWerkingVeilig;
-    final willFail = newGoed == 'Niet goed' || newVeilig == 'Niet veilig';
-    final wasFailing = hasNegativeAssessment;
-
-    var nextDate = nextInspectionDate;
-    if (willFail && !wasFailing) {
-      nextDate = calculateRemediationNextDate(fromDate: visitDate);
-    } else if (!willFail && wasFailing) {
-      nextDate = calculateStatutoryNextDate(
-        fuelType: fuelType,
-        fromDate: visitDate,
-      );
-    }
+    final nextDate = _resolveNextDate(
+      willFail: newGoed == 'Niet goed' || newVeilig == 'Niet veilig',
+      wasFailing: hasNegativeAssessment,
+      isCompliant: newGoed == 'Goed' && newVeilig == 'Veilig',
+      hasFuel: fuelType.trim().isNotEmpty,
+      fuelType: fuelType,
+      currentDate: nextInspectionDate,
+      visitDate: visitDate,
+    );
 
     return copyWith(
       toestelWerkingGoed: newGoed,
@@ -100,43 +132,22 @@ class EindbeoordelingDraft {
     required String fuelType,
     DateTime? visitDate,
   }) {
-    String? newGoed = toestelWerkingGoed;
-    String? newVeilig = toestelWerkingVeilig;
+    final newGoed = combustionPassed == false
+        ? 'Niet goed'
+        : (combustionPassed == true ? 'Goed' : null);
+    final newVeilig = safetyChecksPassed == false
+        ? 'Niet veilig'
+        : (safetyChecksPassed == true ? 'Veilig' : null);
 
-    // 1. Proef II combustion verdict maps to 'Het stooktoestel werkt'
-    if (combustionPassed == false) {
-      newGoed = 'Niet goed';
-    } else if (combustionPassed == true) {
-      newGoed = 'Goed';
-    }
-
-    // 2. Safety checks verdict maps to 'Veilige staat van werking'
-    if (safetyChecksPassed == false) {
-      newVeilig = 'Niet veilig';
-    } else if (safetyChecksPassed == true) {
-      newVeilig = 'Veilig';
-    }
-
-    // 3. 3-Month statutory rule vs standard statutory term
-    final willFail = newGoed == 'Niet goed' || newVeilig == 'Niet veilig';
-    final wasFailing = hasNegativeAssessment;
-
-    var nextDate = nextInspectionDate;
-    if (willFail && (!wasFailing || nextDate == null || nextDate.isEmpty)) {
-      nextDate = calculateRemediationNextDate(fromDate: visitDate);
-    } else if (!willFail && wasFailing) {
-      nextDate = calculateStatutoryNextDate(
-        fuelType: fuelType,
-        fromDate: visitDate,
-      );
-    } else if (nextDate == null || nextDate.isEmpty) {
-      nextDate = willFail
-          ? calculateRemediationNextDate(fromDate: visitDate)
-          : calculateStatutoryNextDate(
-              fuelType: fuelType,
-              fromDate: visitDate,
-            );
-    }
+    final nextDate = _resolveNextDate(
+      willFail: newGoed == 'Niet goed' || newVeilig == 'Niet veilig',
+      wasFailing: hasNegativeAssessment,
+      isCompliant: newGoed == 'Goed' && newVeilig == 'Veilig',
+      hasFuel: fuelType.trim().isNotEmpty,
+      fuelType: fuelType,
+      currentDate: nextInspectionDate,
+      visitDate: visitDate,
+    );
 
     return copyWith(
       toestelWerkingGoed: newGoed,

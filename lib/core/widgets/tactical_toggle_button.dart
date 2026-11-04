@@ -95,30 +95,39 @@ class TacticalToggleButton extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  label!,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: isInteractive ? Colors.white : AppColors.textMuted,
-                    fontWeight:
-                        isInteractive ? FontWeight.w600 : FontWeight.w400,
-                  ),
-                ),
-                if (subtitle != null) ...[
-                  const SizedBox(height: 2),
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: isInteractive
+                  ? () {
+                      HapticFeedback.selectionClick();
+                      onChanged!(!value);
+                    }
+                  : null,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
                   Text(
-                    subtitle!,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: AppColors.textMuted,
+                    label!,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: isInteractive ? Colors.white : AppColors.textMuted,
+                      fontWeight:
+                          isInteractive ? FontWeight.w600 : FontWeight.w400,
                     ),
                   ),
+                  if (subtitle != null) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle!,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: AppColors.textMuted,
+                      ),
+                    ),
+                  ],
                 ],
-              ],
+              ),
             ),
           ),
           const SizedBox(width: 12),

@@ -51,60 +51,64 @@ class EffectiveLocationPreview extends StatelessWidget {
             city: controllers.locMunicipality.text,
           );
 
+    final hasAddress = effectiveAddress != AppDictionary.lblNoAddressFilled;
+    final titleText = isSameAsCustomer
+        ? AppDictionary.lblSameAsCustomerAddress
+        : AppDictionary.lblSourceSeparateAddress;
+    final subtitleText = hasAddress
+        ? effectiveAddress
+        : (isSameAsCustomer
+            ? AppDictionary.descSameAsCustomerEmpty
+            : AppDictionary.lblNoAddressFilled);
+
     return Container(
-      padding: const EdgeInsets.all(14),
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 12.0),
       decoration: BoxDecoration(
-        color: const Color(0xFF141414),
-        borderRadius: BorderRadius.circular(14),
+        color: const Color(0xFF0C0C0C),
+        borderRadius: BorderRadius.circular(10),
         border: Border.all(
-          color: Colors.white.withValues(alpha: 0.08),
+          color: AppColors.amberGoldBorder.withValues(alpha: 0.6),
           width: 1.0,
         ),
       ),
-      child: Column(
+      child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            AppDictionary.lblEffectiveLocation,
-            style: TextStyle(
-              fontSize: 13,
-              color: AppColors.textSecondary,
-              fontWeight: FontWeight.w600,
+          Padding(
+            padding: const EdgeInsets.only(top: 2.0),
+            child: Icon(
+              isSameAsCustomer
+                  ? Icons.check_circle_rounded
+                  : Icons.apartment_rounded,
+              color: AppColors.amberGold,
+              size: 20,
             ),
           ),
-          const SizedBox(height: 6),
-          Text(
-            effectiveAddress,
-            style: const TextStyle(
-              fontSize: 15,
-              color: Colors.white,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              Icon(
-                isSameAsCustomer
-                    ? Icons.person_outline_rounded
-                    : Icons.apartment_rounded,
-                size: 16,
-                color: AppColors.textMuted,
-              ),
-              const SizedBox(width: 6),
-              Expanded(
-                child: Text(
-                  isSameAsCustomer
-                      ? AppDictionary.lblSourceCustomerAddress
-                      : AppDictionary.lblSourceSeparateAddress,
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  titleText,
                   style: const TextStyle(
-                    fontSize: 12,
-                    color: AppColors.textMuted,
+                    color: Colors.white,
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.w600,
                   ),
-                  overflow: TextOverflow.ellipsis,
                 ),
-              ),
-            ],
+                const SizedBox(height: 3),
+                Text(
+                  subtitleText,
+                  style: const TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 12,
+                    height: 1.35,
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),

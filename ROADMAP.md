@@ -46,29 +46,25 @@
 
 ## 2. Current Handoff (Active State for AI Agent)
 
-- **Current Status:** Milestone 1, Milestone 2, and Milestone 3 (Slices 3.1, 3.2, 3.3) complete, hardened, and verified.
+- **Current Status:** Milestone 1, Milestone 2, and Milestone 3 (Slices 3.1, 3.2, 3.3) complete, refined, and verified.
 - **Workflow & Architecture Hardening Delivered:**
-  - **All 7 Tabs of Verbrandingsattest Vlaanderen Fully Active & Lag-Free:**
-    - High-performance GPU viewport pre-caching on [TacticalTabBarView](file:///c:/Users/Admin/Documents/hvac_V0.3/lib/core/widgets/tactical_tab_bar_view.dart) (`allowImplicitScrolling: true`, `scrollCacheExtent: 7.0`) paired with [VerbrandingsattestLoadingOverlay](file:///c:/Users/Admin/Documents/hvac_V0.3/lib/features/certificate_draft/ui/widgets/verbrandingsattest_loading_overlay.dart), eliminating initial tab transition lag.
-    - Standardized responsive layout container on [WorkflowTabContainer](file:///c:/Users/Admin/Documents/hvac_V0.3/lib/core/widgets/workflow_tab_container.dart) with `scrollKey` preservation, `maxWidth: 600`, and `keyboardDismissBehavior: onDrag`.
-    - Tab 7 (`Eindbeoordeling`) built with dual conclusions (*Goed/Niet goed*, *Veilig/Niet veilig*), statutory date calculator (+2 years for gas, +1 year for oil/solid), 3-month legal remediation banner, quick defect chips, and dual digital signature pads ([SignaturePadModal](file:///c:/Users/Admin/Documents/hvac_V0.3/lib/core/widgets/signature_pad_modal.dart)) with live base64 preview thumbnails.
-    - Centralized tactical HUD toasts across all tabs on [TacticalFeedback](file:///c:/Users/Admin/Documents/hvac_V0.3/lib/core/widgets/tactical_feedback.dart) (`showSuccess`, `showInfo`, `showError`).
-    - Standardized 38–40px square action buttons on [TacticalSquareButton](file:///c:/Users/Admin/Documents/hvac_V0.3/lib/core/widgets/tactical_square_button.dart).
-    - Standardized debouncing with automatic flush on dispose and Done actions on [Debouncer](file:///c:/Users/Admin/Documents/hvac_V0.3/lib/core/utils/debouncer.dart).
-  - **Eurolyzer S1 & Telemetry Modal Hardening:**
-    - Symmetrical HUD modal header with glass circular buttons: golden simulation beaker on top-left, title `"Eurolyzer S1"` centered, and close `"X"` on top-right via [TacticalHeaderCircleButton](file:///c:/Users/Admin/Documents/hvac_V0.3/lib/core/widgets/tactical_header_circle_button.dart).
-    - Clean camera viewfinder in [EurolyzerCameraBox](file:///c:/Users/Admin/Documents/hvac_V0.3/lib/features/certificate_draft/ui/tabs/meting/eurolyzer_camera_box.dart) with reticle, torch toggle, and zero floating text overlays.
-    - Overwrite protection dialog (*"Meting overschrijven?"*) preventing accidental data replacement when scanning.
-    - Clean, concise deletion confirmation (*"Meting wissen"* / *"Wilt u de meetgegevens in Data wissen?"*).
-    - Airtight camera lifecycle management with single-fire detection latch and guaranteed `dispose()`.
-  - **Database & Shell Air-Tightness:**
-    - Dynamic active draft visit ID binding in [VerbrandingsattestScreen](file:///c:/Users/Admin/Documents/hvac_V0.3/lib/features/certificate_draft/ui/verbrandingsattest_screen.dart) wired across all 7 tabs.
-    - Real-time offline persistence to SQLite `maintenance_visits` for all conclusions, dates, defect notes, and signatures.
-    - Strict draft isolation query in [MeasurementDraftRepository](file:///c:/Users/Admin/Documents/hvac_V0.3/lib/features/certificate_draft/data/measurement_draft_repository.dart) and [EindbeoordelingRepository](file:///c:/Users/Admin/Documents/hvac_V0.3/lib/features/certificate_draft/data/eindbeoordeling_repository.dart).
+  - **Tab 4 (`Klant` & Installatielocatie):**
+    - Address matching logic refined: `Locatie Toestel` section is disabled/grayed out when installation location is identical to customer address, and unlocks smoothly when separate address is selected.
+    - Standardized dark input labels and typography matching Tab 5 (`Stooktoestel`).
+  - **Tab 5 (`Stooktoestel` & Brandstofkeuze):**
+    - Fuel category memory ([FuelCategoryMemory](file:///c:/Users/Admin/Documents/hvac_V0.3/lib/features/certificate_draft/ui/tabs/stooktoestel/fuel_category_memory.dart)) isolates and remembers user sub-selections (e.g. *Aardgas*, *LPG*, *Houtpellets*) across category switches.
+    - Eliminated auto-selection of *Aardgas* when selecting *Gasvormig* (Zero Fake Defaults). Sub-types start unselected and are fully de-selectable.
+  - **Tab 6 (`Meting` & Veilige staat van werking):**
+    - Dynamic fuel banner displaying accurate fuel and subtype names.
+    - Full de-selection support for all safety check toggles (`TacticalBinaryCheck`) back to neutral `null` via sentinel pattern in [OperatingConditionsDraft](file:///c:/Users/Admin/Documents/hvac_V0.3/lib/features/certificate_draft/domain/operating_conditions_draft.dart) and [MeasurementSlotDraft](file:///c:/Users/Admin/Documents/hvac_V0.3/lib/features/certificate_draft/domain/measurement_slot_draft.dart).
+  - **Tab 7 (`Eindbeoordeling` & Regulatory Coupling):**
+    - Dual clear section labels: *Het stooktoestel werkt* ([Goed]/[Niet goed]) and *Verluchting en rookgasafvoer* ([Veilig]/[Niet veilig]).
+    - Fool-proof statutory date logic: Zero fake defaults when fuel is empty (no phantom `+1 Jaar` selections). Date strictly derives when fuel and compliance are established.
+    - Reactive link with Tab 6 via [MeasurementAssessmentNotifier](file:///c:/Users/Admin/Documents/hvac_V0.3/lib/features/certificate_draft/ui/measurement_assessment_notifier.dart) with clean de-selection and 3-month legal remediation rule (Art. 6 Vlaams Stooktoestellenbesluit).
   - **Quality & Metrics:**
-    - 158 unit and widget tests passing (100% green).
+    - 167 unit and widget tests passing (100% green).
     - 0 Dart analyzer issues across all files.
     - All Dart files in `lib/` strictly $\le 250$ lines of code.
-- **Active State:** All 7 tabs of the Flemish combustion certificate workflow are fully operational, styled, lag-free, and verified.
-- **Next Step:** Tab-by-tab review or proceeding with Milestone 4 (PDF Generation & Certificate Finalization).
-- **Blockers / Open Questions:** None. Ready for next step.
+- **Active State:** All 7 tabs of the Flemish combustion certificate workflow are fully operational, refined, styled, lag-free, and verified.
+- **Next Step:** Proceeding with Milestone 4 (Re-Wired PDF Generation & Local Completion).
+- **Blockers / Open Questions:** None. Ready for Milestone 4.

@@ -309,5 +309,102 @@ void main() {
 
       expect(find.widgetWithText(TextFormField, 'Viessmann'), findsOneWidget);
     });
+
+    testWidgets(
+        'Selecting Gasvormig does NOT auto-select aardgas; subtypes remain unselected and de-selectable',
+        (tester) async {
+      tester.view.physicalSize = const Size(412, 1800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() => tester.view.resetPhysicalSize());
+
+      final notifier = BoilerDraftNotifier();
+      addTearDown(notifier.dispose);
+
+      await tester.pumpWidget(MaterialApp(
+        theme: AppTheme.darkTheme,
+        home: Scaffold(
+          body: StooktoestelTab(boilerNotifier: notifier),
+        ),
+      ));
+      await tester.pumpAndSettle();
+
+      // Tap Gasvormig
+      await tester.tap(find.text(AppDictionary.fuelGasShort));
+      await tester.pumpAndSettle();
+
+      // Category is gas, but subtype is empty (not auto-selected!)
+      expect(notifier.draft.fuelCategory, 'gas');
+      expect(notifier.draft.fuelSubtype, '');
+
+      // Tap aardgas chip explicitly
+      await tester.tap(find.text(AppDictionary.gasNatural));
+      await tester.pumpAndSettle();
+      expect(notifier.draft.fuelSubtype, 'aardgas');
+
+      // Tap aardgas chip again to de-select
+      await tester.tap(find.text(AppDictionary.gasNatural));
+      await tester.pumpAndSettle();
+      expect(notifier.draft.fuelSubtype, '');
+    });
+
+    testWidgets(
+        'Subtype selections are remembered when switching between fuel categories',
+        (tester) async {
+      tester.view.physicalSize = const Size(412, 1800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() => tester.view.resetPhysicalSize());
+
+      final notifier = BoilerDraftNotifier();
+      addTearDown(notifier.dispose);
+
+      await tester.pumpWidget(MaterialApp(
+        theme: AppTheme.darkTheme,
+        home: Scaffold(
+          body: StooktoestelTab(boilerNotifier: notifier),
+        ),
+      ));
+      await tester.pumpAndSettle();
+
+      // 1. Select Gas and Aardgas
+      await tester.tap(find.text(AppDictionary.fuelGasShort));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(AppDictionary.gasNatural));
+      await tester.pumpAndSettle();
+      expect(notifier.draft.fuelCategory, 'gas');
+      expect(notifier.draft.fuelSubtype, 'aardgas');
+
+      // 2. Switch to Vloeibaar (oil has no subtype)
+      await tester.tap(find.text(AppDictionary.fuelLiquidShort));
+      await tester.pumpAndSettle();
+      expect(notifier.draft.fuelCategory, 'vloeibaar');
+      expect(notifier.draft.fuelSubtype, '');
+
+      // 3. Switch back to Gasvormig -> Aardgas is remembered!
+      await tester.tap(find.text(AppDictionary.fuelGasShort));
+      await tester.pumpAndSettle();
+      expect(notifier.draft.fuelCategory, 'gas');
+      expect(notifier.draft.fuelSubtype, 'aardgas');
+
+      // 4. Switch to Vast -> starts unselected
+      await tester.tap(find.text(AppDictionary.fuelSolidShort));
+      await tester.pumpAndSettle();
+      expect(notifier.draft.fuelCategory, 'vast');
+      expect(notifier.draft.fuelSubtype, '');
+
+      // 5. Select Houtpellets
+      await tester.tap(find.text(AppDictionary.solidPellets));
+      await tester.pumpAndSettle();
+      expect(notifier.draft.fuelSubtype, 'houtpellets');
+
+      // 6. Switch to Gasvormig -> remembers Aardgas
+      await tester.tap(find.text(AppDictionary.fuelGasShort));
+      await tester.pumpAndSettle();
+      expect(notifier.draft.fuelSubtype, 'aardgas');
+
+      // 7. Switch back to Vast -> remembers Houtpellets
+      await tester.tap(find.text(AppDictionary.fuelSolidShort));
+      await tester.pumpAndSettle();
+      expect(notifier.draft.fuelSubtype, 'houtpellets');
+    });
   });
 }

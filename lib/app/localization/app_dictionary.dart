@@ -95,6 +95,12 @@ abstract final class AppDictionary {
   static const String searchCustomerHint = 'Zoek klanten';
   static const String lblSameAsCustomerAddress =
       'Installatieadres is hetzelfde als klantadres';
+  static const String lblSeparateInstallationAddress =
+      'Afwijkend installatieadres';
+  static const String subSeparateInstallationAddress =
+      'Schakel in als de ketel op een ander adres staat dan het klantadres (bv. syndicus of huurder)';
+  static const String descSameAsCustomerEmpty =
+      'Wordt automatisch overgenomen van de klantgegevens hierboven.';
   static const String lblEffectiveLocation = 'Effectieve installatielocatie';
   static const String lblNoAddressFilled = 'Geen adres ingevuld';
   static const String lblSourceCustomerAddress = 'Bron: Klantadres';
@@ -190,8 +196,9 @@ abstract final class AppDictionary {
   static const String headerAppliance = 'Toestel';
   static const String headerBurner = 'Brander';
   static const String subBurner = '(enkel CV)';
-  static const String optBurnerIntegrated = 'Geïntegreerd';
-  static const String optBurnerSeparate = 'Afzonderlijke brander';
+  static const String lblSeparateBurner = 'Afzonderlijke brander';
+  static const String subSeparateBurner =
+      'Schakel in als de brander een apart toestel is (bv. stookolie)';
   static const String lblBurnerIntegratedBadge = 'Geïntegreerde brander';
   static const String descBurnerIntegrated =
       'De brander maakt integraal deel uit van de ketel. Gegevens worden automatisch overgenomen voor het attest en VEKA.';

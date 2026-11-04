@@ -86,12 +86,14 @@ class EindbeoordelingRepository {
       );
     }
     if (loaded.nextInspectionDate?.isEmpty ?? true) {
-      return loaded.copyWith(
-        nextInspectionDate: EindbeoordelingDraft.calculateStatutoryNextDate(
-          fuelType: activeFuel,
-          fromDate: visitDt,
-        ),
-      );
+      if (activeFuel.isNotEmpty && loaded.isGood && loaded.isSafe) {
+        return loaded.copyWith(
+          nextInspectionDate: EindbeoordelingDraft.calculateStatutoryNextDate(
+            fuelType: activeFuel,
+            fromDate: visitDt,
+          ),
+        );
+      }
     }
     return loaded;
   }
@@ -121,14 +123,14 @@ class EindbeoordelingRepository {
 
       if (rows.isEmpty) {
         return const VisitContextSummary(
-          fuelType: 'gas',
+          fuelType: '',
           visitDate: '',
           customerName: '',
         );
       }
 
       final row = rows.first;
-      final fuel = (row['fuel_type'] as String?) ?? 'gas';
+      final fuel = (row['fuel_type'] as String?) ?? '';
       final date = (row['visit_date'] as String?) ?? '';
       final firstName = (row['first_name'] as String?) ?? '';
       final lastName = (row['last_name'] as String?) ?? '';

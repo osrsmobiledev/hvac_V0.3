@@ -109,22 +109,24 @@ class MeasurementSlotDraft {
     };
   }
 
+  static const Object _sentinel = Object();
+
   /// Copies this instance with updated fields.
   MeasurementSlotDraft copyWith({
     String? slot,
     double? o2Percent,
     double? co2Percent,
     double? coMgKwh,
-    bool? coOk,
+    Object? coOk = _sentinel,
     double? flueTempTg,
     double? ambientTempTa,
     double? netTemp,
     double? efficiencyHi,
-    bool? efficiencyHiOk,
+    Object? efficiencyHiOk = _sentinel,
     double? efficiencyHs,
     double? fluePressurePa,
     int? bacharach,
-    bool? bacharachOk,
+    Object? bacharachOk = _sentinel,
     String? rawQrPayload,
   }) {
     return MeasurementSlotDraft(
@@ -132,16 +134,20 @@ class MeasurementSlotDraft {
       o2Percent: o2Percent ?? this.o2Percent,
       co2Percent: co2Percent ?? this.co2Percent,
       coMgKwh: coMgKwh ?? this.coMgKwh,
-      coOk: coOk ?? this.coOk,
+      coOk: identical(coOk, _sentinel) ? this.coOk : coOk as bool?,
       flueTempTg: flueTempTg ?? this.flueTempTg,
       ambientTempTa: ambientTempTa ?? this.ambientTempTa,
       netTemp: netTemp ?? this.netTemp,
       efficiencyHi: efficiencyHi ?? this.efficiencyHi,
-      efficiencyHiOk: efficiencyHiOk ?? this.efficiencyHiOk,
+      efficiencyHiOk: identical(efficiencyHiOk, _sentinel)
+          ? this.efficiencyHiOk
+          : efficiencyHiOk as bool?,
       efficiencyHs: efficiencyHs ?? this.efficiencyHs,
       fluePressurePa: fluePressurePa ?? this.fluePressurePa,
       bacharach: bacharach ?? this.bacharach,
-      bacharachOk: bacharachOk ?? this.bacharachOk,
+      bacharachOk: identical(bacharachOk, _sentinel)
+          ? this.bacharachOk
+          : bacharachOk as bool?,
       rawQrPayload: rawQrPayload ?? this.rawQrPayload,
     );
   }

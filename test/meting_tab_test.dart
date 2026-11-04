@@ -47,14 +47,7 @@ void main() {
     );
     AppDatabase.instance.setDatabaseForTesting(db);
 
-    // Seed visit 1 and default boiler
-    await db.insert('maintenance_visits', {
-      'id': 1,
-      'activity_type': 'onderhoud',
-      'visit_date': '2026-10-27',
-      'created_at': DateTime.now().toIso8601String(),
-      'updated_at': DateTime.now().toIso8601String(),
-    });
+    // Seed default boiler and visit 1
     await db.insert('boilers', {
       'id': 1,
       'fuel_type': 'gas',
@@ -62,6 +55,15 @@ void main() {
       'centraal_type': 'C',
       'is_central': 1,
       'boiler_operation': 'condenserend',
+      'created_at': DateTime.now().toIso8601String(),
+      'updated_at': DateTime.now().toIso8601String(),
+    });
+    await db.insert('maintenance_visits', {
+      'id': 1,
+      'boiler_id': 1,
+      'is_draft': 1,
+      'activity_type': 'onderhoud',
+      'visit_date': '2026-10-27',
       'created_at': DateTime.now().toIso8601String(),
       'updated_at': DateTime.now().toIso8601String(),
     });
@@ -172,6 +174,47 @@ void main() {
       expect(find.text(MetingDictionary.lblCheckFuelSupplyTightness),
           findsOneWidget);
       expect(find.text(MetingDictionary.lblCheckFlueTightness), findsOneWidget);
+    });
+
+    testWidgets(
+        'Displays neutral placeholder in fuel banner when fuelCategory is empty',
+        (tester) async {
+      final notifier = BoilerDraftNotifier();
+      await pumpTab(tester, notifier: notifier);
+
+      expect(find.byType(MetingFuelBanner), findsOneWidget);
+      expect(find.text(MetingDictionary.lblNoFuelSelected), findsOneWidget);
+      expect(find.text(MetingDictionary.subNoFuelSelected), findsOneWidget);
+      expect(
+        find.descendant(
+          of: find.byType(MetingFuelBanner),
+          matching: find.textContaining('Gas'),
+        ),
+        findsNothing,
+      );
+    });
+
+    testWidgets(
+        'Banner displays Gasvormig when only gas category is selected, and appends subtype when chosen',
+        (tester) async {
+      final notifier = BoilerDraftNotifier();
+      addTearDown(notifier.dispose);
+      notifier.updateDraft(const BoilerDraft(
+        fuelCategory: 'gas',
+        fuelSubtype: '',
+      ));
+      await pumpTab(tester, notifier: notifier);
+
+      // Only Gasvormig, NOT Gasvormig (Aardgas)
+      expect(find.text('Gasvormig'), findsOneWidget);
+      expect(find.text('Gasvormig (Aardgas)'), findsNothing);
+
+      // Now set subtype to aardgas
+      notifier.updateDraft(notifier.draft.copyWith(fuelSubtype: 'aardgas'));
+      await tester.pump();
+
+      expect(find.text('Gasvormig (Aardgas)'), findsOneWidget);
+      await settleDebounce(tester);
     });
 
     testWidgets(
@@ -290,21 +333,37 @@ void main() {
       );
       expect(firstCheck, findsWidgets);
 
-      // Tap OK
+      // 1. Tap OK -> selected
       final okButton = find.descendant(
         of: firstCheck.first,
         matching: find.text(MetingDictionary.lblOk),
       );
       await tester.tap(okButton);
       await settleDebounce(tester);
+      expect(
+          tester.widget<TacticalBinaryCheck>(firstCheck.first).value, isTrue);
 
-      // Tap Niet OK
+      // 2. Tap OK again -> de-selected back to null
+      await tester.tap(okButton);
+      await settleDebounce(tester);
+      expect(
+          tester.widget<TacticalBinaryCheck>(firstCheck.first).value, isNull);
+
+      // 3. Tap Niet OK -> selected
       final notOkButton = find.descendant(
         of: firstCheck.first,
         matching: find.text(MetingDictionary.lblNotOk),
       );
       await tester.tap(notOkButton);
       await settleDebounce(tester);
+      expect(
+          tester.widget<TacticalBinaryCheck>(firstCheck.first).value, isFalse);
+
+      // 4. Tap Niet OK again -> de-selected back to null
+      await tester.tap(notOkButton);
+      await settleDebounce(tester);
+      expect(
+          tester.widget<TacticalBinaryCheck>(firstCheck.first).value, isNull);
 
       expect(tester.takeException(), isNull);
     });
@@ -388,6 +447,11 @@ void main() {
         'Statutory combustion fields adapt norm labels smartly to fuel and boiler type',
         (tester) async {
       final notifier = BoilerDraftNotifier();
+      notifier.updateDraft(const BoilerDraft(
+        fuelCategory: 'gas',
+        centraalType: 'C',
+        boilerOperation: 'condenserend',
+      ));
       await pumpTab(tester, notifier: notifier);
 
       // Default: Gas Type C Condenserend

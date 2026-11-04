@@ -130,6 +130,8 @@ class OperatingConditionsDraft {
     };
   }
 
+  static const Object _sentinel = Object();
+
   /// Copies this instance with optional updated fields.
   OperatingConditionsDraft copyWith({
     double? boilerTempCelsius,
@@ -141,14 +143,14 @@ class OperatingConditionsDraft {
     double? nozzleAngleDegrees,
     double? pumpPressureBar,
     int? smokeIndexBacharach,
-    bool? smokeIndexOk,
-    bool? noOilTraceOk,
-    bool? noUnwantedCondensationOk,
-    bool? rarelyPollutingSmokeOk,
-    bool? fluePressureOk,
-    bool? ventilationOk,
-    bool? flueTightnessOk,
-    bool? fuelSupplyTightnessOk,
+    Object? smokeIndexOk = _sentinel,
+    Object? noOilTraceOk = _sentinel,
+    Object? noUnwantedCondensationOk = _sentinel,
+    Object? rarelyPollutingSmokeOk = _sentinel,
+    Object? fluePressureOk = _sentinel,
+    Object? ventilationOk = _sentinel,
+    Object? flueTightnessOk = _sentinel,
+    Object? fuelSupplyTightnessOk = _sentinel,
     String? verbrandingscontrole,
     String? stooktoestelConform,
     String? rookgasafvoerkanaalConform,
@@ -167,17 +169,30 @@ class OperatingConditionsDraft {
       nozzleAngleDegrees: nozzleAngleDegrees ?? this.nozzleAngleDegrees,
       pumpPressureBar: pumpPressureBar ?? this.pumpPressureBar,
       smokeIndexBacharach: smokeIndexBacharach ?? this.smokeIndexBacharach,
-      smokeIndexOk: smokeIndexOk ?? this.smokeIndexOk,
-      noOilTraceOk: noOilTraceOk ?? this.noOilTraceOk,
-      noUnwantedCondensationOk:
-          noUnwantedCondensationOk ?? this.noUnwantedCondensationOk,
-      rarelyPollutingSmokeOk:
-          rarelyPollutingSmokeOk ?? this.rarelyPollutingSmokeOk,
-      fluePressureOk: fluePressureOk ?? this.fluePressureOk,
-      ventilationOk: ventilationOk ?? this.ventilationOk,
-      flueTightnessOk: flueTightnessOk ?? this.flueTightnessOk,
-      fuelSupplyTightnessOk:
-          fuelSupplyTightnessOk ?? this.fuelSupplyTightnessOk,
+      smokeIndexOk: identical(smokeIndexOk, _sentinel)
+          ? this.smokeIndexOk
+          : smokeIndexOk as bool?,
+      noOilTraceOk: identical(noOilTraceOk, _sentinel)
+          ? this.noOilTraceOk
+          : noOilTraceOk as bool?,
+      noUnwantedCondensationOk: identical(noUnwantedCondensationOk, _sentinel)
+          ? this.noUnwantedCondensationOk
+          : noUnwantedCondensationOk as bool?,
+      rarelyPollutingSmokeOk: identical(rarelyPollutingSmokeOk, _sentinel)
+          ? this.rarelyPollutingSmokeOk
+          : rarelyPollutingSmokeOk as bool?,
+      fluePressureOk: identical(fluePressureOk, _sentinel)
+          ? this.fluePressureOk
+          : fluePressureOk as bool?,
+      ventilationOk: identical(ventilationOk, _sentinel)
+          ? this.ventilationOk
+          : ventilationOk as bool?,
+      flueTightnessOk: identical(flueTightnessOk, _sentinel)
+          ? this.flueTightnessOk
+          : flueTightnessOk as bool?,
+      fuelSupplyTightnessOk: identical(fuelSupplyTightnessOk, _sentinel)
+          ? this.fuelSupplyTightnessOk
+          : fuelSupplyTightnessOk as bool?,
       verbrandingscontrole: verbrandingscontrole ?? this.verbrandingscontrole,
       stooktoestelConform: stooktoestelConform ?? this.stooktoestelConform,
       rookgasafvoerkanaalConform:

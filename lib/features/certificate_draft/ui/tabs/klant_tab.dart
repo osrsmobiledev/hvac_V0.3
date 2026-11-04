@@ -13,7 +13,6 @@ import 'klant/klant_form_controllers.dart';
 import 'klant/klant_tab_body.dart';
 
 /// Tab 4 — Klant & Installatieadres
-/// Features top tactical 4-button action bar (Zoeken, Nieuw, Bewerken/Opslaan, Wissen/Annuleren).
 class KlantTab extends StatefulWidget {
   final CustomerRepository? customerRepository;
   final DraftRepository? draftRepository;
@@ -59,7 +58,9 @@ class _KlantTabState extends State<KlantTab>
       if (c.activeCustomer != null) {
         _controllers.populateCustomer(_activeCustomer = c.activeCustomer!);
       }
-      if (c.activeServiceLocation != null) _applyLocation(c.activeServiceLocation!);
+      if (c.activeServiceLocation != null) {
+        _applyLocation(c.activeServiceLocation!);
+      }
       _isLoading = false;
     } else {
       _loadInitialData();
@@ -161,9 +162,7 @@ class _KlantTabState extends State<KlantTab>
   }
 
   Future<void> _onEditPressed() async {
-    if (!await KlantActionDialogs.confirmEditCustomer(context) || !mounted) {
-      return;
-    }
+    if (!await KlantActionDialogs.confirmEditCustomer(context) || !mounted) return;
     _takeSnapshot();
     setState(() => _isEditing = true);
   }
@@ -176,9 +175,7 @@ class _KlantTabState extends State<KlantTab>
   }
 
   Future<void> _onCancelPressed() async {
-    if (!await KlantActionDialogs.confirmCancelEdit(context) || !mounted) {
-      return;
-    }
+    if (!await KlantActionDialogs.confirmCancelEdit(context) || !mounted) return;
     setState(() {
       _restoreSnapshot();
       _isEditing = false;
@@ -186,16 +183,16 @@ class _KlantTabState extends State<KlantTab>
   }
 
   Future<void> _onDeletePressed() async {
-    if (!await KlantActionDialogs.confirmDeleteCustomer(context) || !mounted) {
-      return;
-    }
+    if (!await KlantActionDialogs.confirmDeleteCustomer(context) || !mounted) return;
     _clearCustomerForm();
     setState(() => _isEditing = false);
   }
 
   void _takeSnapshot() => _snapshot = KlantFormSnapshot(
-        customer: _activeCustomer, location: _activeLocation,
-        role: _role, isSameAsCustomer: _isSameAsCustomer,
+        customer: _activeCustomer,
+        location: _activeLocation,
+        role: _role,
+        isSameAsCustomer: _isSameAsCustomer,
       );
 
   void _restoreSnapshot() {
@@ -215,9 +212,8 @@ class _KlantTabState extends State<KlantTab>
       _isSameAsCustomer = true;
     });
     if (_draftVisitId != null) {
-      _coord.unlinkCustomer(_draftVisitId!).catchError((e, s) {
-        debugPrint('[KlantTab] unlinkCustomer error: $e\n$s');
-      });
+      _coord.unlinkCustomer(_draftVisitId!).catchError(
+          (e, s) => debugPrint('[KlantTab] unlinkCustomer error: $e\n$s'));
     }
   }
 

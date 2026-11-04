@@ -6,6 +6,7 @@ import 'package:hvac_app/core/widgets/tactical_feedback.dart';
 import 'package:hvac_app/features/certificate_draft/data/boiler_draft_repository.dart';
 import 'package:hvac_app/features/certificate_draft/domain/boiler_draft.dart';
 import '../boiler_draft_notifier.dart';
+import 'stooktoestel/fuel_category_memory.dart';
 import 'stooktoestel/stooktoestel_form_controllers.dart';
 import 'stooktoestel/stooktoestel_tab_body.dart';
 
@@ -14,11 +15,7 @@ class StooktoestelTab extends StatefulWidget {
   final BoilerDraftRepository? repository;
   final BoilerDraftNotifier? boilerNotifier;
 
-  const StooktoestelTab({
-    super.key,
-    this.repository,
-    this.boilerNotifier,
-  });
+  const StooktoestelTab({super.key, this.repository, this.boilerNotifier});
 
   @override
   State<StooktoestelTab> createState() => _StooktoestelTabState();
@@ -29,7 +26,7 @@ class _StooktoestelTabState extends State<StooktoestelTab>
   late final BoilerDraftRepository _repository;
   final StooktoestelFormControllers _controllers =
       StooktoestelFormControllers();
-
+  final FuelCategoryMemory _fuelMemory = FuelCategoryMemory();
   final _debouncer = Debouncer();
   BoilerDraft _draft = BoilerDraft.initial();
 
@@ -80,9 +77,7 @@ class _StooktoestelTabState extends State<StooktoestelTab>
   void _onBoilerNotifierChanged() {
     final notifier = widget.boilerNotifier;
     if (notifier == null || !mounted || notifier.isLoading) return;
-    if (_draft != notifier.draft) {
-      _applyDraftToUi(notifier.draft);
-    }
+    if (_draft != notifier.draft) _applyDraftToUi(notifier.draft);
   }
 
   void _applyDraftToUi(BoilerDraft d) {
@@ -95,6 +90,7 @@ class _StooktoestelTabState extends State<StooktoestelTab>
       _fuelCategory = d.fuelCategory;
       _fuelSubtype = d.fuelSubtype;
       _fuelOtherText = d.fuelOtherText;
+      _fuelMemory.populateFrom(d);
       _burnerTechnology = d.burnerTechnology;
       _burnerType = d.burnerType.isNotEmpty ? d.burnerType : 'geintegreerd';
       _serialUnknown = d.boilerSerialNumberUnknown;
@@ -107,9 +103,7 @@ class _StooktoestelTabState extends State<StooktoestelTab>
     try {
       final notifier = widget.boilerNotifier;
       if (notifier != null) {
-        if (!notifier.isLoading) {
-          _applyDraftToUi(notifier.draft);
-        }
+        if (!notifier.isLoading) _applyDraftToUi(notifier.draft);
         return;
       }
       final draft = await _repository.getOrCreateActiveBoiler();
@@ -161,23 +155,32 @@ class _StooktoestelTabState extends State<StooktoestelTab>
     _syncDraft(immediate: false);
   }
 
-  void _onBoilerOp(String val) => _update(() {
-        _boilerOperation = val;
-      });
-
   void _onFuelCat(String val) => _update(() {
         _fuelCategory = val;
+        final (sub, other) = _fuelMemory.resolveForCategory(val);
+        _fuelSubtype = sub;
+        _fuelOtherText = other;
         if (val == 'gas') {
-          _fuelSubtype = 'aardgas';
           _burnerType = _burnerTechnology == 'ventilatorbrander'
               ? 'afzonderlijk'
               : 'geintegreerd';
         } else if (val == 'vloeibaar') {
           _burnerType = 'afzonderlijk';
-        } else if (val == 'vast') {
-          _fuelSubtype = 'houtpellets';
+        } else {
+          _burnerType = 'geintegreerd';
         }
       });
+
+  void _onFuelSubtype(String val) => _update(() {
+        _fuelSubtype = val;
+        _fuelMemory.onSubtype(_fuelCategory, val);
+      });
+
+  void _onFuelOtherText(String v) {
+    _fuelOtherText = v;
+    _fuelMemory.onOtherText(_fuelCategory, v);
+    _syncDraft(immediate: false);
+  }
 
   void _onBurnerTech(String val) => _update(() {
         _burnerTechnology = val;
@@ -188,18 +191,6 @@ class _StooktoestelTabState extends State<StooktoestelTab>
         }
       });
 
-  void _onFormChanged() => _syncDraft(immediate: false);
-
-  void _onCentralChanged(bool val) => _update(() {
-        _isCentral = val;
-        if (!val) _centraalType = '';
-      });
-
-  void _onCentraalType(String val) => _update(() {
-        _centraalType = (_centraalType == val && _isCentral) ? '' : val;
-        _isCentral = _centraalType.isNotEmpty;
-      });
-
   void _scanBarcode(TextEditingController target, String title) =>
       TacticalFeedback.showInfo(
           context, AppDictionary.barcodeScannerPlaceholder);
@@ -207,7 +198,6 @@ class _StooktoestelTabState extends State<StooktoestelTab>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-
     return StooktoestelTabBody(
       controllers: _controllers,
       isCentral: _isCentral,
@@ -223,13 +213,19 @@ class _StooktoestelTabState extends State<StooktoestelTab>
       yearUnknown: _yearUnknown,
       burnerSerialUnknown: _burnerSerialUnknown,
       burnerYearUnknown: _burnerYearUnknown,
-      onCentralChanged: _onCentralChanged,
-      onCentraalTypeChanged: _onCentraalType,
+      onCentralChanged: (v) => _update(() {
+        _isCentral = v;
+        if (!v) _centraalType = '';
+      }),
+      onCentraalTypeChanged: (val) => _update(() {
+        _centraalType = (_centraalType == val && _isCentral) ? '' : val;
+        _isCentral = _centraalType.isNotEmpty;
+      }),
       onHeatingTypeChanged: (val) => _update(() => _heatingType = val),
-      onBoilerOperationChanged: _onBoilerOp,
+      onBoilerOperationChanged: (val) => _update(() => _boilerOperation = val),
       onFuelCategoryChanged: _onFuelCat,
-      onFuelSubtypeChanged: (val) => _update(() => _fuelSubtype = val),
-      onFuelOtherTextChanged: (v) { _fuelOtherText = v; _onFormChanged(); },
+      onFuelSubtypeChanged: _onFuelSubtype,
+      onFuelOtherTextChanged: _onFuelOtherText,
       onBurnerTechChanged: _onBurnerTech,
       onBurnerTypeChanged: (val) => _update(() => _burnerType = val),
       onTypeBCodeChanged: (_) => _syncDraft(immediate: true),
@@ -243,7 +239,7 @@ class _StooktoestelTabState extends State<StooktoestelTab>
           _controllers.toestelSerial, AppDictionary.hintScanToestelSerial),
       onScanBranderBarcode: () => _scanBarcode(
           _controllers.branderSerial, AppDictionary.hintScanBranderSerial),
-      onFormChanged: _onFormChanged,
+      onFormChanged: () => _syncDraft(immediate: false),
     );
   }
 }

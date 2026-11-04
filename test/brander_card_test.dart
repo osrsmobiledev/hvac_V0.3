@@ -40,33 +40,35 @@ void main() {
         MaterialApp(
           theme: AppTheme.darkTheme,
           home: Scaffold(
-            body: StatefulBuilder(
-              builder: (context, setState) {
-                return BranderCard(
-                  burnerType: activeType,
-                  onBurnerTypeChanged: (val) =>
-                      setState(() => activeType = val),
-                  brandController: brandCtrl,
-                  modelController: modelCtrl,
-                  yearController: yearCtrl,
-                  serialController: serialCtrl,
-                  flowRateController: flowCtrl,
-                  yearUnknown: false,
-                  serialUnknown: false,
-                  onYearUnknownChanged: (_) {},
-                  onSerialUnknownChanged: (_) {},
-                  onScanBarcode: () {},
-                  onChanged: () {},
-                );
-              },
+            body: SingleChildScrollView(
+              child: StatefulBuilder(
+                builder: (context, setState) {
+                  return BranderCard(
+                    burnerType: activeType,
+                    onBurnerTypeChanged: (val) =>
+                        setState(() => activeType = val),
+                    brandController: brandCtrl,
+                    modelController: modelCtrl,
+                    yearController: yearCtrl,
+                    serialController: serialCtrl,
+                    flowRateController: flowCtrl,
+                    yearUnknown: false,
+                    serialUnknown: false,
+                    onYearUnknownChanged: (_) {},
+                    onSerialUnknownChanged: (_) {},
+                    onScanBarcode: () {},
+                    onChanged: () {},
+                  );
+                },
+              ),
             ),
           ),
         ),
       );
 
-      // Verify TwoWaySlidingBar options
-      expect(find.text(AppDictionary.optBurnerIntegrated), findsOneWidget);
-      expect(find.text(AppDictionary.optBurnerSeparate), findsOneWidget);
+      // Verify TacticalToggleButton label and subtitle
+      expect(find.text(AppDictionary.lblSeparateBurner), findsOneWidget);
+      expect(find.text(AppDictionary.subSeparateBurner), findsOneWidget);
 
       // Verify integrated badge is shown
       expect(find.byType(IntegratedBurnerBadge), findsOneWidget);
@@ -77,8 +79,8 @@ void main() {
       expect(find.text(AppDictionary.lblFlowRate), findsNothing);
       expect(find.text('Weishaupt'), findsNothing);
 
-      // Switch to Afzonderlijke brander
-      await tester.tap(find.text(AppDictionary.optBurnerSeparate));
+      // Toggle switch to Afzonderlijke brander
+      await tester.tap(find.text(AppDictionary.lblSeparateBurner));
       await tester.pumpAndSettle();
 
       // Integrated badge disappears, form and quick chips appear
@@ -92,6 +94,12 @@ void main() {
       await tester.tap(find.text('Weishaupt'));
       await tester.pumpAndSettle();
       expect(brandCtrl.text, 'Weishaupt');
+
+      // Toggle switch back OFF
+      await tester.tap(find.text(AppDictionary.lblSeparateBurner));
+      await tester.pumpAndSettle();
+      expect(find.byType(IntegratedBurnerBadge), findsOneWidget);
+      expect(find.text(AppDictionary.lblFlowRate), findsNothing);
     });
 
     testWidgets(

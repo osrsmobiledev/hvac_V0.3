@@ -3,11 +3,41 @@
 /// Centralizes all section headers, field titles, hints, slot titles,
 /// and statutory assessment checks according to official VEKA / NBN terminology.
 abstract final class MetingDictionary {
-  // --- Section Headers ---
+  // --- Section Headers & Fuel Banner ---
   static const String headerOperatingConditions = 'Goede staat van werking';
   static const String headerCombustionMeasurements = 'Rookgasmetingen';
   static const String headerSafetyChecks = 'Veilige staat van werking';
   static const String headerFuelBanner = 'Installatie Brandstof';
+  static const String lblNoFuelSelected = 'Geen brandstof geselecteerd';
+  static const String subNoFuelSelected =
+      'Kies een brandstof in tab Stooktoestel';
+  static const String lblFuelGas = 'Gasvormig';
+  static const String lblFuelOil = 'Stookolie (Mazout)';
+  static const String lblFuelSolid = 'Vaste brandstof';
+
+  /// Formats the gas title, showing subtype only if explicitly chosen.
+  static String formatGasFuelTitle(String subtype, {String otherText = ''}) {
+    if (subtype.isEmpty) return lblFuelGas;
+    if (subtype == 'aardgas') return 'Gasvormig (Aardgas)';
+    if (subtype == 'LPG') return 'Gasvormig (LPG)';
+    if (subtype == 'andere') {
+      final trimmed = otherText.trim();
+      return trimmed.isNotEmpty ? 'Gasvormig ($trimmed)' : 'Gasvormig (Andere)';
+    }
+    return 'Gasvormig ($subtype)';
+  }
+
+  /// Formats the solid fuel title, showing subtype only if explicitly chosen.
+  static String formatSolidFuelTitle(String subtype, {String otherText = ''}) {
+    if (subtype.isEmpty) return lblFuelSolid;
+    if (subtype == 'houtpellets') return 'Vast (Houtpellets)';
+    if (subtype == 'houtblokken') return 'Vast (Houtblokken)';
+    if (subtype == 'andere') {
+      final trimmed = otherText.trim();
+      return trimmed.isNotEmpty ? 'Vast ($trimmed)' : 'Vast (Andere)';
+    }
+    return 'Vast ($subtype)';
+  }
 
   // --- Measurement Slots (Official VEKA Statutory Terminology) ---
   static const String slotProef1 = 'Proef I';
@@ -109,14 +139,14 @@ abstract final class MetingDictionary {
 
   /// Returns smart statutory CO-norm label based on fuel category.
   static String getCoNormLabel({required String fuelCategory}) {
-    if (fuelCategory == 'vast') {
-      return 'CO-norm (conform norm)';
-    }
+    if (fuelCategory.isEmpty) return 'CO-norm (—)';
+    if (fuelCategory == 'vast') return 'CO-norm (conform norm)';
     return 'CO-norm (≤ 150 mg/kWh)';
   }
 
   /// Compact statutory CO norm text for embedding inside the input box.
   static String getCoNormText({required String fuelCategory}) {
+    if (fuelCategory.isEmpty) return '—';
     if (fuelCategory == 'vast') return 'conform';
     return '≤ 150 mg/kWh';
   }
@@ -127,6 +157,7 @@ abstract final class MetingDictionary {
     required String centraalType,
     String typeBText = '',
   }) {
+    if (fuelCategory.isEmpty) return '—';
     if (fuelCategory == 'vloeibaar') return '≥ 90%';
     if (fuelCategory == 'vast') return '≥ 80%';
     if (centraalType == 'B') {
@@ -146,6 +177,7 @@ abstract final class MetingDictionary {
     String typeBText = '',
     String boilerOperation = 'condenserend',
   }) {
+    if (fuelCategory.isEmpty) return 'Rendement Hi-norm (—)';
     if (fuelCategory == 'vloeibaar') {
       return 'Rendement Hi-norm (≥ 90% - Stookolie)';
     } else if (fuelCategory == 'vast') {

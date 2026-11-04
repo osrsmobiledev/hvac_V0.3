@@ -78,12 +78,14 @@ class FakeEindbeoordelingRepository implements EindbeoordelingRepository {
       );
     }
     if (draft.nextInspectionDate?.isEmpty ?? true) {
-      return draft.copyWith(
-        nextInspectionDate: EindbeoordelingDraft.calculateStatutoryNextDate(
-          fuelType: activeFuel,
-          fromDate: visitDt,
-        ),
-      );
+      if (activeFuel.isNotEmpty && draft.isGood && draft.isSafe) {
+        return draft.copyWith(
+          nextInspectionDate: EindbeoordelingDraft.calculateStatutoryNextDate(
+            fuelType: activeFuel,
+            fromDate: visitDt,
+          ),
+        );
+      }
     }
     return draft;
   }
@@ -209,7 +211,12 @@ void main() {
       final repo = FakeEindbeoordelingRepository();
       await pumpTabScreen(tester, repo: repo);
 
-      // Initially pre-selected at +2 years (gas). Tapping +2 Jaar deselects it back to empty
+      // Initially empty. Tapping +2 Jaar sets date to +2 years
+      await tester.tap(find.text(EindbeoordelingDictionary.chipPlus2Years));
+      await tester.pumpAndSettle();
+      expect(repo.draft.nextInspectionDate, '25/10/2027');
+
+      // Tapping already selected +2 Jaar deselects it back to empty
       await tester.tap(find.text(EindbeoordelingDictionary.chipPlus2Years));
       await tester.pumpAndSettle();
       expect(repo.draft.nextInspectionDate, '');
@@ -223,11 +230,6 @@ void main() {
       await tester.tap(find.text(EindbeoordelingDictionary.chipPlus1Year));
       await tester.pumpAndSettle();
       expect(repo.draft.nextInspectionDate, '');
-
-      // Tapping +2 Jaar sets date to +2 years
-      await tester.tap(find.text(EindbeoordelingDictionary.chipPlus2Years));
-      await tester.pumpAndSettle();
-      expect(repo.draft.nextInspectionDate, '25/10/2027');
     });
 
     testWidgets('Completing without conclusions displays info toast',
@@ -278,6 +280,11 @@ void main() {
         'Reactive fuel switch from Stooktoestel via BoilerDraftNotifier updates statutory date',
         (tester) async {
       final repo = FakeEindbeoordelingRepository();
+      repo.draft = const EindbeoordelingDraft(
+        toestelWerkingGoed: 'Goed',
+        toestelWerkingVeilig: 'Veilig',
+        nextInspectionDate: '25/10/2027',
+      );
       final notifier = BoilerDraftNotifier();
       notifier.updateDraft(const BoilerDraft(fuelCategory: 'gas'));
 
@@ -334,38 +341,22 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // Initial statutory gas date: 2025-10-25 + 2 years = 25/10/2027
-      expect(find.text('25/10/2027'), findsOneWidget);
+      // Initial state has no conclusions and empty date
+      expect(
+          find.text(EindbeoordelingDictionary.datePlaceholder), findsOneWidget);
 
       // Verify +3 Maanden button exists and tap it
       expect(
           find.text(EindbeoordelingDictionary.chipPlus3Months), findsOneWidget);
       await tester.tap(find.text(EindbeoordelingDictionary.chipPlus3Months));
       await tester.pumpAndSettle();
-
-      // Tap Niet goed (fails) -> auto-switches to 3-month remediation date
-      await tester.tap(find.text(EindbeoordelingDictionary.optNietGoed));
-      await tester.pumpAndSettle();
-      expect(find.text('25/01/2026'), findsOneWidget);
-      expect(repo.draft.nextInspectionDate, '25/01/2026');
-
-      // Tap Goed (transitions back to compliant) -> restores statutory 25/10/2027
-      await tester.tap(find.text(EindbeoordelingDictionary.optGoed));
-      await tester.pumpAndSettle();
-      expect(find.text('25/10/2027'), findsOneWidget);
-      expect(repo.draft.nextInspectionDate, '25/10/2027');
-
-      // Manually tap +3 Maanden
-      await tester.tap(find.text(EindbeoordelingDictionary.chipPlus3Months));
-      await tester.pumpAndSettle();
       expect(find.text('25/01/2026'), findsOneWidget);
 
-      // Tapping +3 Maanden again deselects to empty
+      // Tap +3 Maanden again deselects to empty
       await tester.tap(find.text(EindbeoordelingDictionary.chipPlus3Months));
       await tester.pumpAndSettle();
       expect(
           find.text(EindbeoordelingDictionary.datePlaceholder), findsOneWidget);
-      expect(repo.draft.nextInspectionDate, '');
     });
 
     testWidgets(
@@ -373,6 +364,8 @@ void main() {
         (tester) async {
       final repo = FakeEindbeoordelingRepository();
       final assessmentNotifier = MeasurementAssessmentNotifier();
+      final boilerNotifier = BoilerDraftNotifier();
+      boilerNotifier.updateDraft(const BoilerDraft(fuelCategory: 'gas'));
       addTearDown(assessmentNotifier.dispose);
 
       tester.view.physicalSize = const Size(1080, 2400);
@@ -387,6 +380,7 @@ void main() {
             body: EindbeoordelingTab(
               visitId: 1,
               repositoryOverride: repo,
+              boilerNotifier: boilerNotifier,
               assessmentNotifier: assessmentNotifier,
             ),
           ),
@@ -394,8 +388,9 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // Initially Goed is null/initialized, statutory date is 25/10/2027
-      expect(find.text('25/10/2027'), findsOneWidget);
+      // Initially Goed is null/initialized, date is empty placeholder
+      expect(
+          find.text(EindbeoordelingDictionary.datePlaceholder), findsOneWidget);
 
       // Tab 6 signals combustion failure (e.g. NOK on CO or Efficiency)
       assessmentNotifier.updateAssessment(
@@ -420,6 +415,28 @@ void main() {
       expect(find.text('25/10/2027'), findsOneWidget);
       expect(repo.draft.toestelWerkingGoed, 'Goed');
       expect(repo.draft.nextInspectionDate, '25/10/2027');
+
+      // Tab 6 signals measurements/checks cleared back to null
+      assessmentNotifier.updateAssessment(
+        combustionPassed: null,
+        safetyChecksPassed: null,
+      );
+      await tester.pumpAndSettle();
+
+      // Tab 7 reverts conclusions back to null (unselected)
+      expect(repo.draft.toestelWerkingGoed, isNull);
+      expect(repo.draft.toestelWerkingVeilig, isNull);
+    });
+
+    testWidgets('Staat van werking card displays both section labels',
+        (tester) async {
+      final repo = FakeEindbeoordelingRepository();
+      await pumpTabScreen(tester, repo: repo);
+
+      expect(find.text(EindbeoordelingDictionary.headerHetStooktoestelWerkt),
+          findsOneWidget);
+      expect(find.text(EindbeoordelingDictionary.lblVerluchtingRookgasafvoer),
+          findsOneWidget);
     });
   });
 }

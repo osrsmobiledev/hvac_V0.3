@@ -38,102 +38,108 @@ class InstallationLocationCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bool hasSeparateAddress = !isSameAsCustomer;
+
     return BentoMainSection(
       title: AppDictionary.headerApplianceLocation,
-      child: AbsorbPointer(
-        absorbing: readOnly,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // Reusable tactical toggle: Installatieadres is hetzelfde als klantadres
-            TacticalToggleButton(
-              label: AppDictionary.lblSameAsCustomerAddress,
-              value: isSameAsCustomer,
-              enabled: isEditing || hasCustomer,
-              onChanged: isEditing ? onSameAddressChanged : null,
-            ),
-            const SizedBox(height: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Reusable tactical toggle: Afwijkend installatieadres (greyed out unless editing)
+          TacticalToggleButton(
+            label: AppDictionary.lblSeparateInstallationAddress,
+            subtitle: AppDictionary.subSeparateInstallationAddress,
+            value: hasSeparateAddress,
+            enabled: isEditing,
+            onChanged: isEditing ? (val) => onSameAddressChanged(!val) : null,
+          ),
+          const SizedBox(height: 12),
 
-            // Effective Installation Location Preview Box
-            EffectiveLocationPreview(
-              controllers: controllers,
-              isSameAsCustomer: isSameAsCustomer,
-            ),
+          // Effective Installation Location Preview Box
+          EffectiveLocationPreview(
+            controllers: controllers,
+            isSameAsCustomer: isSameAsCustomer,
+          ),
 
-            // Collapsible separate address fields (when switch is OFF)
-            if (!isSameAsCustomer) ...[
-              const SizedBox(height: 14),
-
-              // Straat (Installatie) — Full width
-              KlantFormField(
-                fieldKey: const ValueKey('loc_street'),
-                controller: controllers.locStreet,
-                label: AppDictionary.lblStreetInstallation,
-                hint: AppDictionary.hintSearchAddress,
-                readOnly: readOnly,
-                onChanged: onChanged,
-              ),
-              const SizedBox(height: 12),
-
-              // Nr & Bus — 2-Column Row (1:1)
-              Row(
+          // Collapsible separate address fields (when switch is ON)
+          if (hasSeparateAddress) ...[
+            const SizedBox(height: 14),
+            AbsorbPointer(
+              absorbing: readOnly,
+              child: Column(
                 children: [
-                  Expanded(
-                    child: KlantFormField(
-                      fieldKey: const ValueKey('loc_houseNumber'),
-                      controller: controllers.locHouseNumber,
-                      label: AppDictionary.lblHouseNumber,
-                      hint: AppDictionary.hintHouseNumber,
-                      keyboardType: TextInputType.streetAddress,
-                      readOnly: readOnly,
-                      onChanged: onChanged,
-                    ),
+                  // Straat (Installatie) — Full width
+                  KlantFormField(
+                    fieldKey: const ValueKey('loc_street'),
+                    controller: controllers.locStreet,
+                    label: AppDictionary.lblStreetInstallation,
+                    hint: AppDictionary.hintSearchAddress,
+                    readOnly: readOnly,
+                    onChanged: onChanged,
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: KlantFormField(
-                      fieldKey: const ValueKey('loc_boxNumber'),
-                      controller: controllers.locBoxNumber,
-                      label: AppDictionary.lblBox,
-                      hint: AppDictionary.hintBox,
-                      readOnly: readOnly,
-                      onChanged: onChanged,
-                    ),
+                  const SizedBox(height: 12),
+
+                  // Nr & Bus — 2-Column Row (1:1)
+                  Row(
+                    children: [
+                      Expanded(
+                        child: KlantFormField(
+                          fieldKey: const ValueKey('loc_houseNumber'),
+                          controller: controllers.locHouseNumber,
+                          label: AppDictionary.lblHouseNumber,
+                          hint: AppDictionary.hintHouseNumber,
+                          keyboardType: TextInputType.streetAddress,
+                          readOnly: readOnly,
+                          onChanged: onChanged,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: KlantFormField(
+                          fieldKey: const ValueKey('loc_boxNumber'),
+                          controller: controllers.locBoxNumber,
+                          label: AppDictionary.lblBox,
+                          hint: AppDictionary.hintBox,
+                          readOnly: readOnly,
+                          onChanged: onChanged,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Postcode & Gemeente — 2-Column Row (1:1)
+                  Row(
+                    children: [
+                      Expanded(
+                        child: KlantFormField(
+                          fieldKey: const ValueKey('loc_postalCode'),
+                          controller: controllers.locPostalCode,
+                          label: AppDictionary.lblPostalCode,
+                          hint: AppDictionary.hintPostalCode,
+                          keyboardType: TextInputType.number,
+                          readOnly: readOnly,
+                          onChanged: onChanged,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: KlantFormField(
+                          fieldKey: const ValueKey('loc_municipality'),
+                          controller: controllers.locMunicipality,
+                          label: AppDictionary.lblCity,
+                          hint: AppDictionary.hintCity,
+                          readOnly: readOnly,
+                          onChanged: onChanged,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
-
-              // Postcode & Gemeente — 2-Column Row (1:1)
-              Row(
-                children: [
-                  Expanded(
-                    child: KlantFormField(
-                      fieldKey: const ValueKey('loc_postalCode'),
-                      controller: controllers.locPostalCode,
-                      label: AppDictionary.lblPostalCode,
-                      hint: AppDictionary.hintPostalCode,
-                      keyboardType: TextInputType.number,
-                      readOnly: readOnly,
-                      onChanged: onChanged,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: KlantFormField(
-                      fieldKey: const ValueKey('loc_municipality'),
-                      controller: controllers.locMunicipality,
-                      label: AppDictionary.lblCity,
-                      hint: AppDictionary.hintCity,
-                      readOnly: readOnly,
-                      onChanged: onChanged,
-                    ),
-                  ),
-                ],
-              ),
-            ],
+            ),
           ],
-        ),
+        ],
       ),
     );
   }

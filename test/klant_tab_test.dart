@@ -88,9 +88,11 @@ void main() {
       expect(find.text(AppDictionary.lblPhone), findsOneWidget);
       expect(find.text(AppDictionary.lblEmail), findsOneWidget);
 
-      // Verify Same Address Switch starts disabled (greyed out) with inputs locked
-      expect(find.text(AppDictionary.lblSameAsCustomerAddress), findsOneWidget);
+      // Verify Afwijkend installatieadres Switch starts OFF (value: false) and disabled (greyed out) with inputs locked
+      expect(find.text(AppDictionary.lblSeparateInstallationAddress),
+          findsOneWidget);
       final initialSwitch = tester.widget<Switch>(find.byType(Switch));
+      expect(initialSwitch.value, isFalse);
       expect(initialSwitch.onChanged, isNull);
       final textField = tester.widget<TextField>(
         find.descendant(

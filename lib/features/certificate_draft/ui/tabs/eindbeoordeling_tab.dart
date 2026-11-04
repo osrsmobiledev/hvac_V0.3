@@ -41,7 +41,7 @@ class _EindbeoordelingTabState extends State<EindbeoordelingTab>
   final _remarksController = TextEditingController();
 
   EindbeoordelingDraft _draft = const EindbeoordelingDraft();
-  String _fuelType = 'gas';
+  String _fuelType = '';
   String _visitDate = '';
 
   @override
@@ -62,7 +62,7 @@ class _EindbeoordelingTabState extends State<EindbeoordelingTab>
         cached!.eindbeoordeling!,
         (nFuel != null && nFuel.isNotEmpty)
             ? nFuel
-            : (cached.activeBoiler?.fuelCategory ?? 'gas'),
+            : (cached.activeBoiler?.fuelCategory ?? ''),
         cached.activeDraft?.visitDate ?? '',
       );
     } else {
@@ -78,9 +78,23 @@ class _EindbeoordelingTabState extends State<EindbeoordelingTab>
   ]) {
     _fuelType = fuel;
     _visitDate = date;
-    _draft = loaded;
-    _defectsController.text = loaded.defectsNotes ?? '';
-    _remarksController.text = loaded.generalRemarks ?? '';
+    var effectiveDraft = loaded;
+    final assessment = widget.assessmentNotifier?.state;
+    if (loaded.toestelWerkingGoed == null &&
+        loaded.toestelWerkingVeilig == null &&
+        assessment != null &&
+        (assessment.combustionPassed != null ||
+            assessment.safetyChecksPassed != null)) {
+      effectiveDraft = loaded.withAssessmentState(
+        combustionPassed: assessment.combustionPassed,
+        safetyChecksPassed: assessment.safetyChecksPassed,
+        fuelType: fuel,
+        visitDate: EindbeoordelingDraft.parseDate(date),
+      );
+    }
+    _draft = effectiveDraft;
+    _defectsController.text = effectiveDraft.defectsNotes ?? '';
+    _remarksController.text = effectiveDraft.generalRemarks ?? '';
   }
 
   @override
@@ -109,14 +123,18 @@ class _EindbeoordelingTabState extends State<EindbeoordelingTab>
   void _onBoilerChanged() {
     if (widget.boilerNotifier == null || !mounted) return;
     final newFuel = widget.boilerNotifier!.draft.fuelCategory;
-    if (newFuel.isNotEmpty && newFuel != _fuelType) {
-      final newDate = EindbeoordelingDraft.calculateStatutoryNextDate(
-        fuelType: newFuel,
-        fromDate: EindbeoordelingDraft.parseDate(_visitDate),
-      );
+    if (newFuel != _fuelType) {
       setState(() {
         _fuelType = newFuel;
-        _draft = _draft.copyWith(nextInspectionDate: newDate);
+        if (_draft.isGood && _draft.isSafe && newFuel.isNotEmpty) {
+          final newDate = EindbeoordelingDraft.calculateStatutoryNextDate(
+            fuelType: newFuel,
+            fromDate: EindbeoordelingDraft.parseDate(_visitDate),
+          );
+          _draft = _draft.copyWith(nextInspectionDate: newDate ?? '');
+        } else if (newFuel.isEmpty && !_draft.hasNegativeAssessment) {
+          _draft = _draft.copyWith(nextInspectionDate: '');
+        }
       });
       _saveDirect(_draft);
     }

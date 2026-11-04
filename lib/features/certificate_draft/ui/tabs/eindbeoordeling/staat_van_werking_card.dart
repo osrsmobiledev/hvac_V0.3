@@ -57,7 +57,10 @@ class StaatVanWerkingCard extends StatelessWidget {
               }
             },
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
+          const DarkInputLabel(
+            EindbeoordelingDictionary.lblVerluchtingRookgasafvoer,
+          ),
           TacticalBinaryCheck(
             value: selectedVeilig == null
                 ? null

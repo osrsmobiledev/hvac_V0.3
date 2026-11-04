@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hvac_app/app/localization/app_dictionary.dart';
 import 'package:hvac_app/app/theme/app_colors.dart';
+import 'package:hvac_app/core/widgets/tactical_toggle_button.dart';
 import '../../widgets/bento_main_section.dart';
 import '../../widgets/dark_input_box.dart';
 import '../../widgets/dark_input_label.dart';
-import '../../widgets/two_way_sliding_bar.dart';
 import 'brand_quick_picker.dart';
 import 'integrated_burner_badge.dart';
 import 'unknown_badge.dart';
@@ -13,10 +13,10 @@ import 'unknown_badge.dart';
 /// Bento Card 3: Brander (enkel CV).
 ///
 /// Features:
-/// - Smart toggle: Geïntegreerd (Integrated into boiler) vs Afzonderlijk (Separate).
-/// - Default integrated for modern condensing/premix gas boilers (95%+ visits).
+/// - Smart TacticalToggleButton: Afzonderlijke brander (OFF = geïntegreerd in ketel, ON = apart toestel).
+/// - Default OFF (integrated) for modern condensing/premix gas boilers (95%+ visits).
 /// - Tactical badge with VEKA & statutory compliance notice when integrated.
-/// - Full burner nameplate form with quick-chips for oil & blast burner brands.
+/// - Full burner nameplate form with quick-chips for oil & blast burner brands when separate.
 class BranderCard extends StatelessWidget {
   final String burnerType;
   final ValueChanged<String> onBurnerTypeChanged;
@@ -51,26 +51,26 @@ class BranderCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bool isIntegrated = burnerType == 'geintegreerd';
+    final bool isSeparate = burnerType == 'afzonderlijk';
 
     return BentoMainSection(
       title: '${AppDictionary.headerBurner} ${AppDictionary.subBurner}',
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // 1. Smart Two-Way Sliding Bar
-          TwoWaySlidingBar(
-            selectedValue: burnerType,
-            onValueChanged: onBurnerTypeChanged,
-            optionAValue: 'geintegreerd',
-            optionALabel: AppDictionary.optBurnerIntegrated,
-            optionBValue: 'afzonderlijk',
-            optionBLabel: AppDictionary.optBurnerSeparate,
+          // 1. Tactical Toggle: Afzonderlijke brander (OFF = geïntegreerd, ON = apart)
+          TacticalToggleButton(
+            label: AppDictionary.lblSeparateBurner,
+            subtitle: AppDictionary.subSeparateBurner,
+            value: isSeparate,
+            onChanged: (val) {
+              onBurnerTypeChanged(val ? 'afzonderlijk' : 'geintegreerd');
+            },
           ),
           const SizedBox(height: 12),
 
           // 2. Dynamic Content: Tactical Badge or Full Burner Form
-          if (isIntegrated)
+          if (!isSeparate)
             const IntegratedBurnerBadge()
           else ...[
             // Merk + Burner Brand Quick-Chips
