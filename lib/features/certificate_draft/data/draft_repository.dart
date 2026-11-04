@@ -33,7 +33,7 @@ class DraftRepository {
         '${now.year.toString().padLeft(4, '0')}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
 
     final id = await db.insert('maintenance_visits', {
-      'activity_type': 'onderhoud',
+      'activity_type': '',
       'attest_number': '',
       'visit_date': today,
       'start_time': '',
@@ -45,7 +45,7 @@ class DraftRepository {
 
     return DraftVisit(
       id: id,
-      activityType: 'onderhoud',
+      activityType: '',
       attestNumber: '',
       visitDate: today,
       startTime: '',

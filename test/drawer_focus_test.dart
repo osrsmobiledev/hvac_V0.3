@@ -85,7 +85,9 @@ void main() {
       await tester.pumpAndSettle();
 
       // Find an active input field (boiler brand)
-      final editable = find.byType(EditableText).first;
+      final editable = find
+          .byWidgetPredicate((w) => w is EditableText && !w.readOnly)
+          .first;
       final focusNode = tester.widget<EditableText>(editable).focusNode;
 
       await tester.tap(editable);
@@ -132,7 +134,9 @@ void main() {
       await tester.pumpAndSettle();
 
       // Focus active EditableText
-      final editable = find.byType(EditableText).first;
+      final editable = find
+          .byWidgetPredicate((w) => w is EditableText && !w.readOnly)
+          .first;
       final focusNode = tester.widget<EditableText>(editable).focusNode;
 
       await tester.tap(editable);

@@ -55,7 +55,9 @@ class GasSubSection extends StatelessWidget {
               child: TacticalOptionChip(
                 label: AppDictionary.gasNatural,
                 isSelected: selectedSubtype == 'aardgas',
-                onTap: () => onSubtypeChanged('aardgas'),
+                onTap: () => onSubtypeChanged(
+                  selectedSubtype == 'aardgas' ? '' : 'aardgas',
+                ),
               ),
             ),
             const SizedBox(width: 6),
@@ -63,7 +65,9 @@ class GasSubSection extends StatelessWidget {
               child: TacticalOptionChip(
                 label: AppDictionary.gasLpg,
                 isSelected: selectedSubtype == 'LPG',
-                onTap: () => onSubtypeChanged('LPG'),
+                onTap: () => onSubtypeChanged(
+                  selectedSubtype == 'LPG' ? '' : 'LPG',
+                ),
               ),
             ),
             const SizedBox(width: 6),
@@ -71,7 +75,9 @@ class GasSubSection extends StatelessWidget {
               child: TacticalOptionChip(
                 label: AppDictionary.gasOther,
                 isSelected: selectedSubtype == 'andere',
-                onTap: () => onSubtypeChanged('andere'),
+                onTap: () => onSubtypeChanged(
+                  selectedSubtype == 'andere' ? '' : 'andere',
+                ),
               ),
             ),
           ],
@@ -114,7 +120,9 @@ class GasSubSection extends StatelessWidget {
         // Dedicated tile for rare commercial forced-draft burner (GII)
         _FanBurnerTile(
           isSelected: isFanBurner,
-          onTap: () => onBurnerTechChanged('ventilatorbrander'),
+          onTap: () => onBurnerTechChanged(
+            isFanBurner ? '' : 'ventilatorbrander',
+          ),
         ),
       ],
     );

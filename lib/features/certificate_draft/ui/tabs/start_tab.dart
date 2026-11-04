@@ -35,7 +35,7 @@ class _StartTabState extends State<StartTab>
   final TextEditingController _attestNumberController = TextEditingController();
 
   int? _visitId;
-  String _activityType = 'onderhoud';
+  String _activityType = '';
   final _debouncer = Debouncer();
 
   @override

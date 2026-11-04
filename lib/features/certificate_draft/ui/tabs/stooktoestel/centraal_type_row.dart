@@ -63,14 +63,10 @@ class CentraalTypeRow extends StatelessWidget {
         // 1. Text button styled like Tab "Start" with 2-line layout
         Expanded(
           child: OutlinedButton(
-            onPressed: isCentral
-                ? () {
-                    if (!isActive) {
-                      HapticFeedback.selectionClick();
-                      onSelect();
-                    }
-                  }
-                : null,
+            onPressed: () {
+              HapticFeedback.selectionClick();
+              onSelect();
+            },
             style: OutlinedButton.styleFrom(
               minimumSize: const Size.fromHeight(48),
               backgroundColor: backgroundColor,
@@ -83,117 +79,59 @@ class CentraalTypeRow extends StatelessWidget {
                 borderRadius: BorderRadius.circular(10),
               ),
               padding: const EdgeInsets.symmetric(
-                horizontal: 12.0,
+                horizontal: 14.0,
                 vertical: 6.0,
               ),
             ),
-            child: Row(
-              children: [
-                // Radio indicator
-                Container(
-                  width: 18,
-                  height: 18,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: isActive
-                          ? AppColors.amberGold
-                          : Colors.white.withValues(alpha: 0.3),
-                      width: 1.5,
-                    ),
-                    color: Colors.transparent,
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  '${AppDictionary.lblConnected} $typeLabel $suffix',
+                  style: TextStyle(
+                    fontFamily: AppTheme.fontFamily,
+                    color: isActive ? Colors.white : const Color(0xFF9E9E9E),
+                    fontSize: 13.0,
+                    fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
+                    letterSpacing: 0.1,
                   ),
-                  child: isActive
-                      ? Center(
-                          child: Container(
-                            width: 8,
-                            height: 8,
-                            decoration: const BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: AppColors.amberGold,
-                            ),
-                          ),
-                        )
-                      : null,
+                  maxLines: 1,
                 ),
-                const SizedBox(width: 10),
-
-                // 2-line text column
-                Expanded(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        AppDictionary.lblConnected,
-                        style: TextStyle(
-                          color: isActive
-                              ? Colors.white.withValues(alpha: 0.65)
-                              : const Color(0xFF6E6E6E),
-                          fontSize: 10.5,
-                          fontWeight: FontWeight.w500,
-                          letterSpacing: 0.2,
-                        ),
-                        maxLines: 1,
-                      ),
-                      FittedBox(
-                        fit: BoxFit.scaleDown,
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          '$typeLabel $suffix',
-                          style: TextStyle(
-                            fontFamily: AppTheme.fontFamily,
-                            color: isActive
-                                ? Colors.white
-                                : const Color(0xFF8E8E8E),
-                            fontSize: 13.0,
-                            fontWeight:
-                                isActive ? FontWeight.w700 : FontWeight.w500,
-                            letterSpacing: 0.1,
-                          ),
-                          maxLines: 1,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
         ),
         const SizedBox(width: 10),
 
         // 2. Tactical NBN picker box (72dp: fits prefix and code cleanly without clipping)
-        IgnorePointer(
-          ignoring: !isCentral,
-          child: SizedBox(
-            width: 72,
-            height: 48,
-            child: InkWell(
+        SizedBox(
+          width: 72,
+          height: 48,
+          child: InkWell(
+            onTap: isActive ? () => _openPicker(context) : onSelect,
+            borderRadius: BorderRadius.circular(8),
+            child: TextFormField(
+              key: ValueKey('nbn_input_$prefix'),
+              controller: controller,
+              readOnly: true,
               onTap: isActive ? () => _openPicker(context) : onSelect,
-              borderRadius: BorderRadius.circular(8),
-              child: TextFormField(
-                key: ValueKey('nbn_input_$prefix'),
-                controller: controller,
-                readOnly: true,
-                onTap: isActive ? () => _openPicker(context) : onSelect,
-                textAlign: TextAlign.start,
-                style: TextStyle(
-                  color: isActive ? Colors.white : const Color(0xFF9E9E9E),
-                  fontSize: 15,
-                  fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
+              textAlign: TextAlign.start,
+              style: TextStyle(
+                color: isActive ? Colors.white : const Color(0xFF9E9E9E),
+                fontSize: 15,
+                fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
+              ),
+              decoration: DarkInputBox.decoration(
+                prefixText: prefix,
+                hintText: hint,
+                readOnly: !isActive,
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 10.0,
+                  vertical: 10.0,
                 ),
-                decoration: DarkInputBox.decoration(
-                  prefixText: prefix,
-                  hintText: hint,
-                  readOnly: !isActive,
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 10.0,
-                    vertical: 10.0,
-                  ),
-                  fontSize: 15,
-                ),
+                fontSize: 15,
               ),
             ),
           ),

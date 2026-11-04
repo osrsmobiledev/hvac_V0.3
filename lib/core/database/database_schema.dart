@@ -10,7 +10,7 @@ import 'package:sqflite/sqflite.dart';
 /// 5. maintenance_visits (Attest draft, measurements, assessments, PDF & VEKA state)
 /// 6. measurement_captures (Flue gas data captured manually or via Eurolyzer QR)
 abstract final class DatabaseSchema {
-  static const int version = 5;
+  static const int version = 6;
   static const String databaseName = 'hvac_service.db';
 
   /// Executes all CREATE TABLE and CREATE INDEX statements on database initialization.
@@ -83,16 +83,16 @@ abstract final class DatabaseSchema {
       CREATE TABLE boilers (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         service_location_id INTEGER,
-        is_central INTEGER NOT NULL DEFAULT 1,
+        is_central INTEGER NOT NULL DEFAULT 0,
         centraal_type TEXT,
         type_b_text TEXT,
         type_c_text TEXT,
-        heating_type TEXT DEFAULT 'individueel',
-        boiler_operation TEXT DEFAULT 'condenserend',
-        fuel_type TEXT NOT NULL DEFAULT 'gas',
-        fuel_subtype TEXT DEFAULT 'aardgas',
+        heating_type TEXT DEFAULT '',
+        boiler_operation TEXT DEFAULT '',
+        fuel_type TEXT NOT NULL DEFAULT '',
+        fuel_subtype TEXT DEFAULT '',
         fuel_other_text TEXT,
-        burner_technology TEXT DEFAULT 'premix',
+        burner_technology TEXT DEFAULT '',
         boiler_brand TEXT,
         boiler_brand_unknown INTEGER NOT NULL DEFAULT 0,
         boiler_model TEXT,
@@ -122,7 +122,7 @@ abstract final class DatabaseSchema {
         customer_id INTEGER,
         service_location_id INTEGER,
         boiler_id INTEGER,
-        activity_type TEXT NOT NULL DEFAULT 'onderhoud',
+        activity_type TEXT NOT NULL DEFAULT '',
         attest_number TEXT,
         visit_date TEXT NOT NULL,
         start_time TEXT,

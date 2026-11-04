@@ -121,6 +121,23 @@ class AppDatabase {
             }
           }
         }
+        if (oldVersion < 6) {
+          try {
+            await db.execute('''
+              UPDATE boilers 
+              SET is_central = 0,
+                  centraal_type = '',
+                  heating_type = '',
+                  boiler_operation = '',
+                  fuel_type = '',
+                  fuel_subtype = '',
+                  burner_technology = ''
+              WHERE boiler_brand IS NULL OR boiler_brand = '';
+            ''');
+          } catch (e, stack) {
+            debugPrint('[AppDatabase] v6 migration query warning: $e\n$stack');
+          }
+        }
       },
     );
   }

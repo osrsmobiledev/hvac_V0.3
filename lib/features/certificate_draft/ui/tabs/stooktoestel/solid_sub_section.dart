@@ -39,7 +39,9 @@ class SolidSubSection extends StatelessWidget {
               child: TacticalOptionChip(
                 label: AppDictionary.solidPellets,
                 isSelected: selectedSubtype == 'houtpellets',
-                onTap: () => onSubtypeChanged('houtpellets'),
+                onTap: () => onSubtypeChanged(
+                  selectedSubtype == 'houtpellets' ? '' : 'houtpellets',
+                ),
               ),
             ),
             const SizedBox(width: 6),
@@ -47,7 +49,9 @@ class SolidSubSection extends StatelessWidget {
               child: TacticalOptionChip(
                 label: AppDictionary.solidLogs,
                 isSelected: selectedSubtype == 'houtblokken',
-                onTap: () => onSubtypeChanged('houtblokken'),
+                onTap: () => onSubtypeChanged(
+                  selectedSubtype == 'houtblokken' ? '' : 'houtblokken',
+                ),
               ),
             ),
             const SizedBox(width: 6),
@@ -55,7 +59,9 @@ class SolidSubSection extends StatelessWidget {
               child: TacticalOptionChip(
                 label: AppDictionary.solidOther,
                 isSelected: selectedSubtype == 'andere',
-                onTap: () => onSubtypeChanged('andere'),
+                onTap: () => onSubtypeChanged(
+                  selectedSubtype == 'andere' ? '' : 'andere',
+                ),
               ),
             ),
           ],

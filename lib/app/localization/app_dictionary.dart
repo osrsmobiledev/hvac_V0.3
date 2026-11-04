@@ -178,7 +178,7 @@ abstract final class AppDictionary {
   static const String gasLpg = 'LPG';
   static const String gasOther = 'Andere gas';
   static const String hintSpecifyGas = 'Specifieer gassoort...';
-  static const String headerBurnerTech = 'Brandertechnologie (NBN / VEKA)';
+  static const String headerBurnerTech = 'Brandertechnologie';
   static const String techNonPremix = 'niet premix (GI)';
   static const String techPremix = 'premix (GI)';
   static const String techFanBurner = 'gasketel met ventilatorbrander (GII)';

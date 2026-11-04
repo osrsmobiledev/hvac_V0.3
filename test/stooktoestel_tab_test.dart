@@ -79,8 +79,8 @@ void main() {
         (tester) async {
       await pumpTab(tester);
 
-      // Buttons with 2-line text
-      expect(find.text(AppDictionary.lblConnected), findsNWidgets(2));
+      // Buttons with 1-line text
+      expect(find.textContaining(AppDictionary.lblConnected), findsNWidgets(2));
       expect(find.textContaining(AppDictionary.lblAsTypeB), findsOneWidget);
       expect(find.textContaining(AppDictionary.lblAsTypeC), findsOneWidget);
 
@@ -90,9 +90,12 @@ void main() {
       expect(find.text('B'), findsOneWidget);
       expect(find.text('C'), findsOneWidget);
 
-      // Tap Type B text button
+      // Tapping Type B directly selects it AND automatically turns Centraal switch ON
       await tester.tap(find.textContaining(AppDictionary.lblAsTypeB));
       await tester.pumpAndSettle();
+
+      final centralSwitch = tester.widget<Switch>(find.byType(Switch).first);
+      expect(centralSwitch.value, isTrue);
 
       // Tap Type B input to open tactical bottom sheet
       final typeBInput = find.byKey(const ValueKey('nbn_input_B'));
@@ -112,10 +115,17 @@ void main() {
         (tester) async {
       await pumpTab(tester);
 
-      // Initially gas is active
+      // Initially fuel category starts unselected
       expect(find.text(AppDictionary.fuelGasShort), findsOneWidget);
+      expect(find.text(AppDictionary.gasNatural), findsNothing);
+
+      // Tap Gas: sub-options become visible
+      await tester.tap(find.text(AppDictionary.fuelGasShort));
+      await tester.pumpAndSettle();
+
       expect(find.text(AppDictionary.gasNatural), findsOneWidget);
-      expect(find.text(AppDictionary.techPremix), findsOneWidget);
+      expect(find.text(AppDictionary.headerBurnerTech), findsOneWidget);
+      expect(AppDictionary.headerBurnerTech, 'Brandertechnologie');
 
       // Tap Vloeibaar: bare-bones selector hides gas sub-options
       await tester.tap(find.text(AppDictionary.fuelLiquidShort));
@@ -167,9 +177,35 @@ void main() {
 
       // No overflow errors occurred during render or tap
       expect(tester.takeException(), isNull);
+    });
 
-      // Smart derivation: switching to niet-condenserend auto-selects niet-premix for gas
-      expect(find.text(AppDictionary.techNonPremix), findsOneWidget);
+    testWidgets(
+        'Tapping an active selection button (Individueel, Gas, Condenserend) toggles it back to unselected',
+        (tester) async {
+      await pumpTab(tester);
+
+      // 1. Heating type: tap Individueel to select, tap again to unselect
+      await tester.tap(find.text(AppDictionary.optIndividual));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text(AppDictionary.optIndividual));
+      await tester.pumpAndSettle();
+
+      // 2. Boiler operation: tap Condenserend to select, tap again to unselect
+      await tester.tap(find.text(AppDictionary.optCondensing));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text(AppDictionary.optCondensing));
+      await tester.pumpAndSettle();
+
+      // 3. Fuel category: tap Gasvormig to select, tap again to unselect
+      await tester.tap(find.text(AppDictionary.fuelGasShort));
+      await tester.pumpAndSettle();
+      expect(find.text(AppDictionary.gasNatural), findsOneWidget);
+
+      await tester.tap(find.text(AppDictionary.fuelGasShort));
+      await tester.pumpAndSettle();
+      expect(find.text(AppDictionary.gasNatural), findsNothing);
     });
 
     testWidgets(

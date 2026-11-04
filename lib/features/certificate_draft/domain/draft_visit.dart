@@ -27,7 +27,7 @@ class DraftVisit {
   factory DraftVisit.fromMap(Map<String, dynamic> map) {
     return DraftVisit(
       id: map['id'] as int,
-      activityType: (map['activity_type'] as String?) ?? 'onderhoud',
+      activityType: (map['activity_type'] as String?) ?? '',
       attestNumber: (map['attest_number'] as String?) ?? '',
       visitDate: (map['visit_date'] as String?) ?? '',
       startTime: (map['start_time'] as String?) ?? '',

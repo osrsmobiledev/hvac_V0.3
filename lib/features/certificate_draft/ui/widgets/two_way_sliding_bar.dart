@@ -85,7 +85,7 @@ class TwoWaySlidingBar extends StatelessWidget {
                 borderRadius: const BorderRadius.horizontal(
                   left: Radius.circular(9),
                 ),
-                onTap: () => onValueChanged(optionAValue),
+                onTap: () => onValueChanged(isA ? '' : optionAValue),
               ),
               _SlideOption(
                 label: optionBLabel,
@@ -93,7 +93,7 @@ class TwoWaySlidingBar extends StatelessWidget {
                 borderRadius: const BorderRadius.horizontal(
                   right: Radius.circular(9),
                 ),
-                onTap: () => onValueChanged(optionBValue),
+                onTap: () => onValueChanged(isB ? '' : optionBValue),
               ),
             ],
           ),

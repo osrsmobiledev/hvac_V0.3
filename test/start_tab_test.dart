@@ -87,25 +87,20 @@ void main() {
     });
 
     testWidgets(
-        'Tapping active button de-selects it and persists empty activity to SQLite',
+        'Starts un-selected, tapping selects it, tapping again de-selects it',
         (tester) async {
       await pumpStartTab(tester);
 
-      // Default is 'onderhoud'
-      final onderhoudButton =
-          find.widgetWithText(ActivityOptionTile, 'Onderhoud');
-      await tester.tap(onderhoudButton);
+      // Default is un-selected ('')
       late DraftVisit draft;
       await tester.runAsync(() async {
-        await Future<void>.delayed(const Duration(milliseconds: 100));
         draft = await repository.getOrCreateActiveDraft();
       });
-      await tester.pump();
-
-      // Should now be de-selected
       expect(draft.activityType, equals(''));
 
-      // Tapping again selects it back
+      // Tapping 'Onderhoud' selects it
+      final onderhoudButton =
+          find.widgetWithText(ActivityOptionTile, 'Onderhoud');
       await tester.tap(onderhoudButton);
       await tester.runAsync(() async {
         await Future<void>.delayed(const Duration(milliseconds: 100));
@@ -114,6 +109,16 @@ void main() {
       await tester.pump();
 
       expect(draft.activityType, equals('onderhoud'));
+
+      // Tapping again de-selects it back to ''
+      await tester.tap(onderhoudButton);
+      await tester.runAsync(() async {
+        await Future<void>.delayed(const Duration(milliseconds: 100));
+        draft = await repository.getOrCreateActiveDraft();
+      });
+      await tester.pump();
+
+      expect(draft.activityType, equals(''));
     });
 
     testWidgets(

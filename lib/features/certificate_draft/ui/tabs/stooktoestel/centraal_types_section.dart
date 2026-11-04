@@ -26,47 +26,35 @@ class CentraalTypesSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: const Color(0xFF141414),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: isCentral
-              ? Colors.white.withValues(alpha: 0.15)
-              : Colors.white.withValues(alpha: 0.06),
+    return Column(
+      children: [
+        // Type B (open)
+        CentraalTypeRow(
+          isCentral: isCentral,
+          isSelected: centraalType == 'B',
+          prefix: 'B',
+          typeLabel: AppDictionary.lblAsTypeB,
+          suffix: AppDictionary.suffixOpen,
+          hint: AppDictionary.hintSubtypeB,
+          controller: typeBController,
+          onSelect: () => onCentraalTypeChanged('B'),
+          onCodeChanged: onTypeBCodeChanged,
         ),
-      ),
-      child: Column(
-        children: [
-          // Type B (open)
-          CentraalTypeRow(
-            isCentral: isCentral,
-            isSelected: centraalType == 'B',
-            prefix: 'B',
-            typeLabel: AppDictionary.lblAsTypeB,
-            suffix: AppDictionary.suffixOpen,
-            hint: AppDictionary.hintSubtypeB,
-            controller: typeBController,
-            onSelect: () => onCentraalTypeChanged('B'),
-            onCodeChanged: onTypeBCodeChanged,
-          ),
-          const SizedBox(height: 8),
+        const SizedBox(height: 8),
 
-          // Type C (gesloten)
-          CentraalTypeRow(
-            isCentral: isCentral,
-            isSelected: centraalType == 'C',
-            prefix: 'C',
-            typeLabel: AppDictionary.lblAsTypeC,
-            suffix: AppDictionary.suffixClosed,
-            hint: AppDictionary.hintSubtypeC,
-            controller: typeCController,
-            onSelect: () => onCentraalTypeChanged('C'),
-            onCodeChanged: onTypeCCodeChanged,
-          ),
-        ],
-      ),
+        // Type C (gesloten)
+        CentraalTypeRow(
+          isCentral: isCentral,
+          isSelected: centraalType == 'C',
+          prefix: 'C',
+          typeLabel: AppDictionary.lblAsTypeC,
+          suffix: AppDictionary.suffixClosed,
+          hint: AppDictionary.hintSubtypeC,
+          controller: typeCController,
+          onSelect: () => onCentraalTypeChanged('C'),
+          onCodeChanged: onTypeCCodeChanged,
+        ),
+      ],
     );
   }
 }

@@ -31,7 +31,9 @@ class VekaAttributesSection extends StatelessWidget {
         _HeaderWithUnknownChip(
           title: AppDictionary.lblHeatingType,
           isUnknown: heatingType == 'onbekend',
-          onUnknownTap: () => onHeatingTypeChanged('onbekend'),
+          onUnknownTap: () => onHeatingTypeChanged(
+            heatingType == 'onbekend' ? '' : 'onbekend',
+          ),
         ),
         const SizedBox(height: 6),
         TwoWaySlidingBar(
@@ -48,7 +50,9 @@ class VekaAttributesSection extends StatelessWidget {
         _HeaderWithUnknownChip(
           title: AppDictionary.lblOperation,
           isUnknown: boilerOperation == 'onbekend',
-          onUnknownTap: () => onBoilerOperationChanged('onbekend'),
+          onUnknownTap: () => onBoilerOperationChanged(
+            boilerOperation == 'onbekend' ? '' : 'onbekend',
+          ),
         ),
         const SizedBox(height: 6),
         TwoWaySlidingBar(

@@ -39,29 +39,33 @@ class TacticalFuelCategoryBar extends StatelessWidget {
       child: Stack(
         children: [
           // Sliding illuminated amber thumb
-          AnimatedAlign(
-            duration: const Duration(milliseconds: 200),
-            curve: Curves.easeInOut,
-            alignment: Alignment(alignX, 0.0),
-            child: FractionallySizedBox(
-              widthFactor: 1.0 / 3.0,
-              heightFactor: 1.0,
-              child: Container(
-                margin: const EdgeInsets.all(3.0),
-                decoration: BoxDecoration(
-                  color: AppColors.amberGold.withValues(alpha: 0.20),
-                  borderRadius: BorderRadius.circular(7),
-                  border: Border.all(
-                    color: AppColors.amberGoldBorder,
-                    width: 1.2,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.amberGold.withValues(alpha: 0.12),
-                      blurRadius: 4,
-                      offset: const Offset(0, 1),
+          AnimatedOpacity(
+            duration: const Duration(milliseconds: 150),
+            opacity: selectedIndex >= 0 ? 1.0 : 0.0,
+            child: AnimatedAlign(
+              duration: const Duration(milliseconds: 200),
+              curve: Curves.easeInOut,
+              alignment: Alignment(alignX, 0.0),
+              child: FractionallySizedBox(
+                widthFactor: 1.0 / 3.0,
+                heightFactor: 1.0,
+                child: Container(
+                  margin: const EdgeInsets.all(3.0),
+                  decoration: BoxDecoration(
+                    color: AppColors.amberGold.withValues(alpha: 0.20),
+                    borderRadius: BorderRadius.circular(7),
+                    border: Border.all(
+                      color: AppColors.amberGoldBorder,
+                      width: 1.2,
                     ),
-                  ],
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.amberGold.withValues(alpha: 0.12),
+                        blurRadius: 4,
+                        offset: const Offset(0, 1),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -75,7 +79,7 @@ class TacticalFuelCategoryBar extends StatelessWidget {
                 child: InkWell(
                   onTap: () {
                     HapticFeedback.selectionClick();
-                    onCategoryChanged(cat.$1);
+                    onCategoryChanged(isSelected ? '' : cat.$1);
                   },
                   borderRadius: BorderRadius.circular(8),
                   child: Center(

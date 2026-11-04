@@ -3,16 +3,16 @@ import 'package:hvac_app/features/certificate_draft/domain/boiler_draft.dart';
 
 void main() {
   group('Slice 3.1 — BoilerDraft Domain Model', () {
-    test('Default initial model has expected regulatory defaults', () {
+    test('Default initial model starts unselected without fake defaults', () {
       final draft = BoilerDraft.initial();
 
-      expect(draft.isCentral, isTrue);
-      expect(draft.centraalType, 'C');
-      expect(draft.heatingType, 'individueel');
-      expect(draft.boilerOperation, 'condenserend');
-      expect(draft.fuelCategory, 'gas');
-      expect(draft.fuelSubtype, 'aardgas');
-      expect(draft.burnerTechnology, 'premix');
+      expect(draft.isCentral, isFalse);
+      expect(draft.centraalType, '');
+      expect(draft.heatingType, '');
+      expect(draft.boilerOperation, '');
+      expect(draft.fuelCategory, '');
+      expect(draft.fuelSubtype, '');
+      expect(draft.burnerTechnology, '');
       expect(draft.boilerSerialNumberUnknown, isFalse);
     });
 
