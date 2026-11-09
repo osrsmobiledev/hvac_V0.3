@@ -21,12 +21,14 @@ class MetingTab extends StatefulWidget {
   final int visitId;
   final BoilerDraftNotifier? boilerNotifier;
   final MeasurementAssessmentNotifier? assessmentNotifier;
+  final ValueChanged<GlobalKey<FormState>>? onFormKeyReady;
 
   const MetingTab({
     super.key,
     this.visitId = 1,
     this.boilerNotifier,
     this.assessmentNotifier,
+    this.onFormKeyReady,
   });
 
   @override
@@ -37,6 +39,7 @@ class _MetingTabState extends State<MetingTab>
     with AutomaticKeepAliveClientMixin {
   final MeasurementDraftRepository _repository = MeasurementDraftRepository();
   final MetingFormControllers _controllers = MetingFormControllers();
+  final GlobalKey<FormState> _card1FormKey = GlobalKey<FormState>();
 
   BoilerDraft _boiler = BoilerDraft.initial();
   OperatingConditionsDraft _operatingConditions =
@@ -51,15 +54,12 @@ class _MetingTabState extends State<MetingTab>
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => widget.onFormKeyReady?.call(_card1FormKey));
     widget.boilerNotifier?.addListener(_onBoilerChanged);
     final cached = AppWarmupService.instance.cachedResult;
-    if (cached?.operatingConditions != null &&
-        cached?.measurementSlots != null) {
-      final boiler = widget.boilerNotifier?.draft ??
-          cached!.activeBoiler ??
-          BoilerDraft.initial();
-      _populateInitialData(
-          boiler, cached!.operatingConditions!, cached.measurementSlots!);
+    if (cached?.operatingConditions != null && cached?.measurementSlots != null) {
+      final boiler = widget.boilerNotifier?.draft ?? cached!.activeBoiler ?? BoilerDraft.initial();
+      _populateInitialData(boiler, cached!.operatingConditions!, cached.measurementSlots!);
     } else {
       _loadInitialData();
     }
@@ -118,13 +118,10 @@ class _MetingTabState extends State<MetingTab>
 
   Future<void> _loadInitialData() async {
     try {
-      final boiler = widget.boilerNotifier?.draft ??
-          await _repository.loadActiveBoilerDraft();
-      final conditions =
-          await _repository.loadOperatingConditions(widget.visitId);
+      final boiler = widget.boilerNotifier?.draft ?? await _repository.loadActiveBoilerDraft();
+      final conditions = await _repository.loadOperatingConditions(widget.visitId);
       final slots = await _repository.loadMeasurementSlots(widget.visitId);
-      if (!mounted) return;
-      setState(() => _populateInitialData(boiler, conditions, slots));
+      if (mounted) setState(() => _populateInitialData(boiler, conditions, slots));
     } catch (e, stack) {
       debugPrint('[MetingTab] _loadInitialData error: $e\n$stack');
       if (mounted) setState(() => _isLoading = false);
@@ -183,23 +180,26 @@ class _MetingTabState extends State<MetingTab>
       scrollKey: 'meting_tab_scroll',
       children: [
         MetingFuelBanner(boiler: _boiler),
-        OperatingConditionsCard(
-          boiler: _boiler,
-          boilerTempController: _controllers.boilerTemp,
-          gasMeterController: _controllers.gasMeter,
-          gasBlockController: _controllers.gasBlock,
-          gasBurnerBedController: _controllers.gasBurnerBed,
-          nozzleBrandTypeController: _controllers.nozzleBrandType,
-          nozzleFlowRateController: _controllers.nozzleFlowRate,
-          nozzleAngleController: _controllers.nozzleAngle,
-          pumpPressureController: _controllers.pumpPressure,
-          smokeIndexController: _controllers.smokeIndex,
-          smokeIndexOk: _controllers.smokeIndexOk,
-          onSmokeIndexOkChanged: (v) {
-            setState(() => _controllers.smokeIndexOk = v);
-            _onFormChanged();
-          },
-          onChanged: _onFormChanged,
+        Form(
+          key: _card1FormKey,
+          child: OperatingConditionsCard(
+            boiler: _boiler,
+            boilerTempController: _controllers.boilerTemp,
+            gasMeterController: _controllers.gasMeter,
+            gasBlockController: _controllers.gasBlock,
+            gasBurnerBedController: _controllers.gasBurnerBed,
+            nozzleBrandTypeController: _controllers.nozzleBrandType,
+            nozzleFlowRateController: _controllers.nozzleFlowRate,
+            nozzleAngleController: _controllers.nozzleAngle,
+            pumpPressureController: _controllers.pumpPressure,
+            smokeIndexController: _controllers.smokeIndex,
+            smokeIndexOk: _controllers.smokeIndexOk,
+            onSmokeIndexOkChanged: (v) {
+              setState(() => _controllers.smokeIndexOk = v);
+              _onFormChanged();
+            },
+            onChanged: _onFormChanged,
+          ),
         ),
         const SizedBox(height: AppTheme.bentoCardSpacing),
         MeasurementSlotsCard(

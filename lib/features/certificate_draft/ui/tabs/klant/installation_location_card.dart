@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:hvac_app/app/localization/app_dictionary.dart';
+import 'package:hvac_app/core/utils/belgian_formatters.dart';
 import 'package:hvac_app/core/widgets/tactical_toggle_button.dart';
 import 'package:hvac_app/features/certificate_draft/ui/widgets/bento_main_section.dart';
 import 'effective_location_preview.dart';
@@ -74,6 +76,9 @@ class InstallationLocationCard extends StatelessWidget {
                     controller: controllers.locStreet,
                     label: AppDictionary.lblStreetInstallation,
                     hint: AppDictionary.hintSearchAddress,
+                    validator: (v) => v!.trim().isEmpty
+                        ? 'Installatiestraat is verplicht'
+                        : null,
                     readOnly: readOnly,
                     onChanged: onChanged,
                   ),
@@ -88,6 +93,9 @@ class InstallationLocationCard extends StatelessWidget {
                           controller: controllers.locHouseNumber,
                           label: AppDictionary.lblHouseNumber,
                           hint: AppDictionary.hintHouseNumber,
+                          validator: (v) => v!.trim().isEmpty
+                              ? 'Huisnummer is verplicht'
+                              : null,
                           keyboardType: TextInputType.streetAddress,
                           readOnly: readOnly,
                           onChanged: onChanged,
@@ -118,6 +126,11 @@ class InstallationLocationCard extends StatelessWidget {
                           label: AppDictionary.lblPostalCode,
                           hint: AppDictionary.hintPostalCode,
                           keyboardType: TextInputType.number,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly,
+                            LengthLimitingTextInputFormatter(4),
+                          ],
+                          validator: BelgianFormatters.validatePostalCode,
                           readOnly: readOnly,
                           onChanged: onChanged,
                         ),
@@ -129,6 +142,9 @@ class InstallationLocationCard extends StatelessWidget {
                           controller: controllers.locMunicipality,
                           label: AppDictionary.lblCity,
                           hint: AppDictionary.hintCity,
+                          validator: (v) => v!.trim().isEmpty
+                              ? 'Gemeente is verplicht'
+                              : null,
                           readOnly: readOnly,
                           onChanged: onChanged,
                         ),

@@ -4,34 +4,27 @@ import 'package:hvac_app/app/shell/app_shell_controller.dart';
 import 'package:hvac_app/app/theme/app_colors.dart';
 import 'package:hvac_app/app/theme/app_theme.dart';
 import 'package:hvac_app/core/services/app_warmup_service.dart';
+import 'package:hvac_app/core/utils/form_scroll_helper.dart';
+import 'package:hvac_app/core/widgets/tactical_feedback.dart';
 import 'package:hvac_app/core/widgets/tactical_tab_bar_view.dart';
-import '../data/draft_repository.dart';
+import 'package:hvac_app/features/certificate_draft/data/draft_repository.dart';
 import 'boiler_draft_notifier.dart';
 import 'measurement_assessment_notifier.dart';
 import 'tabs/data_tab.dart';
+import 'tabs/eindbeoordeling_tab.dart';
 import 'tabs/firma_technicus_tab.dart';
 import 'tabs/klant_tab.dart';
+import 'tabs/meting_tab.dart';
 import 'tabs/start_tab.dart';
 import 'tabs/stooktoestel_tab.dart';
-import 'tabs/meting_tab.dart';
-import 'tabs/eindbeoordeling_tab.dart';
 import 'widgets/tab_nav_overlay.dart';
 import 'widgets/verbrandingsattest_loading_overlay.dart';
 
 /// The 7-tab workflow screen for 'Verbrandingsattest Vlaanderen'.
-///
-/// Features:
-/// - Scrollable top navigation bar matching the preferred theme style.
-/// - Tab 1 (Data) fully active with collapsible Meetgegevens / Rookgassen cards.
-/// - Swipable TabBarView allowing fluid gesture and tap navigation between tabs.
-/// - Clean modular placeholder views for upcoming slices.
 class VerbrandingsattestScreen extends StatefulWidget {
   final AppShellController controller;
 
-  const VerbrandingsattestScreen({
-    super.key,
-    required this.controller,
-  });
+  const VerbrandingsattestScreen({super.key, required this.controller});
 
   @override
   State<VerbrandingsattestScreen> createState() =>
@@ -44,12 +37,15 @@ class _VerbrandingsattestScreenState extends State<VerbrandingsattestScreen>
   late final BoilerDraftNotifier _boilerNotifier;
   late final MeasurementAssessmentNotifier _assessmentNotifier;
   final DraftRepository _draftRepository = DraftRepository();
+  GlobalKey<FormState>? _tab2FormKey,
+      _tab3FormKey,
+      _tab4FormKey,
+      _tab5FormKey,
+      _tab6FormKey;
   int _activeVisitId =
       AppWarmupService.instance.cachedResult?.activeDraft?.id ?? 1;
   bool _isAppletLoading = true;
 
-  /// Tab titles sourced from [AppDictionary.combustionTabs] to keep UI labels
-  /// centralized in the single Dutch dictionary. Edit labels there, not here.
   static List<String> get _tabTitles => AppDictionary.combustionTabs;
 
   @override
@@ -69,14 +65,11 @@ class _VerbrandingsattestScreenState extends State<VerbrandingsattestScreen>
         setState(() => _activeVisitId = draft.id);
       }
     } catch (e, stack) {
-      debugPrint(
-          '[VerbrandingsattestScreen] _warmupAndPreload error: $e\n$stack');
+      debugPrint('[VerbrandingsattestScreen] warmup error: $e\n$stack');
     }
     if (mounted) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
-          setState(() => _isAppletLoading = false);
-        }
+        if (mounted) setState(() => _isAppletLoading = false);
       });
     }
   }
@@ -89,6 +82,41 @@ class _VerbrandingsattestScreenState extends State<VerbrandingsattestScreen>
     super.dispose();
   }
 
+  void _handleFinalizeAttempt() {
+    final t2Valid = _tab2FormKey?.currentState?.validate() ?? false;
+    final t3Valid = _tab3FormKey?.currentState?.validate() ?? false;
+    final t4Valid = _tab4FormKey?.currentState?.validate() ?? false;
+    final t5Valid = _tab5FormKey?.currentState?.validate() ?? false;
+    final t6Valid = _tab6FormKey?.currentState?.validate() ?? false;
+
+    void notify(int idx, String msg, GlobalKey<FormState>? key) {
+      _tabController.animateTo(idx);
+      TacticalFeedback.showError(context, msg);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        FormScrollHelper.scrollToFirstInvalid(key?.currentContext);
+      });
+    }
+
+    if (!t2Valid) {
+      return notify(1, 'Vul alle verplichte velden in op Tab 2: Start', _tab2FormKey);
+    }
+    if (!t3Valid) {
+      return notify(2, 'Vul alle verplichte velden in op Tab 3: Firma - Technicus', _tab3FormKey);
+    }
+    if (!t4Valid) {
+      return notify(3, 'Vul alle verplichte velden in op Tab 4: Klant', _tab4FormKey);
+    }
+    if (!t5Valid) {
+      return notify(4, 'Vul alle verplichte velden in op Tab 5: Stooktoestel', _tab5FormKey);
+    }
+    if (!t6Valid) {
+      return notify(5, 'Vul alle verplichte velden in op Tab 6: Meting (Goede staat van werking)', _tab6FormKey);
+    }
+
+    TacticalFeedback.showSuccess(context,
+        'Alle velden zijn geldig. PDF-generatie volgt in Milestone 4.');
+  }
+
   @override
   Widget build(BuildContext context) {
     return Stack(
@@ -96,7 +124,6 @@ class _VerbrandingsattestScreenState extends State<VerbrandingsattestScreen>
       children: [
         Column(
           children: [
-            // Top Horizontal Navigation Bar (Tactical Ribbon: 40dp height)
             Container(
               width: double.infinity,
               decoration: const BoxDecoration(
@@ -141,8 +168,6 @@ class _VerbrandingsattestScreenState extends State<VerbrandingsattestScreen>
                     .toList(),
               ),
             ),
-
-            // Tactical Tab Content Views with Floating Navigation Arrows
             Expanded(
               child: Stack(
                 fit: StackFit.expand,
@@ -151,38 +176,43 @@ class _VerbrandingsattestScreenState extends State<VerbrandingsattestScreen>
                     controller: _tabController,
                     physics: const BouncingScrollPhysics(),
                     children: [
-                      // Tab 1: Data (Active in Slice 2.1)
                       RepaintBoundary(child: DataTab(visitId: _activeVisitId)),
-
-                      // Tab 2: Start (Active in Slice 2.2)
-                      RepaintBoundary(child: StartTab(visitId: _activeVisitId)),
-
-                      // Tab 3: Firma - Technicus (Active in Slice 2.3)
-                      const RepaintBoundary(child: FirmaTechnicusTab()),
-
-                      // Tab 4: Klant (Active in Slice 2.4)
-                      const RepaintBoundary(child: KlantTab()),
-
-                      // Tab 5: Stooktoestel (Active in Slice 3.1)
                       RepaintBoundary(
-                        child: StooktoestelTab(boilerNotifier: _boilerNotifier),
+                        child: StartTab(
+                          visitId: _activeVisitId,
+                          onFormKeyReady: (key) => _tab2FormKey = key,
+                        ),
                       ),
-
-                      // Tab 6: Meting (Active in Slice 3.2)
+                      RepaintBoundary(
+                        child: FirmaTechnicusTab(
+                          onFormKeyReady: (key) => _tab3FormKey = key,
+                        ),
+                      ),
+                      RepaintBoundary(
+                        child: KlantTab(
+                          onFormKeyReady: (key) => _tab4FormKey = key,
+                        ),
+                      ),
+                      RepaintBoundary(
+                        child: StooktoestelTab(
+                          boilerNotifier: _boilerNotifier,
+                          onFormKeyReady: (key) => _tab5FormKey = key,
+                        ),
+                      ),
                       RepaintBoundary(
                         child: MetingTab(
                           visitId: _activeVisitId,
                           boilerNotifier: _boilerNotifier,
                           assessmentNotifier: _assessmentNotifier,
+                          onFormKeyReady: (key) => _tab6FormKey = key,
                         ),
                       ),
-
-                      // Tab 7: Eindbeoordeling (Slice 3.3)
                       RepaintBoundary(
                         child: EindbeoordelingTab(
                           visitId: _activeVisitId,
                           boilerNotifier: _boilerNotifier,
                           assessmentNotifier: _assessmentNotifier,
+                          onComplete: _handleFinalizeAttempt,
                         ),
                       ),
                     ],

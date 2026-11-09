@@ -16,8 +16,14 @@ import 'klant/klant_tab_body.dart';
 class KlantTab extends StatefulWidget {
   final CustomerRepository? customerRepository;
   final DraftRepository? draftRepository;
+  final ValueChanged<GlobalKey<FormState>>? onFormKeyReady;
 
-  const KlantTab({super.key, this.customerRepository, this.draftRepository});
+  const KlantTab({
+    super.key,
+    this.customerRepository,
+    this.draftRepository,
+    this.onFormKeyReady,
+  });
 
   @override
   State<KlantTab> createState() => _KlantTabState();
@@ -30,6 +36,7 @@ class _KlantTabState extends State<KlantTab>
     draftRepository: widget.draftRepository,
   );
   final _controllers = KlantFormControllers();
+  final _formKey = GlobalKey<FormState>();
 
   Customer? _activeCustomer;
   ServiceLocation? _activeLocation;
@@ -50,17 +57,16 @@ class _KlantTabState extends State<KlantTab>
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => widget.onFormKeyReady?.call(_formKey),
+    );
     final c = AppWarmupService.instance.cachedResult;
     if (c?.activeDraft != null &&
         widget.customerRepository == null &&
         widget.draftRepository == null) {
       _draftVisitId = c!.activeDraft!.id;
-      if (c.activeCustomer != null) {
-        _controllers.populateCustomer(_activeCustomer = c.activeCustomer!);
-      }
-      if (c.activeServiceLocation != null) {
-        _applyLocation(c.activeServiceLocation!);
-      }
+      if (c.activeCustomer != null) _controllers.populateCustomer(_activeCustomer = c.activeCustomer!);
+      if (c.activeServiceLocation != null) _applyLocation(c.activeServiceLocation!);
       _isLoading = false;
     } else {
       _loadInitialData();
@@ -79,9 +85,7 @@ class _KlantTabState extends State<KlantTab>
       final res = await _coord.loadDraftData();
       _draftVisitId = res.draftId;
       if (mounted) {
-        if (res.customer != null) {
-          _controllers.populateCustomer(_activeCustomer = res.customer!);
-        }
+        if (res.customer != null) _controllers.populateCustomer(_activeCustomer = res.customer!);
         if (res.location != null) _applyLocation(res.location!);
         setState(() => _isLoading = false);
       }
@@ -147,15 +151,11 @@ class _KlantTabState extends State<KlantTab>
       if (loc != null && mounted) {
         _applyLocation(loc, picked.street, picked.houseNumber);
       }
-    }).catchError((e, s) {
-      debugPrint('[KlantTab] linkPickedCustomer error: $e\n$s');
-    });
+    }).catchError((e, s) => debugPrint('[KlantTab] link error: $e\n$s'));
   }
 
   Future<void> _onNewPressed() async {
-    if (!await KlantActionDialogs.confirmNewCustomer(context) || !mounted) {
-      return;
-    }
+    if (!await KlantActionDialogs.confirmNewCustomer(context) || !mounted) return;
     _takeSnapshot();
     _clearCustomerForm();
     setState(() => _isEditing = true);
@@ -168,6 +168,7 @@ class _KlantTabState extends State<KlantTab>
   }
 
   Future<void> _onSavePressed() async {
+    if (!(_formKey.currentState?.validate() ?? true)) return;
     await _saveToDatabase();
     if (!mounted) return;
     setState(() => _isEditing = false);
@@ -212,8 +213,9 @@ class _KlantTabState extends State<KlantTab>
       _isSameAsCustomer = true;
     });
     if (_draftVisitId != null) {
-      _coord.unlinkCustomer(_draftVisitId!).catchError(
-          (e, s) => debugPrint('[KlantTab] unlinkCustomer error: $e\n$s'));
+      _coord
+          .unlinkCustomer(_draftVisitId!)
+          .catchError((e, s) => debugPrint('[KlantTab] unlink error: $e\n$s'));
     }
   }
 
@@ -224,22 +226,25 @@ class _KlantTabState extends State<KlantTab>
       return const Center(
           child: CircularProgressIndicator(color: AppColors.amberGold));
     }
-    return KlantTabBody(
-      isEditing: _isEditing,
-      hasCustomer: _hasCustomer,
-      isSameAsCustomer: _isSameAsCustomer,
-      controllers: _controllers,
-      onFormChanged: _onFormChanged,
-      onSameAddressChanged: (s) => setState(() {
-        _isSameAsCustomer = s;
-        _onFormChanged();
-      }),
-      onSearch: _onSearchPressed,
-      onNew: _onNewPressed,
-      onEdit: _onEditPressed,
-      onSave: _onSavePressed,
-      onCancel: _onCancelPressed,
-      onDelete: _onDeletePressed,
+    return Form(
+      key: _formKey,
+      child: KlantTabBody(
+        isEditing: _isEditing,
+        hasCustomer: _hasCustomer,
+        isSameAsCustomer: _isSameAsCustomer,
+        controllers: _controllers,
+        onFormChanged: _onFormChanged,
+        onSameAddressChanged: (s) => setState(() {
+          _isSameAsCustomer = s;
+          _onFormChanged();
+        }),
+        onSearch: _onSearchPressed,
+        onNew: _onNewPressed,
+        onEdit: _onEditPressed,
+        onSave: _onSavePressed,
+        onCancel: _onCancelPressed,
+        onDelete: _onDeletePressed,
+      ),
     );
   }
 }

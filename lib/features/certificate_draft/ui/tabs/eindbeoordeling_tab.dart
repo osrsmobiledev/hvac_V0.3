@@ -2,10 +2,8 @@
 // Responsibility: Tab 7 — Eindbeoordeling & Handtekeningen coordinator.
 
 import 'package:flutter/material.dart';
-import 'package:hvac_app/app/localization/eindbeoordeling_dictionary.dart';
 import 'package:hvac_app/core/services/app_warmup_service.dart';
 import 'package:hvac_app/core/utils/debouncer.dart';
-import 'package:hvac_app/core/widgets/tactical_feedback.dart';
 import 'package:hvac_app/features/certificate_draft/data/eindbeoordeling_repository.dart';
 import 'package:hvac_app/features/certificate_draft/domain/eindbeoordeling_draft.dart';
 import '../boiler_draft_notifier.dart';
@@ -210,13 +208,6 @@ class _EindbeoordelingTabState extends State<EindbeoordelingTab>
 
   void _onCompletePressed() {
     _debouncer.flush();
-    if (_draft.toestelWerkingGoed == null ||
-        _draft.toestelWerkingVeilig == null) {
-      TacticalFeedback.showInfo(
-          context, EindbeoordelingDictionary.toastValidationMissingConclusions);
-      return;
-    }
-    TacticalFeedback.showSuccess(context, EindbeoordelingDictionary.toastSaved);
     widget.onComplete?.call();
   }
 

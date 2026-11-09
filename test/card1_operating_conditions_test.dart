@@ -100,7 +100,7 @@ void main() {
       ));
 
       expect(find.byType(WheelInputRow), findsOneWidget);
-      expect(find.byType(HorizontalWheelPicker), findsOneWidget);
+      expect(find.byType(QuickSliderPicker), findsOneWidget);
       expect(find.text('20 mbar'), findsOneWidget);
       expect(find.text('20'), findsOneWidget);
 
@@ -228,14 +228,14 @@ void main() {
       );
       expect(find.text('21 mbar'), findsWidgets);
       expect(find.byType(WheelInputRow), findsNWidgets(4));
-      expect(find.byType(HorizontalWheelPicker), findsNWidgets(4));
+      expect(find.byType(QuickSliderPicker), findsWidgets);
 
       // Oil mode
       await tester.pumpWidget(
         buildCard(BoilerDraft.initial().copyWith(fuelCategory: 'vloeibaar')),
       );
       expect(find.text('Danfoss'), findsOneWidget);
-      expect(find.text('60 °'), findsOneWidget);
+      expect(find.text('60 °'), findsWidgets);
       expect(find.byType(WheelInputRow), findsNWidgets(4));
       expect(find.byType(BacharachSelector), findsOneWidget);
     });
@@ -324,6 +324,258 @@ void main() {
       ));
 
       expect(tester.takeException(), isNull);
+    });
+
+    testWidgets(
+        'QuickSliderPicker does not scroll or switch ancestor TabBarView tabs when initialized or updated',
+        (tester) async {
+      final tabController = TabController(length: 2, vsync: const TestVSync());
+      final pickerController = TextEditingController();
+
+      await tester.pumpWidget(MaterialApp(
+        theme: AppTheme.darkTheme,
+        home: Scaffold(
+          body: TabBarView(
+            controller: tabController,
+            children: [
+              const Center(child: Text('Tab 0 Content')),
+              Center(
+                child: QuickSliderPicker.forController(
+                  controller: pickerController,
+                  options: const ['50', '60', '70', '80'],
+                  preferredInitialItem: '70',
+                  suffix: '°C',
+                  onChanged: () {},
+                ),
+              ),
+            ],
+          ),
+        ),
+      ));
+
+      // Tab 0 must remain active!
+      expect(tabController.index, 0);
+      expect(find.text('Tab 0 Content'), findsOneWidget);
+
+      // Rebuild and pump to let any post-frame callbacks execute
+      await tester.pumpAndSettle();
+
+      // Ensure Tab 0 is STILL active and has not been teleported to Tab 1
+      expect(tabController.index, 0);
+      expect(find.text('Tab 0 Content'), findsOneWidget);
+    });
+
+    testWidgets(
+        'Card 1 Pre-Flight Check: Fuel Gas validates only boilerTemp and gas pressures',
+        (tester) async {
+      final formKey = GlobalKey<FormState>();
+      final boiler = BoilerDraft.initial().copyWith(
+        fuelCategory: 'gas',
+        fuelSubtype: 'aardgas',
+      );
+      final boilerTemp = TextEditingController();
+      final gasMeter = TextEditingController();
+      final gasBlock = TextEditingController();
+      final gasBurnerBed = TextEditingController();
+      final nozzleBrand = TextEditingController();
+      final nozzleFlow = TextEditingController();
+      final nozzleAngle = TextEditingController();
+      final pumpPressure = TextEditingController();
+      final smokeIndex = TextEditingController();
+      bool? smokeOk;
+
+      await tester.pumpWidget(MaterialApp(
+        theme: AppTheme.darkTheme,
+        home: Scaffold(
+          body: SingleChildScrollView(
+            child: Form(
+              key: formKey,
+              child: OperatingConditionsCard(
+                boiler: boiler,
+                boilerTempController: boilerTemp,
+                gasMeterController: gasMeter,
+                gasBlockController: gasBlock,
+                gasBurnerBedController: gasBurnerBed,
+                nozzleBrandTypeController: nozzleBrand,
+                nozzleFlowRateController: nozzleFlow,
+                nozzleAngleController: nozzleAngle,
+                pumpPressureController: pumpPressure,
+                smokeIndexController: smokeIndex,
+                smokeIndexOk: smokeOk,
+                onSmokeIndexOkChanged: (v) => smokeOk = v,
+                onChanged: () {},
+              ),
+            ),
+          ),
+        ),
+      ));
+
+      // Initially empty -> validate fails
+      final isValidInitial = formKey.currentState!.validate();
+      expect(isValidInitial, isFalse);
+
+      // Liquid fields do NOT exist in the widget tree for gas!
+      expect(find.text('Sproeier: merk en type'), findsNothing);
+      expect(find.text('Sproeier: debiet'), findsNothing);
+      expect(find.text('Pompdruk (bar)'), findsNothing);
+
+      // Gas fields DO exist and are required
+      expect(find.text('Gasdruk teller (mbar)'), findsOneWidget);
+      expect(find.text('Gasdruk gasblok (mbar)'), findsOneWidget);
+      expect(find.text('Gasdruk branderbed (mbar)'), findsOneWidget);
+
+      // Populate all gas fields
+      boilerTemp.text = '60';
+      gasMeter.text = '21';
+      gasBlock.text = '20';
+      gasBurnerBed.text = '10';
+
+      await tester.pump();
+      final isValidFilled = formKey.currentState!.validate();
+      expect(isValidFilled, isTrue);
+    });
+
+    testWidgets(
+        'Card 1 Pre-Flight Check: Fuel Liquid validates only boilerTemp, nozzle, pump and Bacharach',
+        (tester) async {
+      final formKey = GlobalKey<FormState>();
+      final boiler = BoilerDraft.initial().copyWith(
+        fuelCategory: 'vloeibaar',
+        fuelSubtype: 'stookolie',
+      );
+      final boilerTemp = TextEditingController();
+      final gasMeter = TextEditingController();
+      final gasBlock = TextEditingController();
+      final gasBurnerBed = TextEditingController();
+      final nozzleBrand = TextEditingController();
+      final nozzleFlow = TextEditingController();
+      final nozzleAngle = TextEditingController();
+      final pumpPressure = TextEditingController();
+      final smokeIndex = TextEditingController();
+      bool? smokeOk;
+
+      await tester.pumpWidget(MaterialApp(
+        theme: AppTheme.darkTheme,
+        home: Scaffold(
+          body: SingleChildScrollView(
+            child: StatefulBuilder(
+              builder: (context, setModalState) {
+                return Form(
+                  key: formKey,
+                  child: OperatingConditionsCard(
+                    boiler: boiler,
+                    boilerTempController: boilerTemp,
+                    gasMeterController: gasMeter,
+                    gasBlockController: gasBlock,
+                    gasBurnerBedController: gasBurnerBed,
+                    nozzleBrandTypeController: nozzleBrand,
+                    nozzleFlowRateController: nozzleFlow,
+                    nozzleAngleController: nozzleAngle,
+                    pumpPressureController: pumpPressure,
+                    smokeIndexController: smokeIndex,
+                    smokeIndexOk: smokeOk,
+                    onSmokeIndexOkChanged: (v) =>
+                        setModalState(() => smokeOk = v),
+                    onChanged: () {},
+                  ),
+                );
+              },
+            ),
+          ),
+        ),
+      ));
+
+      // Initially empty -> validate fails
+      final isValidInitial = formKey.currentState!.validate();
+      expect(isValidInitial, isFalse);
+
+      // Gas fields do NOT exist in the widget tree for liquid!
+      expect(find.text('Gasdruk teller (mbar)'), findsNothing);
+      expect(find.text('Gasdruk gasblok (mbar)'), findsNothing);
+      expect(find.text('Gasdruk branderbed (mbar)'), findsNothing);
+
+      // Liquid fields DO exist and are required
+      expect(find.text('Sproeier: merk en type'), findsOneWidget);
+      expect(find.text('Sproeier: debiet'), findsOneWidget);
+      expect(find.text('Pompdruk (bar)'), findsOneWidget);
+      expect(find.text('Rookindex (Bacharach)'), findsOneWidget);
+
+      // Populate liquid fields
+      boilerTemp.text = '65';
+      nozzleBrand.text = 'Danfoss';
+      nozzleFlow.text = '0.60';
+      nozzleAngle.text = '60';
+      pumpPressure.text = '10';
+
+      // Tap Bacharach 0 chip (which automatically marks OK)
+      await tester.tap(find.text('0'));
+      await tester.pump();
+
+      final isValidFilled = formKey.currentState!.validate();
+      expect(isValidFilled, isTrue);
+    });
+
+    testWidgets('Card 1 Pre-Flight Check: Fuel Solid validates ONLY boilerTemp',
+        (tester) async {
+      final formKey = GlobalKey<FormState>();
+      final boiler = BoilerDraft.initial().copyWith(
+        fuelCategory: 'vast',
+        fuelSubtype: 'houtpellets',
+      );
+      final boilerTemp = TextEditingController();
+      final gasMeter = TextEditingController();
+      final gasBlock = TextEditingController();
+      final gasBurnerBed = TextEditingController();
+      final nozzleBrand = TextEditingController();
+      final nozzleFlow = TextEditingController();
+      final nozzleAngle = TextEditingController();
+      final pumpPressure = TextEditingController();
+      final smokeIndex = TextEditingController();
+      bool? smokeOk;
+
+      await tester.pumpWidget(MaterialApp(
+        theme: AppTheme.darkTheme,
+        home: Scaffold(
+          body: SingleChildScrollView(
+            child: Form(
+              key: formKey,
+              child: OperatingConditionsCard(
+                boiler: boiler,
+                boilerTempController: boilerTemp,
+                gasMeterController: gasMeter,
+                gasBlockController: gasBlock,
+                gasBurnerBedController: gasBurnerBed,
+                nozzleBrandTypeController: nozzleBrand,
+                nozzleFlowRateController: nozzleFlow,
+                nozzleAngleController: nozzleAngle,
+                pumpPressureController: pumpPressure,
+                smokeIndexController: smokeIndex,
+                smokeIndexOk: smokeOk,
+                onSmokeIndexOkChanged: (v) => smokeOk = v,
+                onChanged: () {},
+              ),
+            ),
+          ),
+        ),
+      ));
+
+      // Initially empty -> validate fails
+      final isValidInitial = formKey.currentState!.validate();
+      expect(isValidInitial, isFalse);
+
+      // Neither gas nor liquid fields exist for solid
+      expect(find.text('Gasdruk teller (mbar)'), findsNothing);
+      expect(find.text('Sproeier: merk en type'), findsNothing);
+
+      // Only Keteltemperatuur is present
+      expect(find.text('Keteltemperatuur (°C)'), findsOneWidget);
+
+      // Fill Keteltemperatuur
+      boilerTemp.text = '70';
+      await tester.pump();
+
+      final isValidFilled = formKey.currentState!.validate();
+      expect(isValidFilled, isTrue);
     });
   });
 }

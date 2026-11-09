@@ -16,6 +16,7 @@ class TwoWaySlidingBar extends StatelessWidget {
   final String optionALabel;
   final String optionBValue;
   final String optionBLabel;
+  final bool isError;
 
   const TwoWaySlidingBar({
     super.key,
@@ -25,6 +26,7 @@ class TwoWaySlidingBar extends StatelessWidget {
     required this.optionALabel,
     required this.optionBValue,
     required this.optionBLabel,
+    this.isError = false,
   });
 
   @override
@@ -39,7 +41,12 @@ class TwoWaySlidingBar extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xFF0C0C0C),
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
+        border: Border.all(
+          color: isError && !hasActiveSelection
+              ? AppColors.errorRed
+              : Colors.white.withValues(alpha: 0.12),
+          width: isError && !hasActiveSelection ? 1.4 : 1.0,
+        ),
       ),
       child: Stack(
         children: [
@@ -120,6 +127,7 @@ class _SlideOption extends StatelessWidget {
   Widget build(BuildContext context) {
     return Expanded(
       child: InkWell(
+        canRequestFocus: false,
         onTap: () {
           HapticFeedback.selectionClick();
           onTap();

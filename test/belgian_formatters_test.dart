@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:hvac_app/app/theme/app_colors.dart';
 import 'package:hvac_app/core/utils/belgian_formatters.dart';
 import 'package:hvac_app/features/certificate_draft/ui/tabs/firma_technicus/firma_field.dart';
 
@@ -183,6 +184,9 @@ void main() {
       expect(BelgianFormatters.validatePhone('0470 12 34 56'), isNull);
       expect(BelgianFormatters.validatePhone('470 12 34 56'), isNull);
       expect(BelgianFormatters.validatePhone('0470123456'), isNull);
+      expect(BelgianFormatters.validatePhone('+32 470 12 34 56'), isNull);
+      expect(BelgianFormatters.validatePhone('+32470123456'), isNull);
+      expect(BelgianFormatters.validatePhone('0032 470 12 34 56'), isNull);
       // Valid landline numbers
       expect(BelgianFormatters.validatePhone('09 123 45 67'), isNull);
       expect(BelgianFormatters.validatePhone('02 456 78 90'), isNull);
@@ -193,6 +197,20 @@ void main() {
       );
       expect(
         BelgianFormatters.validatePhone('123456789012345'),
+        'Ongeldig telefoonnummer (bv. 470 12 34 56)',
+      );
+      // Incomplete mobile numbers (deleted one digit -> 8 digits starting with 4)
+      expect(
+        BelgianFormatters.validatePhone('470 12 34 5'),
+        'Ongeldig telefoonnummer (bv. 470 12 34 56)',
+      );
+      expect(
+        BelgianFormatters.validatePhone('+32 470 12 34 5'),
+        'Ongeldig telefoonnummer (bv. 470 12 34 56)',
+      );
+      // Incomplete landline
+      expect(
+        BelgianFormatters.validatePhone('09 123 45 6'),
         'Ongeldig telefoonnummer (bv. 470 12 34 56)',
       );
     });
@@ -221,6 +239,39 @@ void main() {
       );
     });
 
+    test('validateEmail validates email addresses correctly', () {
+      expect(BelgianFormatters.validateEmail(''), isNull);
+      expect(BelgianFormatters.validateEmail('   '), isNull);
+      expect(
+        BelgianFormatters.validateEmail('', required: true),
+        'E-mailadres is verplicht',
+      );
+      // Valid emails
+      expect(BelgianFormatters.validateEmail('info@firma.be'), isNull);
+      expect(
+          BelgianFormatters.validateEmail('john.doe@sub.domain.com'), isNull);
+      expect(
+          BelgianFormatters.validateEmail('tech+test@hvac-service.vlaanderen'),
+          isNull);
+      // Invalid emails
+      expect(
+        BelgianFormatters.validateEmail('notanemail'),
+        'Vul een geldig e-mailadres in (bv. info@firma.be)',
+      );
+      expect(
+        BelgianFormatters.validateEmail('user@'),
+        'Vul een geldig e-mailadres in (bv. info@firma.be)',
+      );
+      expect(
+        BelgianFormatters.validateEmail('@domain.be'),
+        'Vul een geldig e-mailadres in (bv. info@firma.be)',
+      );
+      expect(
+        BelgianFormatters.validateEmail('user@domain'),
+        'Vul een geldig e-mailadres in (bv. info@firma.be)',
+      );
+    });
+
     testWidgets(
         'FirmaField renders permanent prefix before focus and validates in real time',
         (tester) async {
@@ -246,25 +297,35 @@ void main() {
       expect(find.text('+32 '), findsOneWidget);
 
       // Enter invalid phone
-      await tester.enterText(find.byType(TextFormField), '123');
+      await tester.enterText(find.byType(TextField), '123');
       await tester.pumpAndSettle();
 
-      // Real-time error text is displayed
+      // Real-time red border is displayed, zero error text
+      final invalidField = tester.widget<TextField>(find.byType(TextField));
+      expect(
+        (invalidField.decoration!.enabledBorder as OutlineInputBorder)
+            .borderSide
+            .color,
+        AppColors.errorRed,
+      );
       expect(
         find.text('Ongeldig telefoonnummer (bv. 470 12 34 56)'),
-        findsOneWidget,
+        findsNothing,
       );
 
       // Enter phone with leading 0; formatter automatically strips 0 and segments
-      await tester.enterText(find.byType(TextFormField), '0470123456');
+      await tester.enterText(find.byType(TextField), '0470123456');
       await tester.pumpAndSettle();
 
       expect(phoneController.text, '470 12 34 56');
 
-      // Error text is gone
+      // Red border is gone
+      final validField = tester.widget<TextField>(find.byType(TextField));
       expect(
-        find.text('Ongeldig telefoonnummer (bv. 470 12 34 56)'),
-        findsNothing,
+        (validField.decoration!.enabledBorder as OutlineInputBorder)
+            .borderSide
+            .color,
+        isNot(AppColors.errorRed),
       );
     });
   });

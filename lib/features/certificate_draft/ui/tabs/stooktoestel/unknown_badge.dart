@@ -31,6 +31,7 @@ class HeaderWithUnknownChip extends StatelessWidget {
             style: DarkInputLabel.style(isMuted: isUnknown),
           ),
           InkWell(
+            canRequestFocus: false,
             onTap: () {
               HapticFeedback.selectionClick();
               onUnknownChanged(!isUnknown);

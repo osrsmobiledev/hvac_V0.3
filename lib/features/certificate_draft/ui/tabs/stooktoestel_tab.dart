@@ -14,8 +14,14 @@ import 'stooktoestel/stooktoestel_tab_body.dart';
 class StooktoestelTab extends StatefulWidget {
   final BoilerDraftRepository? repository;
   final BoilerDraftNotifier? boilerNotifier;
+  final ValueChanged<GlobalKey<FormState>>? onFormKeyReady;
 
-  const StooktoestelTab({super.key, this.repository, this.boilerNotifier});
+  const StooktoestelTab({
+    super.key,
+    this.repository,
+    this.boilerNotifier,
+    this.onFormKeyReady,
+  });
 
   @override
   State<StooktoestelTab> createState() => _StooktoestelTabState();
@@ -23,6 +29,7 @@ class StooktoestelTab extends StatefulWidget {
 
 class _StooktoestelTabState extends State<StooktoestelTab>
     with AutomaticKeepAliveClientMixin {
+  final _formKey = GlobalKey<FormState>();
   late final BoilerDraftRepository _repository;
   final StooktoestelFormControllers _controllers =
       StooktoestelFormControllers();
@@ -33,9 +40,8 @@ class _StooktoestelTabState extends State<StooktoestelTab>
   // Regulatory state
   bool _isCentral = false, _serialUnknown = false, _yearUnknown = false;
   bool _burnerSerialUnknown = false, _burnerYearUnknown = false;
-  String _centraalType = '', _heatingType = '';
-  String _boilerOperation = '', _fuelCategory = '';
-  String _fuelSubtype = '', _fuelOtherText = '';
+  String _centraalType = '', _heatingType = '', _boilerOperation = '';
+  String _fuelCategory = '', _fuelSubtype = '', _fuelOtherText = '';
   String _burnerTechnology = '', _burnerType = 'geintegreerd';
 
   @override
@@ -44,12 +50,12 @@ class _StooktoestelTabState extends State<StooktoestelTab>
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => widget.onFormKeyReady?.call(_formKey));
     _repository = widget.repository ?? BoilerDraftRepository();
     widget.boilerNotifier?.addListener(_onBoilerNotifierChanged);
-    final initialDraft =
-        (widget.boilerNotifier != null && !widget.boilerNotifier!.isLoading)
-            ? widget.boilerNotifier!.draft
-            : AppWarmupService.instance.cachedResult?.activeBoiler;
+    final initialDraft = (widget.boilerNotifier != null && !widget.boilerNotifier!.isLoading)
+        ? widget.boilerNotifier!.draft
+        : AppWarmupService.instance.cachedResult?.activeBoiler;
     if (initialDraft != null && widget.repository == null) {
       _applyDraftToUi(initialDraft);
     } else {
@@ -107,8 +113,7 @@ class _StooktoestelTabState extends State<StooktoestelTab>
         return;
       }
       final draft = await _repository.getOrCreateActiveBoiler();
-      if (!mounted) return;
-      _applyDraftToUi(draft);
+      if (mounted) _applyDraftToUi(draft);
     } catch (e, stack) {
       debugPrint('[StooktoestelTab] _loadBoilerDraft error: $e\n$stack');
     }
@@ -160,15 +165,11 @@ class _StooktoestelTabState extends State<StooktoestelTab>
         final (sub, other) = _fuelMemory.resolveForCategory(val);
         _fuelSubtype = sub;
         _fuelOtherText = other;
-        if (val == 'gas') {
-          _burnerType = _burnerTechnology == 'ventilatorbrander'
-              ? 'afzonderlijk'
-              : 'geintegreerd';
-        } else if (val == 'vloeibaar') {
-          _burnerType = 'afzonderlijk';
-        } else {
-          _burnerType = 'geintegreerd';
-        }
+        _burnerType = val == 'vloeibaar'
+            ? 'afzonderlijk'
+            : (val == 'gas' && _burnerTechnology == 'ventilatorbrander')
+                ? 'afzonderlijk'
+                : 'geintegreerd';
       });
 
   void _onFuelSubtype(String val) => _update(() {
@@ -198,48 +199,48 @@ class _StooktoestelTabState extends State<StooktoestelTab>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    return StooktoestelTabBody(
-      controllers: _controllers,
-      isCentral: _isCentral,
-      centraalType: _centraalType,
-      heatingType: _heatingType,
-      boilerOperation: _boilerOperation,
-      fuelCategory: _fuelCategory,
-      fuelSubtype: _fuelSubtype,
-      fuelOtherText: _fuelOtherText,
-      burnerTechnology: _burnerTechnology,
-      burnerType: _burnerType,
-      serialUnknown: _serialUnknown,
-      yearUnknown: _yearUnknown,
-      burnerSerialUnknown: _burnerSerialUnknown,
-      burnerYearUnknown: _burnerYearUnknown,
-      onCentralChanged: (v) => _update(() {
-        _isCentral = v;
-        if (!v) _centraalType = '';
-      }),
-      onCentraalTypeChanged: (val) => _update(() {
-        _centraalType = (_centraalType == val && _isCentral) ? '' : val;
-        _isCentral = _centraalType.isNotEmpty;
-      }),
-      onHeatingTypeChanged: (val) => _update(() => _heatingType = val),
-      onBoilerOperationChanged: (val) => _update(() => _boilerOperation = val),
-      onFuelCategoryChanged: _onFuelCat,
-      onFuelSubtypeChanged: _onFuelSubtype,
-      onFuelOtherTextChanged: _onFuelOtherText,
-      onBurnerTechChanged: _onBurnerTech,
-      onBurnerTypeChanged: (val) => _update(() => _burnerType = val),
-      onTypeBCodeChanged: (_) => _syncDraft(immediate: true),
-      onTypeCCodeChanged: (_) => _syncDraft(immediate: true),
-      onSerialUnknownChanged: (val) => _update(() => _serialUnknown = val),
-      onYearUnknownChanged: (val) => _update(() => _yearUnknown = val),
-      onBurnerSerialUnknownChanged: (v) =>
-          _update(() => _burnerSerialUnknown = v),
-      onBurnerYearUnknownChanged: (v) => _update(() => _burnerYearUnknown = v),
-      onScanToestelBarcode: () => _scanBarcode(
-          _controllers.toestelSerial, AppDictionary.hintScanToestelSerial),
-      onScanBranderBarcode: () => _scanBarcode(
-          _controllers.branderSerial, AppDictionary.hintScanBranderSerial),
-      onFormChanged: () => _syncDraft(immediate: false),
+    return Form(
+      key: _formKey,
+      child: StooktoestelTabBody(
+        controllers: _controllers,
+        isCentral: _isCentral,
+        centraalType: _centraalType,
+        heatingType: _heatingType,
+        boilerOperation: _boilerOperation,
+        fuelCategory: _fuelCategory,
+        fuelSubtype: _fuelSubtype,
+        fuelOtherText: _fuelOtherText,
+        burnerTechnology: _burnerTechnology,
+        burnerType: _burnerType,
+        serialUnknown: _serialUnknown,
+        yearUnknown: _yearUnknown,
+        burnerSerialUnknown: _burnerSerialUnknown,
+        burnerYearUnknown: _burnerYearUnknown,
+        onCentralChanged: (v) => _update(() {
+          _isCentral = v;
+          if (!v) _centraalType = '';
+        }),
+        onCentraalTypeChanged: (val) => _update(() {
+          _centraalType = (_centraalType == val && _isCentral) ? '' : val;
+          _isCentral = _centraalType.isNotEmpty;
+        }),
+        onHeatingTypeChanged: (val) => _update(() => _heatingType = val),
+        onBoilerOperationChanged: (val) => _update(() => _boilerOperation = val),
+        onFuelCategoryChanged: _onFuelCat,
+        onFuelSubtypeChanged: _onFuelSubtype,
+        onFuelOtherTextChanged: _onFuelOtherText,
+        onBurnerTechChanged: _onBurnerTech,
+        onBurnerTypeChanged: (val) => _update(() => _burnerType = val),
+        onTypeBCodeChanged: (_) => _syncDraft(immediate: true),
+        onTypeCCodeChanged: (_) => _syncDraft(immediate: true),
+        onSerialUnknownChanged: (val) => _update(() => _serialUnknown = val),
+        onYearUnknownChanged: (val) => _update(() => _yearUnknown = val),
+        onBurnerSerialUnknownChanged: (v) => _update(() => _burnerSerialUnknown = v),
+        onBurnerYearUnknownChanged: (v) => _update(() => _burnerYearUnknown = v),
+        onScanToestelBarcode: () => _scanBarcode(_controllers.toestelSerial, AppDictionary.hintScanToestelSerial),
+        onScanBranderBarcode: () => _scanBarcode(_controllers.branderSerial, AppDictionary.hintScanBranderSerial),
+        onFormChanged: () => _syncDraft(immediate: false),
+      ),
     );
   }
 }

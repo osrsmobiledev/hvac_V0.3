@@ -4,8 +4,7 @@ import 'package:hvac_app/app/localization/app_dictionary.dart';
 import 'package:hvac_app/app/theme/app_colors.dart';
 import 'package:hvac_app/core/widgets/tactical_toggle_button.dart';
 import '../../widgets/bento_main_section.dart';
-import '../../widgets/dark_input_box.dart';
-import '../../widgets/dark_input_label.dart';
+import '../../widgets/dark_text_form_field.dart';
 import 'brand_quick_picker.dart';
 import 'integrated_burner_badge.dart';
 import 'unknown_badge.dart';
@@ -74,16 +73,15 @@ class BranderCard extends StatelessWidget {
             const IntegratedBurnerBadge()
           else ...[
             // Merk + Burner Brand Quick-Chips
-            const DarkInputLabel(AppDictionary.lblBrand),
-            TextFormField(
+            DarkTextFormField(
+              label: AppDictionary.lblBrand,
               controller: brandController,
-              style: DarkInputBox.inputStyle,
-              keyboardType: TextInputType.text,
-              textInputAction: TextInputAction.next,
-              decoration: DarkInputBox.decoration(
-                hintText: AppDictionary.hintBurnerBrand,
-              ),
-              onChanged: (_) => onChanged(),
+              hint: AppDictionary.hintBurnerBrand,
+              validator: (val) {
+                if (!isSeparate) return null;
+                return (val?.trim().isEmpty ?? true) ? '' : null;
+              },
+              onChanged: onChanged,
             ),
             const SizedBox(height: 6),
             ListenableBuilder(
@@ -105,16 +103,15 @@ class BranderCard extends StatelessWidget {
             const SizedBox(height: 12),
 
             // Type / Model
-            const DarkInputLabel(AppDictionary.lblModel),
-            TextFormField(
+            DarkTextFormField(
+              label: AppDictionary.lblModel,
               controller: modelController,
-              style: DarkInputBox.inputStyle,
-              keyboardType: TextInputType.text,
-              textInputAction: TextInputAction.next,
-              decoration: DarkInputBox.decoration(
-                hintText: AppDictionary.hintBurnerModel,
-              ),
-              onChanged: (_) => onChanged(),
+              hint: AppDictionary.hintBurnerModel,
+              validator: (val) {
+                if (!isSeparate) return null;
+                return (val?.trim().isEmpty ?? true) ? '' : null;
+              },
+              onChanged: onChanged,
             ),
             const SizedBox(height: 12),
 
@@ -124,23 +121,29 @@ class BranderCard extends StatelessWidget {
               isUnknown: yearUnknown,
               onUnknownChanged: onYearUnknownChanged,
             ),
-            TextFormField(
+            DarkTextFormField(
+              label: '',
               controller: yearController,
-              enabled: !yearUnknown,
-              style: DarkInputBox.inputStyle,
+              readOnly: yearUnknown,
+              hint: yearUnknown
+                  ? AppDictionary.optUnknown
+                  : AppDictionary.hintBurnerYear,
               keyboardType: TextInputType.number,
-              textInputAction: TextInputAction.next,
               inputFormatters: [
                 FilteringTextInputFormatter.digitsOnly,
                 LengthLimitingTextInputFormatter(4),
               ],
-              decoration: DarkInputBox.decoration(
-                hintText: yearUnknown
-                    ? AppDictionary.optUnknown
-                    : AppDictionary.hintBurnerYear,
-                readOnly: yearUnknown,
-              ),
-              onChanged: (_) => onChanged(),
+              validator: (val) {
+                if (!isSeparate || yearUnknown) return null;
+                final text = val?.trim() ?? '';
+                if (text.length != 4) return '';
+                final y = int.tryParse(text);
+                if (y == null || y < 1900 || y > DateTime.now().year + 1) {
+                  return '';
+                }
+                return null;
+              },
+              onChanged: onChanged,
             ),
             const SizedBox(height: 12),
 
@@ -150,45 +153,45 @@ class BranderCard extends StatelessWidget {
               isUnknown: serialUnknown,
               onUnknownChanged: onSerialUnknownChanged,
             ),
-            TextFormField(
+            DarkTextFormField(
+              label: '',
               controller: serialController,
-              enabled: !serialUnknown,
-              style: DarkInputBox.inputStyle,
-              keyboardType: TextInputType.text,
-              textInputAction: TextInputAction.next,
-              decoration: DarkInputBox.decoration(
-                hintText: serialUnknown
-                    ? AppDictionary.optUnknown
-                    : AppDictionary.hintBurnerSerial,
-                readOnly: serialUnknown,
-                suffixIcon: IconButton(
-                  icon: Icon(
-                    Icons.qr_code_scanner_rounded,
-                    color: serialUnknown
-                        ? AppColors.textMuted
-                        : AppColors.amberGold,
-                    size: 22,
-                  ),
-                  tooltip: AppDictionary.tooltipScanBarcode,
-                  onPressed: serialUnknown ? null : onScanBarcode,
+              readOnly: serialUnknown,
+              hint: serialUnknown
+                  ? AppDictionary.optUnknown
+                  : AppDictionary.hintBurnerSerial,
+              suffixIcon: IconButton(
+                focusNode:
+                    FocusNode(canRequestFocus: false, skipTraversal: true),
+                icon: Icon(
+                  Icons.qr_code_scanner_rounded,
+                  color:
+                      serialUnknown ? AppColors.textMuted : AppColors.amberGold,
+                  size: 22,
                 ),
+                tooltip: AppDictionary.tooltipScanBarcode,
+                onPressed: serialUnknown ? null : onScanBarcode,
               ),
-              onChanged: (_) => onChanged(),
+              validator: (val) {
+                if (!isSeparate || serialUnknown) return null;
+                return (val?.trim().isEmpty ?? true) ? '' : null;
+              },
+              onChanged: onChanged,
             ),
             const SizedBox(height: 12),
 
             // Debiet
-            const DarkInputLabel(AppDictionary.lblFlowRate),
-            TextFormField(
+            DarkTextFormField(
+              label: AppDictionary.lblFlowRate,
               controller: flowRateController,
-              style: DarkInputBox.inputStyle,
-              keyboardType:
-                  const TextInputType.numberWithOptions(decimal: true),
+              keyboardType: TextInputType.text,
               textInputAction: TextInputAction.done,
-              decoration: DarkInputBox.decoration(
-                hintText: AppDictionary.hintBurnerFlowRate,
-              ),
-              onChanged: (_) => onChanged(),
+              hint: AppDictionary.hintBurnerFlowRate,
+              validator: (val) {
+                if (!isSeparate) return null;
+                return (val?.trim().isEmpty ?? true) ? '' : null;
+              },
+              onChanged: onChanged,
             ),
           ],
         ],

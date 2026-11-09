@@ -54,6 +54,40 @@ class TechnicianProfile {
     );
   }
 
+  TechnicianProfile copyWith({
+    int? id,
+    String? companyName,
+    String? kboNumber,
+    String? street,
+    String? houseNumber,
+    String? boxNumber,
+    String? postalCode,
+    String? city,
+    String? phone,
+    String? email,
+    String? technicianFirstName,
+    String? technicianLastName,
+    String? gvNumber,
+    String? tvNumber,
+  }) {
+    return TechnicianProfile(
+      id: id ?? this.id,
+      companyName: companyName ?? this.companyName,
+      kboNumber: kboNumber ?? this.kboNumber,
+      street: street ?? this.street,
+      houseNumber: houseNumber ?? this.houseNumber,
+      boxNumber: boxNumber ?? this.boxNumber,
+      postalCode: postalCode ?? this.postalCode,
+      city: city ?? this.city,
+      phone: phone ?? this.phone,
+      email: email ?? this.email,
+      technicianFirstName: technicianFirstName ?? this.technicianFirstName,
+      technicianLastName: technicianLastName ?? this.technicianLastName,
+      gvNumber: gvNumber ?? this.gvNumber,
+      tvNumber: tvNumber ?? this.tvNumber,
+    );
+  }
+
   Map<String, Object?> toMap() {
     final now = DateTime.now().toIso8601String();
     return {

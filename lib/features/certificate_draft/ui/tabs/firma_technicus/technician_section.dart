@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:hvac_app/app/localization/app_dictionary.dart';
 import 'package:hvac_app/app/theme/app_colors.dart';
+import 'package:hvac_app/core/utils/name_capitalization_formatter.dart';
 import 'package:hvac_app/core/widgets/bo2_time_spinner.dart';
 import '../../widgets/bento_main_section.dart';
 import 'firma_field.dart';
+import 'time_validation_helper.dart';
 
 /// Technician and visit timing section on Tab 3 (Firma - Technicus).
-class TechnicianSection extends StatelessWidget {
+class TechnicianSection extends StatefulWidget {
   final TextEditingController firstNameController;
   final TextEditingController lastNameController;
   final TextEditingController gvController;
@@ -30,44 +32,59 @@ class TechnicianSection extends StatelessWidget {
     required this.onTimingsChanged,
   });
 
-  Future<void> _selectDate(BuildContext context) async {
-    FocusScope.of(context).unfocus();
-    DateTime initial = DateTime.now();
-    if (dateController.text.isNotEmpty) {
-      try {
-        initial = DateTime.parse(dateController.text);
-      } catch (e) {
-        debugPrint(
-            '[TechnicianSection] parse date "${dateController.text}" failed: $e');
-      }
+  @override
+  State<TechnicianSection> createState() => _TechnicianSectionState();
+}
+
+class _TechnicianSectionState extends State<TechnicianSection> {
+  final _gvFieldKey = GlobalKey<FormFieldState>();
+  final _tvFieldKey = GlobalKey<FormFieldState>();
+  final _startTimeKey = GlobalKey<FormFieldState>();
+  final _endTimeKey = GlobalKey<FormFieldState>();
+
+  bool get _isStartTimeSelected =>
+      widget.startTimeController.text.trim().isNotEmpty;
+
+  @override
+  void initState() {
+    super.initState();
+    widget.startTimeController.addListener(_onStartTimeTick);
+  }
+
+  @override
+  void dispose() {
+    widget.startTimeController.removeListener(_onStartTimeTick);
+    super.dispose();
+  }
+
+  void _onStartTimeTick() {
+    if (mounted) setState(() {});
+  }
+
+  void _onGvChanged() {
+    widget.onProfileChanged();
+    _tvFieldKey.currentState?.validate();
+  }
+
+  void _onTvChanged() {
+    widget.onProfileChanged();
+    _gvFieldKey.currentState?.validate();
+  }
+
+  void _onStartTimeSelected() {
+    widget.onTimingsChanged();
+    setState(() {});
+    _startTimeKey.currentState?.validate();
+    if (widget.endTimeController.text.isNotEmpty) {
+      _endTimeKey.currentState?.validate();
     }
+  }
 
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: initial,
-      firstDate: DateTime(2020),
-      lastDate: DateTime(2035),
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.dark(
-              primary: AppColors.amberGold,
-              onPrimary: Colors.black,
-              surface: AppColors.charcoalGlass,
-              onSurface: Colors.white,
-            ),
-          ),
-          child: child!,
-        );
-      },
-    );
-
-    if (picked != null) {
-      final y = picked.year.toString().padLeft(4, '0');
-      final m = picked.month.toString().padLeft(2, '0');
-      final d = picked.day.toString().padLeft(2, '0');
-      dateController.text = '$y-$m-$d';
-      onTimingsChanged();
+  void _onEndTimeSelected() {
+    widget.onTimingsChanged();
+    _endTimeKey.currentState?.validate();
+    if (widget.startTimeController.text.isNotEmpty) {
+      _startTimeKey.currentState?.validate();
     }
   }
 
@@ -82,19 +99,29 @@ class TechnicianSection extends StatelessWidget {
             children: [
               Expanded(
                 child: FirmaField(
+                  fieldKey: const ValueKey('technician_firstName'),
                   label: AppDictionary.lblFirstName,
-                  controller: firstNameController,
+                  controller: widget.firstNameController,
                   hint: AppDictionary.hintTechFirstName,
-                  onChanged: onProfileChanged,
+                  textCapitalization: TextCapitalization.words,
+                  inputFormatters: const [CapitalizeWordsInputFormatter()],
+                  validator: (v) =>
+                      v!.trim().isEmpty ? 'Voornaam is verplicht' : null,
+                  onChanged: widget.onProfileChanged,
                 ),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: FirmaField(
+                  fieldKey: const ValueKey('technician_lastName'),
                   label: AppDictionary.lblLastName,
-                  controller: lastNameController,
+                  controller: widget.lastNameController,
                   hint: AppDictionary.hintTechLastName,
-                  onChanged: onProfileChanged,
+                  textCapitalization: TextCapitalization.words,
+                  inputFormatters: const [CapitalizeWordsInputFormatter()],
+                  validator: (v) =>
+                      v!.trim().isEmpty ? 'Achternaam is verplicht' : null,
+                  onChanged: widget.onProfileChanged,
                 ),
               ),
             ],
@@ -104,19 +131,31 @@ class TechnicianSection extends StatelessWidget {
             children: [
               Expanded(
                 child: FirmaField(
+                  fieldKey: _gvFieldKey,
                   label: AppDictionary.lblGV,
-                  controller: gvController,
+                  controller: widget.gvController,
                   hint: AppDictionary.hintGvNumber,
-                  onChanged: onProfileChanged,
+                  textCapitalization: TextCapitalization.characters,
+                  validator: (_) => (widget.gvController.text.trim().isEmpty &&
+                          widget.tvController.text.trim().isEmpty)
+                      ? 'GV-nummer vereist'
+                      : null,
+                  onChanged: _onGvChanged,
                 ),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: FirmaField(
+                  fieldKey: _tvFieldKey,
                   label: AppDictionary.lblTV,
-                  controller: tvController,
+                  controller: widget.tvController,
                   hint: AppDictionary.hintTvNumber,
-                  onChanged: onProfileChanged,
+                  textCapitalization: TextCapitalization.characters,
+                  validator: (_) => (widget.gvController.text.trim().isEmpty &&
+                          widget.tvController.text.trim().isEmpty)
+                      ? 'TV-nummer vereist'
+                      : null,
+                  onChanged: _onTvChanged,
                 ),
               ),
             ],
@@ -128,10 +167,14 @@ class TechnicianSection extends StatelessWidget {
           // Date Picker: Datum onderhoud
           FirmaActionField(
             label: AppDictionary.lblDate,
-            controller: dateController,
+            controller: widget.dateController,
             hint: AppDictionary.hintDateFormat,
             icon: Icons.calendar_month_rounded,
-            onTap: () => _selectDate(context),
+            onTap: () => TimeValidationHelper.pickDate(
+              context,
+              widget.dateController,
+              widget.onTimingsChanged,
+            ),
           ),
           const SizedBox(height: 12),
 
@@ -140,28 +183,45 @@ class TechnicianSection extends StatelessWidget {
             children: [
               Expanded(
                 child: FirmaActionField(
+                  fieldKey: _startTimeKey,
                   label: AppDictionary.lblTimeFrom,
-                  controller: startTimeController,
+                  controller: widget.startTimeController,
                   hint: AppDictionary.hintTimeStart,
                   icon: Icons.access_time_rounded,
+                  showErrorText: false,
+                  validator: (_) => TimeValidationHelper.validateStartTime(
+                    widget.startTimeController.text,
+                  ),
                   onTap: () => showBo2TimeSpinner(
                     context,
-                    startTimeController,
-                    onTimeSelected: onTimingsChanged,
+                    widget.startTimeController,
+                    onTimeSelected: _onStartTimeSelected,
                   ),
                 ),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: FirmaActionField(
+                  fieldKey: _endTimeKey,
                   label: AppDictionary.lblTimeTo,
-                  controller: endTimeController,
+                  controller: widget.endTimeController,
                   hint: AppDictionary.hintTimeEnd,
                   icon: Icons.access_time_rounded,
+                  enabled: _isStartTimeSelected,
+                  showErrorText: false,
+                  validator: (_) => _isStartTimeSelected
+                      ? TimeValidationHelper.validateEndTime(
+                          widget.endTimeController.text,
+                          widget.startTimeController.text,
+                        )
+                      : null,
                   onTap: () => showBo2TimeSpinner(
                     context,
-                    endTimeController,
-                    onTimeSelected: onTimingsChanged,
+                    widget.endTimeController,
+                    fallbackTime: TimeValidationHelper.suggestedEndTime(
+                      widget.startTimeController.text,
+                    ),
+                    onTimeSelected: _onEndTimeSelected,
                   ),
                 ),
               ),

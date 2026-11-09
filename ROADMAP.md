@@ -46,8 +46,19 @@
 
 ## 2. Current Handoff (Active State for AI Agent)
 
-- **Current Status:** Milestone 1, Milestone 2, and Milestone 3 (Slices 3.1, 3.2, 3.3) complete, refined, and verified.
+- **Current Status:** Milestone 1, Milestone 2, and Milestone 3 (Slices 3.1, 3.2, 3.3) complete, refined, and verified. Pre-flight validation across Tabs 2 to 6 implemented and verified.
 - **Workflow & Architecture Hardening Delivered:**
+  - **Pre-Flight Validation Engine ([`PRE_FLIGHT_VALIDATION_BLUEPRINT.md`](file:///c:/Users/Admin/Documents/hvac_V0.3/doc/PRE_FLIGHT_VALIDATION_BLUEPRINT.md)):**
+    - Synchronous in-memory validation via Flutter `Form` and `GlobalKey<FormState>` across Tabs 2, 3, 4, 5, and 6 Card 1.
+    - Zero database round-trip lag during "Voltooien" gatekeeper validation.
+    - Automated waypoint navigation ("teleportation") with auto-scrolling to the first invalid field ([`FormScrollHelper`](file:///c:/Users/Admin/Documents/hvac_V0.3/lib/core/utils/form_scroll_helper.dart)).
+    - Fuel-isolated validation on Tab 6 Card 1: Gas fields never validate on Oil/Solid, and Oil fields never validate on Gas.
+  - **Lifecycle & Build Safety:**
+    - Resolved framework build collision in [`DarkTextFormField`](file:///c:/Users/Admin/Documents/hvac_V0.3/lib/features/certificate_draft/ui/widgets/dark_text_form_field.dart) by removing invalid closure comparisons and scheduling field state resets via `addPostFrameCallback`.
+    - Protected against right-click/secondary tap crashes across all tabs.
+  - **Tab 3 (`Firma - Technicus`):**
+    - Strict Belgian phone and KBO Modulo 97 statutory formatters and validators.
+    - Work timing validator ([`TimeValidationHelper`](file:///c:/Users/Admin/Documents/hvac_V0.3/lib/features/certificate_draft/ui/tabs/firma_technicus/time_validation_helper.dart)) ensuring start/end sequence compliance.
   - **Tab 4 (`Klant` & Installatielocatie):**
     - Address matching logic refined: `Locatie Toestel` section is disabled/grayed out when installation location is identical to customer address, and unlocks smoothly when separate address is selected.
     - Standardized dark input labels and typography matching Tab 5 (`Stooktoestel`).
@@ -56,15 +67,16 @@
     - Eliminated auto-selection of *Aardgas* when selecting *Gasvormig* (Zero Fake Defaults). Sub-types start unselected and are fully de-selectable.
   - **Tab 6 (`Meting` & Veilige staat van werking):**
     - Dynamic fuel banner displaying accurate fuel and subtype names.
+    - Dedicated [`StepperInputBox`](file:///c:/Users/Admin/Documents/hvac_V0.3/lib/features/certificate_draft/ui/tabs/meting/stepper_input_box.dart) with zero-layout-shift red border validation.
     - Full de-selection support for all safety check toggles (`TacticalBinaryCheck`) back to neutral `null` via sentinel pattern in [OperatingConditionsDraft](file:///c:/Users/Admin/Documents/hvac_V0.3/lib/features/certificate_draft/domain/operating_conditions_draft.dart) and [MeasurementSlotDraft](file:///c:/Users/Admin/Documents/hvac_V0.3/lib/features/certificate_draft/domain/measurement_slot_draft.dart).
   - **Tab 7 (`Eindbeoordeling` & Regulatory Coupling):**
     - Dual clear section labels: *Het stooktoestel werkt* ([Goed]/[Niet goed]) and *Verluchting en rookgasafvoer* ([Veilig]/[Niet veilig]).
     - Fool-proof statutory date logic: Zero fake defaults when fuel is empty (no phantom `+1 Jaar` selections). Date strictly derives when fuel and compliance are established.
     - Reactive link with Tab 6 via [MeasurementAssessmentNotifier](file:///c:/Users/Admin/Documents/hvac_V0.3/lib/features/certificate_draft/ui/measurement_assessment_notifier.dart) with clean de-selection and 3-month legal remediation rule (Art. 6 Vlaams Stooktoestellenbesluit).
   - **Quality & Metrics:**
-    - 167 unit and widget tests passing (100% green).
+    - 186 unit and widget tests passing (100% green).
     - 0 Dart analyzer issues across all files.
     - All Dart files in `lib/` strictly $\le 250$ lines of code.
-- **Active State:** All 7 tabs of the Flemish combustion certificate workflow are fully operational, refined, styled, lag-free, and verified.
+- **Active State:** All 7 tabs of the Flemish combustion certificate workflow are fully operational, refined, styled, lag-free, and verified with pre-flight checks.
 - **Next Step:** Proceeding with Milestone 4 (Re-Wired PDF Generation & Local Completion).
 - **Blockers / Open Questions:** None. Ready for Milestone 4.

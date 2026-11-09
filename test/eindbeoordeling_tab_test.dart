@@ -232,7 +232,8 @@ void main() {
       expect(repo.draft.nextInspectionDate, '');
     });
 
-    testWidgets('Completing without conclusions displays info toast',
+    testWidgets(
+        'Tapping Voltooien button always invokes onComplete to delegate to pre-flight check',
         (tester) async {
       final repo = FakeEindbeoordelingRepository();
       bool completed = false;
@@ -246,11 +247,7 @@ void main() {
       await tester.tap(find.text(EindbeoordelingDictionary.btnVoltooien));
       await tester.pumpAndSettle();
 
-      expect(completed, isFalse);
-      expect(
-        find.text(EindbeoordelingDictionary.toastValidationMissingConclusions),
-        findsOneWidget,
-      );
+      expect(completed, isTrue);
     });
 
     testWidgets('Completing with conclusions succeeds and triggers onComplete',
@@ -273,7 +270,6 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(completed, isTrue);
-      expect(find.text(EindbeoordelingDictionary.toastSaved), findsOneWidget);
     });
 
     testWidgets(

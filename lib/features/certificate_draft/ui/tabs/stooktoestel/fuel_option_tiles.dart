@@ -8,11 +8,13 @@ import 'package:hvac_app/app/theme/app_theme.dart';
 class TacticalFuelCategoryBar extends StatelessWidget {
   final String selectedCategory; // 'gas', 'vloeibaar', 'vast'
   final ValueChanged<String> onCategoryChanged;
+  final bool isError;
 
   const TacticalFuelCategoryBar({
     super.key,
     required this.selectedCategory,
     required this.onCategoryChanged,
+    this.isError = false,
   });
 
   @override
@@ -34,7 +36,12 @@ class TacticalFuelCategoryBar extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xFF0C0C0C),
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
+        border: Border.all(
+          color: isError
+              ? AppColors.errorRed
+              : Colors.white.withValues(alpha: 0.12),
+          width: isError ? 1.4 : 1.0,
+        ),
       ),
       child: Stack(
         children: [
@@ -77,6 +84,7 @@ class TacticalFuelCategoryBar extends StatelessWidget {
               final bool isSelected = cat.$1 == selectedCategory;
               return Expanded(
                 child: InkWell(
+                  canRequestFocus: false,
                   onTap: () {
                     HapticFeedback.selectionClick();
                     onCategoryChanged(isSelected ? '' : cat.$1);
@@ -134,17 +142,20 @@ class TacticalOptionChip extends StatelessWidget {
   final String label;
   final bool isSelected;
   final VoidCallback onTap;
+  final bool isError;
 
   const TacticalOptionChip({
     super.key,
     required this.label,
     required this.isSelected,
     required this.onTap,
+    this.isError = false,
   });
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
+      canRequestFocus: false,
       onTap: () {
         HapticFeedback.selectionClick();
         onTap();
@@ -163,8 +174,10 @@ class TacticalOptionChip extends StatelessWidget {
           border: Border.all(
             color: isSelected
                 ? AppColors.amberGoldBorder
-                : Colors.white.withValues(alpha: 0.10),
-            width: isSelected ? 1.2 : 1.0,
+                : (isError
+                    ? AppColors.errorRed
+                    : Colors.white.withValues(alpha: 0.10)),
+            width: (isSelected || isError) ? 1.2 : 1.0,
           ),
         ),
         child: FittedBox(

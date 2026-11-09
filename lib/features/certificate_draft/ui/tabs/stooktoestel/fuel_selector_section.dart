@@ -39,10 +39,20 @@ class FuelSelectorSection extends StatelessWidget {
         const DarkInputLabel(AppDictionary.headerFuel),
         const SizedBox(height: 6),
 
-        // 1. Unified 3-way sliding fuel category bar
-        TacticalFuelCategoryBar(
-          selectedCategory: selectedCategory,
-          onCategoryChanged: onCategoryChanged,
+        // 1. Unified 3-way sliding fuel category bar with zero-layout-shift FormField
+        FormField<String>(
+          initialValue: selectedCategory,
+          validator: (_) => selectedCategory.isEmpty ? '' : null,
+          builder: (state) {
+            return TacticalFuelCategoryBar(
+              selectedCategory: selectedCategory,
+              isError: state.hasError && selectedCategory.isEmpty,
+              onCategoryChanged: (cat) {
+                onCategoryChanged(cat);
+                state.didChange(cat);
+              },
+            );
+          },
         ),
 
         // 2. Dynamic Sub-Panels (Gas and Solid; Liquid requires no sub-inputs)

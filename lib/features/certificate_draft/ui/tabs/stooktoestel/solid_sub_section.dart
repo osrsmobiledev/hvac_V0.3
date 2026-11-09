@@ -33,48 +33,77 @@ class SolidSubSection extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 6),
-        Row(
-          children: [
-            Expanded(
-              child: TacticalOptionChip(
-                label: AppDictionary.solidPellets,
-                isSelected: selectedSubtype == 'houtpellets',
-                onTap: () => onSubtypeChanged(
-                  selectedSubtype == 'houtpellets' ? '' : 'houtpellets',
+        FormField<String>(
+          initialValue: selectedSubtype,
+          validator: (_) => selectedSubtype.isEmpty ? '' : null,
+          builder: (subtypeState) {
+            final hasSubtypeError =
+                subtypeState.hasError && selectedSubtype.isEmpty;
+            return Row(
+              children: [
+                Expanded(
+                  child: TacticalOptionChip(
+                    label: AppDictionary.solidPellets,
+                    isSelected: selectedSubtype == 'houtpellets',
+                    isError: hasSubtypeError,
+                    onTap: () {
+                      final next =
+                          selectedSubtype == 'houtpellets' ? '' : 'houtpellets';
+                      onSubtypeChanged(next);
+                      subtypeState.didChange(next);
+                    },
+                  ),
                 ),
-              ),
-            ),
-            const SizedBox(width: 6),
-            Expanded(
-              child: TacticalOptionChip(
-                label: AppDictionary.solidLogs,
-                isSelected: selectedSubtype == 'houtblokken',
-                onTap: () => onSubtypeChanged(
-                  selectedSubtype == 'houtblokken' ? '' : 'houtblokken',
+                const SizedBox(width: 6),
+                Expanded(
+                  child: TacticalOptionChip(
+                    label: AppDictionary.solidLogs,
+                    isSelected: selectedSubtype == 'houtblokken',
+                    isError: hasSubtypeError,
+                    onTap: () {
+                      final next =
+                          selectedSubtype == 'houtblokken' ? '' : 'houtblokken';
+                      onSubtypeChanged(next);
+                      subtypeState.didChange(next);
+                    },
+                  ),
                 ),
-              ),
-            ),
-            const SizedBox(width: 6),
-            Expanded(
-              child: TacticalOptionChip(
-                label: AppDictionary.solidOther,
-                isSelected: selectedSubtype == 'andere',
-                onTap: () => onSubtypeChanged(
-                  selectedSubtype == 'andere' ? '' : 'andere',
+                const SizedBox(width: 6),
+                Expanded(
+                  child: TacticalOptionChip(
+                    label: AppDictionary.solidOther,
+                    isSelected: selectedSubtype == 'andere',
+                    isError: hasSubtypeError,
+                    onTap: () {
+                      final next = selectedSubtype == 'andere' ? '' : 'andere';
+                      onSubtypeChanged(next);
+                      subtypeState.didChange(next);
+                    },
+                  ),
                 ),
-              ),
-            ),
-          ],
+              ],
+            );
+          },
         ),
         if (selectedSubtype == 'andere') ...[
           const SizedBox(height: 8),
-          TextFormField(
+          FormField<String>(
             initialValue: otherText,
-            style: DarkInputBox.inputStyle,
-            decoration: DarkInputBox.decoration(
-              hintText: AppDictionary.hintSpecifySolid,
-            ),
-            onChanged: onOtherTextChanged,
+            validator: (_) => otherText.trim().isEmpty ? '' : null,
+            builder: (otherState) {
+              return TextFormField(
+                initialValue: otherText,
+                style: DarkInputBox.inputStyle,
+                decoration: DarkInputBox.decoration(
+                  hintText: AppDictionary.hintSpecifySolid,
+                  isError: otherState.hasError,
+                ),
+                onChanged: (val) {
+                  onOtherTextChanged(val);
+                  otherState.didChange(val);
+                },
+              );
+            },
           ),
         ],
       ],

@@ -60,6 +60,7 @@ class _TacticalTabBarViewState extends State<TacticalTabBarView> {
     if (_isUserDragging || !_pageController.hasClients) return;
     final target = widget.controller.index;
     if (_pageController.page?.round() != target) {
+      FocusManager.instance.primaryFocus?.unfocus();
       _pageController.animateToPage(
         target,
         duration: const Duration(milliseconds: 280),
@@ -69,6 +70,7 @@ class _TacticalTabBarViewState extends State<TacticalTabBarView> {
   }
 
   void _onPageChanged(int index) {
+    FocusManager.instance.primaryFocus?.unfocus();
     if (widget.controller.index != index) {
       widget.controller.animateTo(index);
     }
@@ -96,7 +98,12 @@ class _TacticalTabBarViewState extends State<TacticalTabBarView> {
         allowImplicitScrolling: true,
         scrollCacheExtent: ScrollCacheExtent.viewport(count.toDouble()),
         onPageChanged: _onPageChanged,
-        children: widget.children,
+        children: [
+          for (final child in widget.children)
+            FocusScope(
+              child: child,
+            ),
+        ],
       ),
     );
   }

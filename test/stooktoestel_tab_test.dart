@@ -260,8 +260,8 @@ void main() {
       await tester.tap(find.text('Vaillant'));
       await tester.pumpAndSettle();
 
-      // Find the first TextFormField (Merk) and verify text
-      expect(find.widgetWithText(TextFormField, 'Vaillant'), findsOneWidget);
+      // Find the first TextField (Merk) and verify text
+      expect(find.widgetWithText(TextField, 'Vaillant'), findsOneWidget);
 
       // Scroll and tap Bosch
       final brandScroll = find.descendant(
@@ -272,14 +272,14 @@ void main() {
           scrollable: brandScroll);
       await tester.tap(find.text('Bosch'));
       await tester.pumpAndSettle();
-      expect(find.widgetWithText(TextFormField, 'Bosch'), findsOneWidget);
+      expect(find.widgetWithText(TextField, 'Bosch'), findsOneWidget);
 
       // Scroll and tap Junkers
       await tester.scrollUntilVisible(find.text('Junkers'), 50.0,
           scrollable: brandScroll);
       await tester.tap(find.text('Junkers'));
       await tester.pumpAndSettle();
-      expect(find.widgetWithText(TextFormField, 'Junkers'), findsOneWidget);
+      expect(find.widgetWithText(TextField, 'Junkers'), findsOneWidget);
     });
 
     testWidgets(
@@ -307,7 +307,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 350));
       await tester.pumpAndSettle();
 
-      expect(find.widgetWithText(TextFormField, 'Viessmann'), findsOneWidget);
+      expect(find.widgetWithText(TextField, 'Viessmann'), findsOneWidget);
     });
 
     testWidgets(
@@ -405,6 +405,45 @@ void main() {
       await tester.tap(find.text(AppDictionary.fuelSolidShort));
       await tester.pumpAndSettle();
       expect(notifier.draft.fuelSubtype, 'houtpellets');
+    });
+
+    testWidgets(
+        'Form validation enforces Centraal Type B/C, gas subtype, and burner technology',
+        (tester) async {
+      GlobalKey<FormState>? capturedKey;
+      tester.view.physicalSize = const Size(412, 1800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() => tester.view.resetPhysicalSize());
+
+      await tester.pumpWidget(MaterialApp(
+        theme: AppTheme.darkTheme,
+        home: Scaffold(
+          body: StooktoestelTab(
+            onFormKeyReady: (k) => capturedKey = k,
+          ),
+        ),
+      ));
+      await tester.pumpAndSettle();
+
+      expect(capturedKey, isNotNull);
+
+      // 1. Initial empty validate fails
+      expect(capturedKey!.currentState!.validate(), isFalse);
+
+      // 2. Select Gasvormig
+      await tester.tap(find.text(AppDictionary.fuelGasShort));
+      await tester.pumpAndSettle();
+
+      // Subtype and technology are missing, so validate fails
+      expect(capturedKey!.currentState!.validate(), isFalse);
+
+      // 3. Select Aardgas and Premix
+      await tester.tap(find.text(AppDictionary.gasNatural));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(AppDictionary.techPremix));
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
     });
   });
 }

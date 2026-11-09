@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:hvac_app/app/localization/app_dictionary.dart';
 import 'package:hvac_app/core/utils/belgian_formatters.dart';
 import 'package:hvac_app/features/certificate_draft/ui/widgets/bento_main_section.dart';
@@ -67,6 +68,8 @@ class CustomerDetailsCard extends StatelessWidget {
                         controller: controllers.firstName,
                         label: AppDictionary.lblFirstName,
                         hint: AppDictionary.hintFirstName,
+                        validator: (v) =>
+                            v!.trim().isEmpty ? 'Voornaam is verplicht' : null,
                         readOnly: readOnly,
                         onChanged: onChanged,
                       ),
@@ -78,6 +81,9 @@ class CustomerDetailsCard extends StatelessWidget {
                         controller: controllers.lastName,
                         label: AppDictionary.lblLastName,
                         hint: AppDictionary.hintLastName,
+                        validator: (v) => v!.trim().isEmpty
+                            ? 'Achternaam is verplicht'
+                            : null,
                         readOnly: readOnly,
                         onChanged: onChanged,
                       ),
@@ -92,6 +98,8 @@ class CustomerDetailsCard extends StatelessWidget {
                   controller: controllers.street,
                   label: AppDictionary.lblStreet,
                   hint: AppDictionary.hintSearchAddress,
+                  validator: (v) =>
+                      v!.trim().isEmpty ? 'Straat is verplicht' : null,
                   readOnly: readOnly,
                   onChanged: onChanged,
                 ),
@@ -106,6 +114,9 @@ class CustomerDetailsCard extends StatelessWidget {
                         controller: controllers.houseNumber,
                         label: AppDictionary.lblHouseNumber,
                         hint: AppDictionary.hintHouseNumber,
+                        validator: (v) => v!.trim().isEmpty
+                            ? 'Huisnummer is verplicht'
+                            : null,
                         keyboardType: TextInputType.streetAddress,
                         readOnly: readOnly,
                         onChanged: onChanged,
@@ -136,6 +147,11 @@ class CustomerDetailsCard extends StatelessWidget {
                         label: AppDictionary.lblPostalCode,
                         hint: AppDictionary.hintPostalCode,
                         keyboardType: TextInputType.number,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                          LengthLimitingTextInputFormatter(4),
+                        ],
+                        validator: BelgianFormatters.validatePostalCode,
                         readOnly: readOnly,
                         onChanged: onChanged,
                       ),
@@ -147,6 +163,8 @@ class CustomerDetailsCard extends StatelessWidget {
                         controller: controllers.city,
                         label: AppDictionary.lblCity,
                         hint: AppDictionary.hintCity,
+                        validator: (v) =>
+                            v!.trim().isEmpty ? 'Gemeente is verplicht' : null,
                         readOnly: readOnly,
                         onChanged: onChanged,
                       ),
@@ -170,13 +188,14 @@ class CustomerDetailsCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 12),
 
-                // 7. Email — Full width email input
+                // 7. Email — Full width email input (optional, validates format when filled)
                 KlantFormField(
                   fieldKey: const ValueKey('customer_email'),
                   controller: controllers.email,
                   label: AppDictionary.lblEmail,
                   hint: AppDictionary.hintEmail,
                   keyboardType: TextInputType.emailAddress,
+                  validator: BelgianFormatters.validateEmail,
                   textInputAction: TextInputAction.done,
                   readOnly: readOnly,
                   onChanged: onChanged,

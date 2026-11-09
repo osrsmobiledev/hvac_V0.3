@@ -38,6 +38,7 @@ class DarkInputBox extends StatelessWidget {
   /// Factory helper for creating standard tactical [InputDecoration]
   /// with dark #0C0C0C fill, white/grey resting border, and gold focused border.
   /// When [readOnly] is true, renders in a recessed, greyed-out protected state.
+  /// When [isError] is true, tints the resting and focused border with [AppColors.errorRed].
   static InputDecoration decoration({
     String? hintText,
     String? prefixText,
@@ -46,8 +47,10 @@ class DarkInputBox extends StatelessWidget {
     Widget? suffix,
     Widget? suffixIcon,
     bool readOnly = false,
+    bool isError = false,
     EdgeInsetsGeometry? contentPadding,
     double? fontSize,
+    bool showErrorText = true,
   }) {
     final effectivePrefix = prefixText != null
         ? DarkInputPrefix.text(prefixText, isMuted: readOnly)
@@ -58,9 +61,17 @@ class DarkInputBox extends StatelessWidget {
               )
             : null;
 
-    final restingBorderColor = readOnly
-        ? Colors.white.withValues(alpha: 0.08)
-        : Colors.white.withValues(alpha: 0.22);
+    final restingBorderColor = isError
+        ? AppColors.errorRed
+        : readOnly
+            ? Colors.white.withValues(alpha: 0.08)
+            : Colors.white.withValues(alpha: 0.22);
+
+    final focusBorderColor = isError
+        ? AppColors.errorRed
+        : readOnly
+            ? restingBorderColor
+            : AppColors.amberGoldBorder;
 
     return InputDecoration(
       filled: true,
@@ -92,14 +103,14 @@ class DarkInputBox extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         borderSide: BorderSide(
           color: restingBorderColor,
-          width: 1.0,
+          width: isError ? 1.2 : 1.0,
         ),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: const BorderRadius.all(Radius.circular(12)),
         borderSide: BorderSide(
-          color: readOnly ? restingBorderColor : AppColors.amberGoldBorder,
-          width: readOnly ? 1.0 : 1.2,
+          color: focusBorderColor,
+          width: isError ? 1.4 : (readOnly ? 1.0 : 1.2),
         ),
       ),
       errorBorder: const OutlineInputBorder(
@@ -116,11 +127,18 @@ class DarkInputBox extends StatelessWidget {
           width: 1.4,
         ),
       ),
-      errorStyle: const TextStyle(
-        color: AppColors.errorRed,
-        fontSize: 12,
-        fontWeight: FontWeight.w500,
-      ),
+      errorStyle: showErrorText
+          ? const TextStyle(
+              color: AppColors.errorRed,
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+            )
+          : const TextStyle(
+              fontSize: 0,
+              height: 0,
+              color: Colors.transparent,
+            ),
+      errorMaxLines: 2,
       hintText: hintText,
       hintStyle: TextStyle(
         color: readOnly ? Colors.white24 : Colors.white38,

@@ -29,6 +29,8 @@ class DarkInputLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (text.isEmpty) return const SizedBox.shrink();
+
     Widget content = Text(
       text,
       maxLines: maxLines,

@@ -1,6 +1,8 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hvac_app/app/localization/app_dictionary.dart';
+import 'package:hvac_app/app/theme/app_colors.dart';
 import 'package:hvac_app/app/theme/app_theme.dart';
 import 'package:hvac_app/core/database/app_database.dart';
 import 'package:hvac_app/features/certificate_draft/data/draft_repository.dart';
@@ -260,8 +262,10 @@ void main() {
       expect(find.text('Aitest BV'), findsWidgets);
       expect(find.text('Industrieweg'), findsOneWidget);
       expect(find.text('5'), findsOneWidget);
-      final cityField = tester
-          .widget<TextFormField>(find.byKey(const ValueKey('customer_city')));
+      final cityField = tester.widget<TextField>(find.descendant(
+        of: find.byKey(const ValueKey('customer_city')),
+        matching: find.byType(TextField),
+      ));
       expect(cityField.controller?.text, equals('Gent'));
       expect(find.text('9 123 45 67'), findsOneWidget);
 
@@ -272,6 +276,117 @@ void main() {
         draft = await draftRepository.getOrCreateActiveDraft();
       });
       expect(draft.customerId, isNotNull);
+    });
+
+    testWidgets(
+        'onFormKeyReady exposes formKey and validate() checks required fields and highlights red',
+        (tester) async {
+      GlobalKey<FormState>? formKey;
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.darkTheme,
+          home: Scaffold(
+            body: KlantTab(
+              customerRepository: customerRepository,
+              draftRepository: draftRepository,
+              onFormKeyReady: (k) => formKey = k,
+            ),
+          ),
+        ),
+      );
+      await tester.runAsync(() async {
+        await Future<void>.delayed(const Duration(milliseconds: 100));
+      });
+      await tester.pump();
+
+      expect(formKey, isNotNull);
+      // Empty fields -> validate() fails
+      expect(formKey!.currentState!.validate(), isFalse);
+      await tester.pumpAndSettle();
+
+      // Verify required fields highlight red border and NO text underneath
+      final firstNameField = tester.widget<TextField>(find.descendant(
+        of: find.byKey(const ValueKey('customer_firstName')),
+        matching: find.byType(TextField),
+      ));
+      expect(
+        (firstNameField.decoration!.enabledBorder as OutlineInputBorder)
+            .borderSide
+            .color,
+        AppColors.errorRed,
+      );
+      expect(find.text('Voornaam is verplicht'), findsNothing);
+
+      final streetField = tester.widget<TextField>(find.descendant(
+        of: find.byKey(const ValueKey('customer_street')),
+        matching: find.byType(TextField),
+      ));
+      expect(
+        (streetField.decoration!.enabledBorder as OutlineInputBorder)
+            .borderSide
+            .color,
+        AppColors.errorRed,
+      );
+
+      // Bedrijfsnaam remains optional (not red)
+      final companyField = tester.widget<TextField>(find.descendant(
+        of: find.byKey(const ValueKey('customer_company')),
+        matching: find.byType(TextField),
+      ));
+      expect(
+        (companyField.decoration!.enabledBorder as OutlineInputBorder)
+            .borderSide
+            .color,
+        isNot(AppColors.errorRed),
+      );
+    });
+
+    testWidgets(
+        'Rebuilding invalid fields or secondary tap does not trigger setState during build',
+        (tester) async {
+      GlobalKey<FormState>? formKey;
+      await tester.pumpWidget(MaterialApp(
+        theme: AppTheme.darkTheme,
+        home: Scaffold(
+          body: KlantTab(
+            customerRepository: customerRepository,
+            draftRepository: draftRepository,
+            onFormKeyReady: (k) => formKey = k,
+          ),
+        ),
+      ));
+      await tester.runAsync(() async {
+        await Future<void>.delayed(const Duration(milliseconds: 100));
+      });
+      await tester.pump();
+
+      // Trigger validation error
+      expect(formKey!.currentState!.validate(), isFalse);
+      await tester.pump();
+
+      // Simulate secondary tap / right click on invalid field
+      await tester.tap(
+        find.byKey(const ValueKey('customer_firstName')),
+        buttons: kSecondaryMouseButton,
+        warnIfMissed: false,
+      );
+      await tester.pump();
+
+      // Re-pump widget tree to trigger didUpdateWidget across the form
+      await tester.pumpWidget(MaterialApp(
+        theme: AppTheme.darkTheme,
+        home: Scaffold(
+          body: KlantTab(
+            customerRepository: customerRepository,
+            draftRepository: draftRepository,
+            onFormKeyReady: (k) => formKey = k,
+          ),
+        ),
+      ));
+      await tester.pump();
+
+      // No exception thrown
+      expect(tester.takeException(), isNull);
     });
   });
 }

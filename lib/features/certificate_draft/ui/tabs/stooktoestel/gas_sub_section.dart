@@ -8,12 +8,6 @@ import '../../widgets/two_way_sliding_bar.dart';
 import 'fuel_option_tiles.dart';
 
 /// Bare-bones, unboxed sub-section for gas installations.
-///
-/// Features:
-/// - Gas subtype selection via tactical option chips.
-/// - Symmetrical 2-way slider for the two primary burner technologies (Premix vs Niet-premix).
-/// - Dedicated tactical tile for rare commercial forced-draft burners (GII).
-/// - Clean typography with zero distracting info badges.
 class GasSubSection extends StatelessWidget {
   final String selectedSubtype;
   final String otherText;
@@ -49,48 +43,76 @@ class GasSubSection extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 6),
-        Row(
-          children: [
-            Expanded(
-              child: TacticalOptionChip(
-                label: AppDictionary.gasNatural,
-                isSelected: selectedSubtype == 'aardgas',
-                onTap: () => onSubtypeChanged(
-                  selectedSubtype == 'aardgas' ? '' : 'aardgas',
+        FormField<String>(
+          initialValue: selectedSubtype,
+          validator: (_) => selectedSubtype.isEmpty ? '' : null,
+          builder: (subtypeState) {
+            final hasSubtypeError =
+                subtypeState.hasError && selectedSubtype.isEmpty;
+            return Row(
+              children: [
+                Expanded(
+                  child: TacticalOptionChip(
+                    label: AppDictionary.gasNatural,
+                    isSelected: selectedSubtype == 'aardgas',
+                    isError: hasSubtypeError,
+                    onTap: () {
+                      final next =
+                          selectedSubtype == 'aardgas' ? '' : 'aardgas';
+                      onSubtypeChanged(next);
+                      subtypeState.didChange(next);
+                    },
+                  ),
                 ),
-              ),
-            ),
-            const SizedBox(width: 6),
-            Expanded(
-              child: TacticalOptionChip(
-                label: AppDictionary.gasLpg,
-                isSelected: selectedSubtype == 'LPG',
-                onTap: () => onSubtypeChanged(
-                  selectedSubtype == 'LPG' ? '' : 'LPG',
+                const SizedBox(width: 6),
+                Expanded(
+                  child: TacticalOptionChip(
+                    label: AppDictionary.gasLpg,
+                    isSelected: selectedSubtype == 'LPG',
+                    isError: hasSubtypeError,
+                    onTap: () {
+                      final next = selectedSubtype == 'LPG' ? '' : 'LPG';
+                      onSubtypeChanged(next);
+                      subtypeState.didChange(next);
+                    },
+                  ),
                 ),
-              ),
-            ),
-            const SizedBox(width: 6),
-            Expanded(
-              child: TacticalOptionChip(
-                label: AppDictionary.gasOther,
-                isSelected: selectedSubtype == 'andere',
-                onTap: () => onSubtypeChanged(
-                  selectedSubtype == 'andere' ? '' : 'andere',
+                const SizedBox(width: 6),
+                Expanded(
+                  child: TacticalOptionChip(
+                    label: AppDictionary.gasOther,
+                    isSelected: selectedSubtype == 'andere',
+                    isError: hasSubtypeError,
+                    onTap: () {
+                      final next = selectedSubtype == 'andere' ? '' : 'andere';
+                      onSubtypeChanged(next);
+                      subtypeState.didChange(next);
+                    },
+                  ),
                 ),
-              ),
-            ),
-          ],
+              ],
+            );
+          },
         ),
         if (selectedSubtype == 'andere') ...[
           const SizedBox(height: 8),
-          TextFormField(
+          FormField<String>(
             initialValue: otherText,
-            style: DarkInputBox.inputStyle,
-            decoration: DarkInputBox.decoration(
-              hintText: AppDictionary.hintSpecifyGas,
-            ),
-            onChanged: onOtherTextChanged,
+            validator: (_) => otherText.trim().isEmpty ? '' : null,
+            builder: (otherState) {
+              return TextFormField(
+                initialValue: otherText,
+                style: DarkInputBox.inputStyle,
+                decoration: DarkInputBox.decoration(
+                  hintText: AppDictionary.hintSpecifyGas,
+                  isError: otherState.hasError,
+                ),
+                onChanged: (val) {
+                  onOtherTextChanged(val);
+                  otherState.didChange(val);
+                },
+              );
+            },
           ),
         ],
         const SizedBox(height: 14),
@@ -106,23 +128,40 @@ class GasSubSection extends StatelessWidget {
         ),
         const SizedBox(height: 6),
 
-        // 2-Way Symmetrical Slider for the 2 primary choices
-        TwoWaySlidingBar(
-          selectedValue: burnerTechnology,
-          onValueChanged: onBurnerTechChanged,
-          optionAValue: 'premix',
-          optionALabel: AppDictionary.techPremix,
-          optionBValue: 'niet_premix',
-          optionBLabel: AppDictionary.techNonPremix,
-        ),
-        const SizedBox(height: 6),
-
-        // Dedicated tile for rare commercial forced-draft burner (GII)
-        _FanBurnerTile(
-          isSelected: isFanBurner,
-          onTap: () => onBurnerTechChanged(
-            isFanBurner ? '' : 'ventilatorbrander',
-          ),
+        // Burner technology FormField validating premix, niet-premix, or ventilatorbrander
+        FormField<String>(
+          initialValue: burnerTechnology,
+          validator: (_) => burnerTechnology.isEmpty ? '' : null,
+          builder: (techState) {
+            final hasTechError = techState.hasError && burnerTechnology.isEmpty;
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                TwoWaySlidingBar(
+                  selectedValue: burnerTechnology,
+                  onValueChanged: (val) {
+                    onBurnerTechChanged(val);
+                    techState.didChange(val);
+                  },
+                  optionAValue: 'premix',
+                  optionALabel: AppDictionary.techPremix,
+                  optionBValue: 'niet_premix',
+                  optionBLabel: AppDictionary.techNonPremix,
+                  isError: hasTechError,
+                ),
+                const SizedBox(height: 6),
+                _FanBurnerTile(
+                  isSelected: isFanBurner,
+                  isError: hasTechError,
+                  onTap: () {
+                    final next = isFanBurner ? '' : 'ventilatorbrander';
+                    onBurnerTechChanged(next);
+                    techState.didChange(next);
+                  },
+                ),
+              ],
+            );
+          },
         ),
       ],
     );
@@ -133,15 +172,18 @@ class GasSubSection extends StatelessWidget {
 class _FanBurnerTile extends StatelessWidget {
   final bool isSelected;
   final VoidCallback onTap;
+  final bool isError;
 
   const _FanBurnerTile({
     required this.isSelected,
     required this.onTap,
+    this.isError = false,
   });
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
+      canRequestFocus: false,
       onTap: () {
         HapticFeedback.selectionClick();
         onTap();
@@ -160,8 +202,10 @@ class _FanBurnerTile extends StatelessWidget {
           border: Border.all(
             color: isSelected
                 ? AppColors.amberGoldBorder
-                : Colors.white.withValues(alpha: 0.10),
-            width: isSelected ? 1.2 : 1.0,
+                : (isError
+                    ? AppColors.errorRed
+                    : Colors.white.withValues(alpha: 0.10)),
+            width: (isSelected || isError) ? 1.2 : 1.0,
           ),
         ),
         child: FittedBox(

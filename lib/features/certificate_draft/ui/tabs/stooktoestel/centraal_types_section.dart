@@ -26,35 +26,77 @@ class CentraalTypesSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        // Type B (open)
-        CentraalTypeRow(
-          isCentral: isCentral,
-          isSelected: centraalType == 'B',
-          prefix: 'B',
-          typeLabel: AppDictionary.lblAsTypeB,
-          suffix: AppDictionary.suffixOpen,
-          hint: AppDictionary.hintSubtypeB,
-          controller: typeBController,
-          onSelect: () => onCentraalTypeChanged('B'),
-          onCodeChanged: onTypeBCodeChanged,
-        ),
-        const SizedBox(height: 8),
+    if (!isCentral) {
+      return Column(
+        children: [
+          CentraalTypeRow(
+            isCentral: false,
+            isSelected: false,
+            prefix: 'B',
+            typeLabel: AppDictionary.lblAsTypeB,
+            suffix: AppDictionary.suffixOpen,
+            hint: AppDictionary.hintSubtypeB,
+            controller: typeBController,
+            onSelect: () => onCentraalTypeChanged('B'),
+            onCodeChanged: onTypeBCodeChanged,
+          ),
+          const SizedBox(height: 8),
+          CentraalTypeRow(
+            isCentral: false,
+            isSelected: false,
+            prefix: 'C',
+            typeLabel: AppDictionary.lblAsTypeC,
+            suffix: AppDictionary.suffixClosed,
+            hint: AppDictionary.hintSubtypeC,
+            controller: typeCController,
+            onSelect: () => onCentraalTypeChanged('C'),
+            onCodeChanged: onTypeCCodeChanged,
+          ),
+        ],
+      );
+    }
 
-        // Type C (gesloten)
-        CentraalTypeRow(
-          isCentral: isCentral,
-          isSelected: centraalType == 'C',
-          prefix: 'C',
-          typeLabel: AppDictionary.lblAsTypeC,
-          suffix: AppDictionary.suffixClosed,
-          hint: AppDictionary.hintSubtypeC,
-          controller: typeCController,
-          onSelect: () => onCentraalTypeChanged('C'),
-          onCodeChanged: onTypeCCodeChanged,
-        ),
-      ],
+    return FormField<String>(
+      initialValue: centraalType,
+      validator: (_) => (isCentral && centraalType.isEmpty) ? '' : null,
+      builder: (state) {
+        final hasError = state.hasError && centraalType.isEmpty;
+        return Column(
+          children: [
+            CentraalTypeRow(
+              isCentral: isCentral,
+              isSelected: centraalType == 'B',
+              isError: hasError,
+              prefix: 'B',
+              typeLabel: AppDictionary.lblAsTypeB,
+              suffix: AppDictionary.suffixOpen,
+              hint: AppDictionary.hintSubtypeB,
+              controller: typeBController,
+              onSelect: () {
+                onCentraalTypeChanged('B');
+                state.didChange('B');
+              },
+              onCodeChanged: onTypeBCodeChanged,
+            ),
+            const SizedBox(height: 8),
+            CentraalTypeRow(
+              isCentral: isCentral,
+              isSelected: centraalType == 'C',
+              isError: hasError,
+              prefix: 'C',
+              typeLabel: AppDictionary.lblAsTypeC,
+              suffix: AppDictionary.suffixClosed,
+              hint: AppDictionary.hintSubtypeC,
+              controller: typeCController,
+              onSelect: () {
+                onCentraalTypeChanged('C');
+                state.didChange('C');
+              },
+              onCodeChanged: onTypeCCodeChanged,
+            ),
+          ],
+        );
+      },
     );
   }
 }

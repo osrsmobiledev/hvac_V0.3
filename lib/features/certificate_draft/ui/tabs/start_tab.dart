@@ -1,28 +1,32 @@
 import 'package:flutter/material.dart';
 import 'package:hvac_app/app/localization/app_dictionary.dart';
-import 'package:hvac_app/app/theme/app_colors.dart';
 import 'package:hvac_app/core/services/app_warmup_service.dart';
 import 'package:hvac_app/core/utils/debouncer.dart';
 import 'package:hvac_app/core/widgets/workflow_tab_container.dart';
 import '../../data/draft_repository.dart';
 import '../widgets/bento_main_section.dart';
-import '../widgets/dark_input_box.dart';
-import '../widgets/dark_input_label.dart';
+import '../widgets/dark_text_form_field.dart';
 import 'start/activity_option_tile.dart';
 
 /// Tab 2 (Start) form for Verbrandingsattest Vlaanderen.
 ///
 /// Features:
-/// - Clean activity selection under the 'Activiteit' Bento section.
-/// - Attest sequence number tracking with live auto-save to SQLite.
+/// - Reusable tactical activity selection buttons with zero-jump red border validation.
+/// - Attest sequence number tracking with live auto-save to SQLite and red border validation.
+/// - Exposes [onFormKeyReady] so the parent screen can call [FormState.validate]
+///   on "Voltooien" without any database round-trip.
 class StartTab extends StatefulWidget {
   final int? visitId;
   final DraftRepository? draftRepository;
+
+  /// Called once after first build with this tab's [GlobalKey<FormState>].
+  final ValueChanged<GlobalKey<FormState>>? onFormKeyReady;
 
   const StartTab({
     super.key,
     this.visitId,
     this.draftRepository,
+    this.onFormKeyReady,
   });
 
   @override
@@ -33,6 +37,10 @@ class _StartTabState extends State<StartTab>
     with AutomaticKeepAliveClientMixin {
   late final DraftRepository _repository;
   final TextEditingController _attestNumberController = TextEditingController();
+
+  /// Form key — exposed to parent via [StartTab.onFormKeyReady] so "Voltooien"
+  /// can validate Tab 2 fields without any database round-trip.
+  final _formKey = GlobalKey<FormState>();
 
   int? _visitId;
   String _activityType = '';
@@ -45,6 +53,9 @@ class _StartTabState extends State<StartTab>
   void initState() {
     super.initState();
     _repository = widget.draftRepository ?? DraftRepository();
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => widget.onFormKeyReady?.call(_formKey),
+    );
     final cachedDraft = AppWarmupService.instance.cachedResult?.activeDraft;
     if (cachedDraft != null && widget.draftRepository == null) {
       _visitId = cachedDraft.id;
@@ -126,83 +137,82 @@ class _StartTabState extends State<StartTab>
   Widget build(BuildContext context) {
     super.build(context);
 
-    return WorkflowTabContainer(
-      scrollKey: 'start_tab_scroll',
-      children: [
-        // Standalone gold-tinted main dropdown header labeled 'Activiteit'
-        BentoMainSection(
-          title: AppDictionary.headerActivity,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Side-by-side activity selector buttons
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: ActivityOptionTile(
-                      title: AppDictionary.activityMaintenance,
-                      isSelected: _activityType == 'onderhoud',
-                      onTap: () => _onActivityChanged('onderhoud'),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.center,
+    return Form(
+      key: _formKey,
+      child: WorkflowTabContainer(
+        scrollKey: 'start_tab_scroll',
+        children: [
+          BentoMainSection(
+            title: AppDictionary.headerActivity,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Activity selection with zero-jump red border validation
+                FormField<String>(
+                  key: const ValueKey('start_activity_field'),
+                  initialValue: _activityType,
+                  validator: (_) => _activityType.isEmpty
+                      ? 'Kies een activiteitstype (Onderhoud of Eerste ingebruikname)'
+                      : null,
+                  builder: (field) {
+                    final isError = field.hasError && _activityType.isEmpty;
+
+                    return Row(
                       children: [
-                        ActivityOptionTile(
-                          title: AppDictionary.activityCommissioningShort,
-                          isSelected: _activityType == 'eerste_ingebruikname',
-                          onTap: () =>
-                              _onActivityChanged('eerste_ingebruikname'),
+                        Expanded(
+                          child: ActivityOptionTile(
+                            title: AppDictionary.activityMaintenance,
+                            isSelected: _activityType == 'onderhoud',
+                            isError: isError,
+                            onTap: () {
+                              _onActivityChanged('onderhoud');
+                              field.didChange(_activityType);
+                            },
+                          ),
                         ),
-                        const SizedBox(height: 6),
-                        GestureDetector(
-                          onTap: () =>
-                              _onActivityChanged('eerste_ingebruikname'),
-                          child: const FittedBox(
-                            fit: BoxFit.scaleDown,
-                            child: Text(
-                              AppDictionary.captionCommissioning,
-                              maxLines: 1,
-                              style: TextStyle(
-                                color: AppColors.textSecondary,
-                                fontSize: 11,
-                                fontStyle: FontStyle.italic,
-                              ),
-                            ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: ActivityOptionTile(
+                            title: AppDictionary.activityCommissioningShort,
+                            subtitle: AppDictionary.captionCommissioning,
+                            isSelected: _activityType == 'eerste_ingebruikname',
+                            isError: isError,
+                            onTap: () {
+                              _onActivityChanged('eerste_ingebruikname');
+                              field.didChange(_activityType);
+                            },
                           ),
                         ),
                       ],
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 18),
-              const Divider(color: Colors.white10, height: 1),
-              const SizedBox(height: 14),
-
-              // Section 2: Volgnummer Attest
-              const DarkInputLabel(AppDictionary.lblSequenceNumber),
-              TextField(
-                controller: _attestNumberController,
-                onChanged: _onAttestNumberChanged,
-                onSubmitted: _onAttestNumberSubmitted,
-                keyboardType: TextInputType.text,
-                textInputAction: TextInputAction.done,
-                style: DarkInputBox.inputStyle,
-                cursorColor: AppColors.amberGoldBorder,
-                decoration: DarkInputBox.decoration(
-                  hintText: AppDictionary.hintSequenceNumber,
-                  prefixText: '#',
+                    );
+                  },
                 ),
-              ),
-            ],
+                const SizedBox(height: 18),
+                const Divider(color: Colors.white10, height: 1),
+                const SizedBox(height: 14),
+
+                // Section 2: Volgnummer Attest (required)
+                DarkTextFormField(
+                  fieldKey: const ValueKey('start_attestNumber'),
+                  label: AppDictionary.lblSequenceNumber,
+                  controller: _attestNumberController,
+                  hint: AppDictionary.hintSequenceNumber,
+                  prefixText: '#',
+                  keyboardType: TextInputType.text,
+                  textInputAction: TextInputAction.done,
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
+                  validator: (v) => v!.trim().isEmpty
+                      ? 'Volgnummer attest is verplicht'
+                      : null,
+                  onChanged: () =>
+                      _onAttestNumberChanged(_attestNumberController.text),
+                  onSubmitted: _onAttestNumberSubmitted,
+                ),
+              ],
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

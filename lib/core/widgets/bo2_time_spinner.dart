@@ -10,11 +10,12 @@ import 'tactical_dialog_window.dart';
 Future<void> showBo2TimeSpinner(
   BuildContext context,
   TextEditingController controller, {
+  TimeOfDay? fallbackTime,
   VoidCallback? onTimeSelected,
 }) async {
   FocusManager.instance.primaryFocus?.unfocus();
 
-  TimeOfDay selectedTime = TimeOfDay.now();
+  TimeOfDay selectedTime = fallbackTime ?? TimeOfDay.now();
   if (controller.text.isNotEmpty && controller.text.contains(':')) {
     try {
       final parts = controller.text.split(':');

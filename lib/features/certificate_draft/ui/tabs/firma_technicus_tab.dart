@@ -13,22 +13,21 @@ import 'firma_technicus/company_section.dart';
 import 'firma_technicus/technician_section.dart';
 
 /// Tab 3 (Firma - Technicus) view for Verbrandingsattest Vlaanderen.
-///
-/// Features:
-/// - Reuses [CompanySection] and [TechnicianSection] under standardized bento cards.
-/// - Persists company & technician details to the singleton `technician_profile` table.
-/// - Persists visit date and BO2 Time Spinner timings to active `maintenance_visits` draft.
-/// - Scroll and form state preserved across tab navigation.
+/// Reuses [CompanySection] and [TechnicianSection]. Persists to SQLite.
+/// Exposes [onFormKeyReady] so the parent screen can call [FormState.validate].
 class FirmaTechnicusTab extends StatefulWidget {
   final int? visitId;
   final TechnicianProfileRepository? profileRepository;
   final DraftRepository? draftRepository;
 
+  /// Called once after first build with this tab's form key; used by parent to validate on "Voltooien".
+  final ValueChanged<GlobalKey<FormState>>? onFormKeyReady;
   const FirmaTechnicusTab({
     super.key,
     this.visitId,
     this.profileRepository,
     this.draftRepository,
+    this.onFormKeyReady,
   });
 
   @override
@@ -40,6 +39,9 @@ class _FirmaTechnicusTabState extends State<FirmaTechnicusTab>
   late final TechnicianProfileRepository _profileRepo;
   late final DraftRepository _draftRepo;
 
+  /// Form key — exposed to parent via [FirmaTechnicusTab.onFormKeyReady]
+  /// so "Voltooien" validates Tab 3 fields without touching SQLite.
+  final _formKey = GlobalKey<FormState>();
   // Company Controllers
   final _nameController = TextEditingController();
   final _streetController = TextEditingController();
@@ -72,6 +74,10 @@ class _FirmaTechnicusTabState extends State<FirmaTechnicusTab>
     super.initState();
     _profileRepo = widget.profileRepository ?? TechnicianProfileRepository();
     _draftRepo = widget.draftRepository ?? DraftRepository();
+    // Notify parent with the form key so it can validate on "Voltooien".
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => widget.onFormKeyReady?.call(_formKey),
+    );
     final cachedProfile = AppWarmupService.instance.cachedResult?.profile;
     final cachedDraft = AppWarmupService.instance.cachedResult?.activeDraft;
     if (cachedProfile != null &&
@@ -151,8 +157,7 @@ class _FirmaTechnicusTabState extends State<FirmaTechnicusTab>
         setState(() => _populateFields(profile, draft));
       }
     } catch (e, stack) {
-      // Log unexpected errors so they are visible during development.
-      // The form stays empty but the user is not blocked.
+      // Log errors; the form stays empty but the user is not blocked.
       debugPrint('[FirmaTechnicusTab] _loadData error: $e\n$stack');
       if (mounted) setState(() => _isLoading = false);
     }
@@ -207,35 +212,38 @@ class _FirmaTechnicusTabState extends State<FirmaTechnicusTab>
           child: CircularProgressIndicator(color: AppColors.amberGold));
     }
 
-    return WorkflowTabContainer(
-      scrollKey: 'firma_technicus_tab_scroll',
-      children: [
-        CompanySection(
-          nameController: _nameController,
-          streetController: _streetController,
-          houseNumberController: _houseNumberController,
-          boxNumberController: _boxNumberController,
-          postalCodeController: _postalCodeController,
-          cityController: _cityController,
-          phoneController: _phoneController,
-          emailController: _emailController,
-          kboNumberController: _kboNumberController,
-          onChanged: _onProfileChanged,
-          onSubmitted: _debouncer.flush,
-        ),
-        const SizedBox(height: AppTheme.bentoCardSpacing),
-        TechnicianSection(
-          firstNameController: _firstNameController,
-          lastNameController: _lastNameController,
-          gvController: _gvController,
-          tvController: _tvController,
-          dateController: _dateController,
-          startTimeController: _startTimeController,
-          endTimeController: _endTimeController,
-          onProfileChanged: _onProfileChanged,
-          onTimingsChanged: _saveTimings,
-        ),
-      ],
+    return Form(
+      key: _formKey,
+      child: WorkflowTabContainer(
+        scrollKey: 'firma_technicus_tab_scroll',
+        children: [
+          CompanySection(
+            nameController: _nameController,
+            streetController: _streetController,
+            houseNumberController: _houseNumberController,
+            boxNumberController: _boxNumberController,
+            postalCodeController: _postalCodeController,
+            cityController: _cityController,
+            phoneController: _phoneController,
+            emailController: _emailController,
+            kboNumberController: _kboNumberController,
+            onChanged: _onProfileChanged,
+            onSubmitted: _debouncer.flush,
+          ),
+          const SizedBox(height: AppTheme.bentoCardSpacing),
+          TechnicianSection(
+            firstNameController: _firstNameController,
+            lastNameController: _lastNameController,
+            gvController: _gvController,
+            tvController: _tvController,
+            dateController: _dateController,
+            startTimeController: _startTimeController,
+            endTimeController: _endTimeController,
+            onProfileChanged: _onProfileChanged,
+            onTimingsChanged: _saveTimings,
+          ),
+        ],
+      ),
     );
   }
 }

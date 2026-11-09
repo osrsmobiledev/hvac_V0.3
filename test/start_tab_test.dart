@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hvac_app/app/localization/app_dictionary.dart';
+import 'package:hvac_app/app/theme/app_colors.dart';
 import 'package:hvac_app/app/theme/app_theme.dart';
 import 'package:hvac_app/core/database/app_database.dart';
 import 'package:hvac_app/features/certificate_draft/data/draft_repository.dart';
@@ -239,6 +240,59 @@ void main() {
 
       // Flushed to database during dispose
       expect(draft.attestNumber, equals('FLUSH-ON-DISPOSE'));
+    });
+
+    testWidgets(
+        'onFormKeyReady exposes formKey and validate() checks required fields',
+        (tester) async {
+      GlobalKey<FormState>? formKey;
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.darkTheme,
+          home: Scaffold(
+            body: StartTab(
+              draftRepository: repository,
+              onFormKeyReady: (key) => formKey = key,
+            ),
+          ),
+        ),
+      );
+      await tester.runAsync(() async {
+        await Future<void>.delayed(const Duration(milliseconds: 100));
+      });
+      await tester.pump();
+
+      expect(formKey, isNotNull);
+      // Empty fields -> validate() fails
+      expect(formKey!.currentState!.validate(), isFalse);
+      await tester.pumpAndSettle();
+
+      // Zero error text rendered on screen
+      expect(
+        find.text(
+            'Kies een activiteitstype (Onderhoud of Eerste ingebruikname)'),
+        findsNothing,
+      );
+      expect(find.text('Volgnummer attest is verplicht'), findsNothing);
+
+      // Verify activity tiles have red border
+      final activityTiles = tester.widgetList<ActivityOptionTile>(
+        find.byType(ActivityOptionTile),
+      );
+      expect(activityTiles.first.isError, isTrue);
+      expect(activityTiles.last.isError, isTrue);
+
+      // Verify sequence number input box has red border
+      final attestTextField = tester.widget<TextField>(find.descendant(
+        of: find.byKey(const ValueKey('start_attestNumber')),
+        matching: find.byType(TextField),
+      ));
+      expect(
+        (attestTextField.decoration!.enabledBorder as OutlineInputBorder)
+            .borderSide
+            .color,
+        AppColors.errorRed,
+      );
     });
   });
 }

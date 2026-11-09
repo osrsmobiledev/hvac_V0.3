@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:hvac_app/app/localization/app_dictionary.dart';
 import 'package:hvac_app/core/utils/belgian_formatters.dart';
+import 'package:hvac_app/core/utils/name_capitalization_formatter.dart';
 import '../../widgets/bento_main_section.dart';
 import 'firma_field.dart';
 
@@ -49,22 +51,30 @@ class CompanySection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // 1. Naam Firma — Full width
+          // 1. Naam Firma — Full width (required)
           FirmaField(
             fieldKey: const ValueKey('company_name'),
             label: AppDictionary.lblCompanyName,
             controller: nameController,
             hint: AppDictionary.hintCompanyName,
+            textCapitalization: TextCapitalization.words,
+            inputFormatters: const [CapitalizeWordsInputFormatter()],
+            validator: (v) =>
+                v!.trim().isEmpty ? 'Naam firma is verplicht' : null,
             onChanged: onChanged,
           ),
           const SizedBox(height: 12),
 
-          // 2. Straat — Full width address input
+          // 2. Straat — Full width address input (required)
           FirmaField(
             fieldKey: const ValueKey('company_street'),
             label: AppDictionary.lblStreet,
             controller: streetController,
             hint: AppDictionary.hintSearchAddress,
+            keyboardType: TextInputType.streetAddress,
+            textCapitalization: TextCapitalization.words,
+            inputFormatters: const [CapitalizeWordsInputFormatter()],
+            validator: (v) => v!.trim().isEmpty ? 'Straat is verplicht' : null,
             onChanged: onChanged,
           ),
           const SizedBox(height: 12),
@@ -79,6 +89,8 @@ class CompanySection extends StatelessWidget {
                   controller: houseNumberController,
                   hint: AppDictionary.hintHouseNumber,
                   keyboardType: TextInputType.streetAddress,
+                  validator: (v) =>
+                      v!.trim().isEmpty ? 'Huisnummer is verplicht' : null,
                   onChanged: onChanged,
                 ),
               ),
@@ -106,6 +118,11 @@ class CompanySection extends StatelessWidget {
                   controller: postalCodeController,
                   hint: AppDictionary.hintPostalCode,
                   keyboardType: TextInputType.number,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly,
+                    LengthLimitingTextInputFormatter(4),
+                  ],
+                  validator: BelgianFormatters.validatePostalCode,
                   onChanged: onChanged,
                 ),
               ),
@@ -116,6 +133,10 @@ class CompanySection extends StatelessWidget {
                   label: AppDictionary.lblCity,
                   controller: cityController,
                   hint: AppDictionary.hintCity,
+                  textCapitalization: TextCapitalization.words,
+                  inputFormatters: const [CapitalizeWordsInputFormatter()],
+                  validator: (v) =>
+                      v!.trim().isEmpty ? 'Gemeente is verplicht' : null,
                   onChanged: onChanged,
                 ),
               ),
@@ -137,13 +158,14 @@ class CompanySection extends StatelessWidget {
           ),
           const SizedBox(height: 12),
 
-          // 6. Email — Full width email input
+          // 6. Email — Full width email input (optional but validated when filled)
           FirmaField(
             fieldKey: const ValueKey('company_email'),
             label: AppDictionary.lblEmail,
             controller: emailController,
             hint: AppDictionary.hintCompanyEmail,
             keyboardType: TextInputType.emailAddress,
+            validator: BelgianFormatters.validateEmail,
             onChanged: onChanged,
           ),
           const SizedBox(height: 12),
@@ -155,10 +177,10 @@ class CompanySection extends StatelessWidget {
             controller: kboNumberController,
             prefixText: BelgianFormatters.kboPrefix,
             inputFormatters: BelgianFormatters.kboFormatters,
-            validator: BelgianFormatters.validateKbo,
+            validator: (v) => BelgianFormatters.validateKbo(v, required: true),
             hint: AppDictionary.hintCompanyKbo,
             keyboardType: TextInputType.number,
-            textInputAction: TextInputAction.done,
+            textInputAction: TextInputAction.next,
             onChanged: onChanged,
             onSubmitted: onSubmitted != null ? (_) => onSubmitted!() : null,
           ),

@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:hvac_app/app/theme/app_colors.dart';
-import 'package:hvac_app/features/certificate_draft/ui/widgets/dark_input_box.dart';
-import 'package:hvac_app/features/certificate_draft/ui/widgets/dark_input_label.dart';
+import 'package:hvac_app/features/certificate_draft/ui/widgets/dark_text_form_field.dart';
 
 /// Labeled dark input field helper used across Tab 4 (Klant) cards.
+///
+/// Reuses [DarkTextFormField] to guarantee zero-layout-shift red border validation
+/// across all customer details and installation address inputs.
 class KlantFormField extends StatelessWidget {
   final Key? fieldKey;
   final TextEditingController controller;
@@ -39,37 +40,20 @@ class KlantFormField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        DarkInputLabel(label, isMuted: readOnly),
-        TextFormField(
-          key: fieldKey,
-          controller: controller,
-          readOnly: readOnly,
-          keyboardType: keyboardType,
-          textInputAction: textInputAction,
-          inputFormatters: inputFormatters,
-          validator: validator,
-          autovalidateMode: autovalidateMode,
-          style: readOnly
-              ? const TextStyle(
-                  color: Color(0xFF9E9E9E),
-                  fontSize: 15,
-                  fontWeight: FontWeight.w500,
-                )
-              : DarkInputBox.inputStyle,
-          cursorColor:
-              readOnly ? Colors.transparent : AppColors.amberGoldBorder,
-          decoration: DarkInputBox.decoration(
-            hintText: hint,
-            prefixText: prefixText,
-            suffixIcon: suffixIcon,
-            readOnly: readOnly,
-          ),
-          onChanged: (_) => onChanged(),
-        ),
-      ],
+    return DarkTextFormField(
+      fieldKey: fieldKey,
+      controller: controller,
+      label: label,
+      hint: hint,
+      prefixText: prefixText,
+      suffixIcon: suffixIcon,
+      readOnly: readOnly,
+      inputFormatters: inputFormatters,
+      validator: validator,
+      autovalidateMode: autovalidateMode,
+      keyboardType: keyboardType,
+      textInputAction: textInputAction,
+      onChanged: onChanged,
     );
   }
 }

@@ -10,6 +10,7 @@ import 'nbn_type_picker_modal.dart';
 class CentraalTypeRow extends StatelessWidget {
   final bool isCentral;
   final bool isSelected;
+  final bool isError;
   final String prefix;
   final String typeLabel;
   final String suffix;
@@ -22,6 +23,7 @@ class CentraalTypeRow extends StatelessWidget {
     super.key,
     required this.isCentral,
     required this.isSelected,
+    this.isError = false,
     required this.prefix,
     required this.typeLabel,
     required this.suffix,
@@ -31,13 +33,14 @@ class CentraalTypeRow extends StatelessWidget {
     this.onCodeChanged,
   });
 
-  void _openPicker(BuildContext context) {
+  void _openPicker(BuildContext context, [FormFieldState<String>? fieldState]) {
     showNbnTypePickerModal(
       context: context,
       typeLetter: prefix,
       currentCode: controller.text,
       onSelected: (code) {
         controller.text = code;
+        fieldState?.didChange(code);
         onCodeChanged?.call(code);
       },
     );
@@ -56,13 +59,18 @@ class CentraalTypeRow extends StatelessWidget {
 
     final borderColor = isActive
         ? AppColors.amberGoldBorder
-        : Colors.white.withValues(alpha: 0.16);
+        : (isCentral && isError
+            ? AppColors.errorRed
+            : Colors.white.withValues(alpha: 0.16));
+
+    final borderWidth = (isActive || (isCentral && isError)) ? 1.4 : 1.0;
 
     return Row(
       children: [
         // 1. Text button styled like Tab "Start" with 2-line layout
         Expanded(
           child: OutlinedButton(
+            focusNode: FocusNode(canRequestFocus: false, skipTraversal: true),
             onPressed: () {
               HapticFeedback.selectionClick();
               onSelect();
@@ -73,7 +81,7 @@ class CentraalTypeRow extends StatelessWidget {
               foregroundColor: Colors.white,
               side: BorderSide(
                 color: borderColor,
-                width: isActive ? 1.5 : 1.0,
+                width: borderWidth,
               ),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
@@ -109,31 +117,56 @@ class CentraalTypeRow extends StatelessWidget {
         SizedBox(
           width: 72,
           height: 48,
-          child: InkWell(
-            onTap: isActive ? () => _openPicker(context) : onSelect,
-            borderRadius: BorderRadius.circular(8),
-            child: TextFormField(
-              key: ValueKey('nbn_input_$prefix'),
-              controller: controller,
-              readOnly: true,
-              onTap: isActive ? () => _openPicker(context) : onSelect,
-              textAlign: TextAlign.start,
-              style: TextStyle(
-                color: isActive ? Colors.white : const Color(0xFF9E9E9E),
-                fontSize: 15,
-                fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
-              ),
-              decoration: DarkInputBox.decoration(
-                prefixText: prefix,
-                hintText: hint,
-                readOnly: !isActive,
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 10.0,
-                  vertical: 10.0,
+          child: FormField<String>(
+            initialValue: controller.text,
+            validator: (_) {
+              if (isActive && controller.text.trim().isEmpty) return '';
+              return null;
+            },
+            builder: (boxState) {
+              final isBoxError = boxState.hasError &&
+                  isActive &&
+                  controller.text.trim().isEmpty;
+              return InkWell(
+                onTap: () {
+                  if (isActive) {
+                    _openPicker(context, boxState);
+                  } else {
+                    onSelect();
+                  }
+                },
+                borderRadius: BorderRadius.circular(8),
+                child: TextField(
+                  key: ValueKey('nbn_input_$prefix'),
+                  controller: controller,
+                  readOnly: true,
+                  onTap: () {
+                    if (isActive) {
+                      _openPicker(context, boxState);
+                    } else {
+                      onSelect();
+                    }
+                  },
+                  textAlign: TextAlign.start,
+                  style: TextStyle(
+                    color: isActive ? Colors.white : const Color(0xFF9E9E9E),
+                    fontSize: 15,
+                    fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
+                  ),
+                  decoration: DarkInputBox.decoration(
+                    prefixText: prefix,
+                    hintText: hint,
+                    readOnly: !isActive,
+                    isError: isBoxError,
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 10.0,
+                      vertical: 10.0,
+                    ),
+                    fontSize: 15,
+                  ),
                 ),
-                fontSize: 15,
-              ),
-            ),
+              );
+            },
           ),
         ),
       ],

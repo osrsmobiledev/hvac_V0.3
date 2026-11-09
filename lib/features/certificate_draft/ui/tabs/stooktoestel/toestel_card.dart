@@ -3,8 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:hvac_app/app/localization/app_dictionary.dart';
 import 'package:hvac_app/app/theme/app_colors.dart';
 import '../../widgets/bento_main_section.dart';
-import '../../widgets/dark_input_box.dart';
-import '../../widgets/dark_input_label.dart';
+import '../../widgets/dark_text_form_field.dart';
 import 'brand_quick_picker.dart';
 import 'unknown_badge.dart';
 
@@ -52,16 +51,12 @@ class ToestelCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // 1. Merk
-          const DarkInputLabel(AppDictionary.lblBrand),
-          TextFormField(
+          DarkTextFormField(
+            label: AppDictionary.lblBrand,
             controller: brandController,
-            style: DarkInputBox.inputStyle,
-            keyboardType: TextInputType.text,
-            textInputAction: TextInputAction.next,
-            decoration: DarkInputBox.decoration(
-              hintText: AppDictionary.hintBoilerBrand,
-            ),
-            onChanged: (_) => onChanged(),
+            hint: AppDictionary.hintBoilerBrand,
+            validator: (val) => (val?.trim().isEmpty ?? true) ? '' : null,
+            onChanged: onChanged,
           ),
           const SizedBox(height: 6),
           ListenableBuilder(
@@ -82,16 +77,12 @@ class ToestelCard extends StatelessWidget {
           const SizedBox(height: 12),
 
           // 2. Type / Model
-          const DarkInputLabel(AppDictionary.lblModel),
-          TextFormField(
+          DarkTextFormField(
+            label: AppDictionary.lblModel,
             controller: modelController,
-            style: DarkInputBox.inputStyle,
-            keyboardType: TextInputType.text,
-            textInputAction: TextInputAction.next,
-            decoration: DarkInputBox.decoration(
-              hintText: AppDictionary.hintBoilerModel,
-            ),
-            onChanged: (_) => onChanged(),
+            hint: AppDictionary.hintBoilerModel,
+            validator: (val) => (val?.trim().isEmpty ?? true) ? '' : null,
+            onChanged: onChanged,
           ),
           const SizedBox(height: 12),
 
@@ -101,69 +92,79 @@ class ToestelCard extends StatelessWidget {
             isUnknown: yearUnknown,
             onUnknownChanged: onYearUnknownChanged,
           ),
-          TextFormField(
+          DarkTextFormField(
+            label: '',
             controller: yearController,
-            enabled: !yearUnknown,
-            style: DarkInputBox.inputStyle,
+            readOnly: yearUnknown,
+            hint: yearUnknown
+                ? AppDictionary.optUnknown
+                : AppDictionary.hintBoilerYear,
             keyboardType: TextInputType.number,
-            textInputAction: TextInputAction.next,
             inputFormatters: [
               FilteringTextInputFormatter.digitsOnly,
               LengthLimitingTextInputFormatter(4),
             ],
-            decoration: DarkInputBox.decoration(
-              hintText: yearUnknown
-                  ? AppDictionary.optUnknown
-                  : AppDictionary.hintBoilerYear,
-              readOnly: yearUnknown,
-            ),
-            onChanged: (_) => onChanged(),
+            validator: (val) {
+              if (yearUnknown) return null;
+              final text = val?.trim() ?? '';
+              if (text.length != 4) return '';
+              final y = int.tryParse(text);
+              if (y == null || y < 1900 || y > DateTime.now().year + 1) {
+                return '';
+              }
+              return null;
+            },
+            onChanged: onChanged,
           ),
           const SizedBox(height: 12),
 
-          // 4. Fabricatienummer + Barcode Scanner (Full-width with Onbekend chip in header)
+          // 4. Fabricatienummer + Barcode Scanner
           HeaderWithUnknownChip(
             title: AppDictionary.lblSerialNumber,
             isUnknown: serialUnknown,
             onUnknownChanged: onSerialUnknownChanged,
           ),
-          TextFormField(
+          DarkTextFormField(
+            label: '',
             controller: serialController,
-            enabled: !serialUnknown,
-            style: DarkInputBox.inputStyle,
-            keyboardType: TextInputType.text,
-            textInputAction: TextInputAction.next,
-            decoration: DarkInputBox.decoration(
-              hintText: serialUnknown
-                  ? AppDictionary.optUnknown
-                  : AppDictionary.hintBoilerSerial,
-              readOnly: serialUnknown,
-              suffixIcon: IconButton(
-                icon: Icon(
-                  Icons.qr_code_scanner_rounded,
-                  color:
-                      serialUnknown ? AppColors.textMuted : AppColors.amberGold,
-                  size: 22,
-                ),
-                tooltip: AppDictionary.tooltipScanBarcode,
-                onPressed: serialUnknown ? null : onScanBarcode,
+            readOnly: serialUnknown,
+            hint: serialUnknown
+                ? AppDictionary.optUnknown
+                : AppDictionary.hintBoilerSerial,
+            suffixIcon: IconButton(
+              focusNode: FocusNode(canRequestFocus: false, skipTraversal: true),
+              icon: Icon(
+                Icons.qr_code_scanner_rounded,
+                color:
+                    serialUnknown ? AppColors.textMuted : AppColors.amberGold,
+                size: 22,
               ),
+              tooltip: AppDictionary.tooltipScanBarcode,
+              onPressed: serialUnknown ? null : onScanBarcode,
             ),
-            onChanged: (_) => onChanged(),
+            validator: (val) {
+              if (serialUnknown) return null;
+              return (val?.trim().isEmpty ?? true) ? '' : null;
+            },
+            onChanged: onChanged,
           ),
           const SizedBox(height: 12),
 
           // 5. Nominaal vermogen (kW)
-          const DarkInputLabel(AppDictionary.lblNominalPower),
-          TextFormField(
+          DarkTextFormField(
+            label: AppDictionary.lblNominalPower,
             controller: powerController,
-            style: DarkInputBox.inputStyle,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
             textInputAction: TextInputAction.done,
-            decoration: DarkInputBox.decoration(
-              hintText: AppDictionary.hintBoilerPower,
-            ),
-            onChanged: (_) => onChanged(),
+            hint: AppDictionary.hintBoilerPower,
+            validator: (val) {
+              final text = val?.trim().replaceAll(',', '.') ?? '';
+              if (text.isEmpty) return '';
+              final p = double.tryParse(text);
+              if (p == null || p <= 0) return '';
+              return null;
+            },
+            onChanged: onChanged,
           ),
         ],
       ),

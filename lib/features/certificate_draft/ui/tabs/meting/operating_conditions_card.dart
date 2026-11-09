@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hvac_app/app/localization/meting_dictionary.dart';
+import 'package:hvac_app/app/theme/app_colors.dart';
 import '../../widgets/bento_main_section.dart';
 import '../../widgets/dark_input_box.dart';
 import '../../widgets/dark_input_label.dart';
@@ -11,9 +12,10 @@ import 'wheel_input_row.dart';
 /// Bento Card 1: Goede staat van werking (Operating conditions).
 ///
 /// Features:
-/// - Compact side-by-side layout: quick slider chips on the left, centered input box on the right.
-/// - Saves over 50px of vertical height per parameter.
+/// - Clean stacked layout: Parameter label and wider [- inputbox +] stepper in the header line.
+/// - Full-range horizontal gliding ribbon with bouncing physics and zero layout jitter.
 /// - Dynamically filters inputs based on the installation fuel (Gas vs Oil vs Solid).
+/// - Strict fuel-isolated pre-flight check: only visible fields trigger validation errors.
 /// - Tactical Bacharach 0-2 selector with automatic regulatory OK/Niet OK logic.
 class OperatingConditionsCard extends StatelessWidget {
   final BoilerDraft boiler;
@@ -51,67 +53,75 @@ class OperatingConditionsCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final bool isLiquid = boiler.fuelCategory == 'vloeibaar';
     final bool isGas = boiler.fuelCategory == 'gas';
+    final bool isTypeC = boiler.centraalType == 'C';
+    final bool isLpg = boiler.fuelSubtype.toLowerCase() == 'lpg';
+    final bool isPremix = boiler.burnerTechnology == 'premix' || isTypeC;
+    final bool isCondensing =
+        boiler.boilerOperation == 'condenserend' || isTypeC;
+
+    String? req(String? v) => (v == null || v.trim().isEmpty) ? '' : null;
 
     return BentoMainSection(
       title: MetingDictionary.headerOperatingConditions,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // 1. Keteltemperatuur (°C) with Horizontal 3D Wheel Dial (50 to 80 °C)
-          const DarkInputLabel(MetingDictionary.lblBoilerTemp),
-          const SizedBox(height: 4),
+          // 1. Keteltemperatuur (°C) - Required for all fuels
           WheelInputRow.range(
+            label: MetingDictionary.lblBoilerTemp,
             min: 50,
             max: 80,
             controller: boilerTempController,
-            preferredInitialItem: '55',
+            preferredInitialItem: isCondensing ? '60' : '70',
             suffix: '°C',
             hintText: '°C',
+            validator: req,
             onChanged: onChanged,
           ),
           const SizedBox(height: 12),
 
-          // 2. Gas specific pressures with 3D Wheel Dials
+          // 2. Gas specific pressures - Validated only when fuel is Gas
           if (isGas) ...[
-            const DarkInputLabel(MetingDictionary.lblGasPressureMeter),
-            const SizedBox(height: 4),
             WheelInputRow.range(
+              label: MetingDictionary.lblGasPressureMeter,
               min: 15,
               max: 37,
               controller: gasMeterController,
-              preferredInitialItem: '21',
+              preferredInitialItem: isLpg ? '37' : '21',
               suffix: 'mbar',
               hintText: 'mbar',
+              validator: req,
               onChanged: onChanged,
             ),
             const SizedBox(height: 12),
-            const DarkInputLabel(MetingDictionary.lblGasPressureBlock),
-            const SizedBox(height: 4),
             WheelInputRow.range(
+              label: MetingDictionary.lblGasPressureBlock,
               min: 15,
               max: 37,
               controller: gasBlockController,
-              preferredInitialItem: '21',
+              preferredInitialItem: isLpg ? '35' : '20',
               suffix: 'mbar',
               hintText: 'mbar',
+              validator: req,
               onChanged: onChanged,
             ),
             const SizedBox(height: 12),
-            const DarkInputLabel(MetingDictionary.lblGasPressureBurnerBed),
-            const SizedBox(height: 4),
             WheelInputRow.range(
+              label: MetingDictionary.lblGasPressureBurnerBed,
               min: 0,
               max: 12,
               controller: gasBurnerBedController,
-              preferredInitialItem: '0',
+              preferredInitialItem: isPremix ? '0' : '10',
               suffix: 'mbar',
               hintText: 'mbar',
               textInputAction: TextInputAction.done,
+              validator: req,
               onChanged: onChanged,
             ),
+            const SizedBox(height: 12),
           ],
 
-          // 3. Oil / Liquid specific nozzle and pump fields
+          // 3. Oil / Liquid specific nozzle and pump fields - Validated only when Liquid
           if (isLiquid) ...[
             const DarkInputLabel(MetingDictionary.lblNozzleBrandType),
             TextFormField(
@@ -119,6 +129,7 @@ class OperatingConditionsCard extends StatelessWidget {
               style: DarkInputBox.inputStyle,
               keyboardType: TextInputType.text,
               textInputAction: TextInputAction.next,
+              validator: req,
               decoration: DarkInputBox.decoration(
                 hintText: MetingDictionary.hintNozzleBrandType,
               ),
@@ -137,9 +148,8 @@ class OperatingConditionsCard extends StatelessWidget {
               onChanged: onChanged,
             ),
             const SizedBox(height: 12),
-            const DarkInputLabel(MetingDictionary.lblNozzleFlowRate),
-            const SizedBox(height: 4),
             WheelInputRow(
+              label: MetingDictionary.lblNozzleFlowRate,
               controller: nozzleFlowRateController,
               preferredInitialItem: '0.60',
               items: const [
@@ -159,39 +169,67 @@ class OperatingConditionsCard extends StatelessWidget {
                 '1.25'
               ],
               hintText: 'debiet',
+              validator: req,
               onChanged: onChanged,
             ),
             const SizedBox(height: 12),
-            const DarkInputLabel(MetingDictionary.lblNozzleAngle),
-            const SizedBox(height: 4),
             WheelInputRow(
+              label: MetingDictionary.lblNozzleAngle,
               controller: nozzleAngleController,
               preferredInitialItem: '60',
               items: const ['30', '45', '60', '70', '80', '90'],
               suffix: '°',
               hintText: '°',
+              validator: req,
               onChanged: onChanged,
             ),
             const SizedBox(height: 12),
-            const DarkInputLabel(MetingDictionary.lblPumpPressure),
-            const SizedBox(height: 4),
             WheelInputRow.range(
+              label: MetingDictionary.lblPumpPressure,
               min: 7,
               max: 16,
               controller: pumpPressureController,
               preferredInitialItem: '10',
               suffix: 'bar',
               hintText: 'bar',
+              validator: req,
               onChanged: onChanged,
             ),
             const SizedBox(height: 12),
             const DarkInputLabel(MetingDictionary.lblSmokeIndex),
             const SizedBox(height: 4),
-            BacharachSelector(
-              controller: smokeIndexController,
-              isOk: smokeIndexOk,
-              onOkChanged: onSmokeIndexOkChanged,
-              onChanged: onChanged,
+            FormField<String>(
+              validator: (_) => (smokeIndexController.text.trim().isEmpty ||
+                      smokeIndexOk == null)
+                  ? ''
+                  : null,
+              builder: (fieldState) {
+                final hasError = fieldState.hasError &&
+                    (smokeIndexController.text.trim().isEmpty ||
+                        smokeIndexOk == null);
+                return Container(
+                  padding: const EdgeInsets.all(2.0),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8.0),
+                    border: Border.all(
+                      color: hasError ? AppColors.errorRed : Colors.transparent,
+                      width: hasError ? 1.2 : 0.0,
+                    ),
+                  ),
+                  child: BacharachSelector(
+                    controller: smokeIndexController,
+                    isOk: smokeIndexOk,
+                    onOkChanged: (v) {
+                      onSmokeIndexOkChanged(v);
+                      fieldState.didChange(smokeIndexController.text);
+                    },
+                    onChanged: () {
+                      fieldState.didChange(smokeIndexController.text);
+                      onChanged();
+                    },
+                  ),
+                );
+              },
             ),
           ],
         ],
