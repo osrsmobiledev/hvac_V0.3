@@ -129,6 +129,13 @@ Run through these exact 20 verification checks before marking any tab, applet, o
 - [ ] Customer signature blocks must hide exception actions (refusal, absence) when a valid signature is present to prevent contradictory states.
 - [ ] When unsigned, administrative exception controls must be tucked behind a discreet progressive disclosure trigger rather than displayed prominently to customers.
 
+### [ ] 21. Basisregisters & VEKA ID Governance (Zero Manual Entry & Automated Fail-Safe Flags)
+- [ ] Technicians must **never** manually type `adresId`, `gebouwId`, or `gebouweenheidId`. These are strictly populated in the background via the Basisregisters API service (`BasisregistersService`).
+- [ ] **Automated Fallback Flagging:**
+  - If `gebouweenheidId` is missing or null, automatically derive `gebouweenheidIdNietGekend = true` (or `false` if found).
+  - If `gebouwId` is missing or null, automatically derive `gebouwIdNietGekend = true` (or `false` if found).
+- [ ] **Nieuwbouw & Offline Safe-Harbor:** Unmapped new developments, unassigned municipal house numbers, or offline basements must **never** block local certificate generation, digital signing, or PDF creation (Golden Rule #5). A missing `adresId` is flagged for manual VEKA web portal reporting or later re-sync, keeping the on-site workflow 100% operational. See [`BASISREGISTER_AND_VEKA_API_SPECIFICATION.md`](file:///c:/Users/Admin/Documents/hvac_V0.3/doc/BASISREGISTER_AND_VEKA_API_SPECIFICATION.md) for full endpoint and payload rules.
+
 ---
 
 ## 3. Verification & Handoff Protocol
