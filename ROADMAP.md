@@ -74,9 +74,11 @@
     - Fool-proof statutory date logic: Zero fake defaults when fuel is empty (no phantom `+1 Jaar` selections). Date strictly derives when fuel and compliance are established.
     - Reactive link with Tab 6 via [MeasurementAssessmentNotifier](file:///c:/Users/Admin/Documents/hvac_V0.3/lib/features/certificate_draft/ui/measurement_assessment_notifier.dart) with clean de-selection and 3-month legal remediation rule (Art. 6 Vlaams Stooktoestellenbesluit).
   - **Quality & Metrics:**
-    - 186 unit and widget tests passing (100% green).
+    - 220 unit and widget tests passing (100% green).
     - 0 Dart analyzer issues across all files.
     - All Dart files in `lib/` strictly $\le 250$ lines of code.
-- **Active State:** All 7 tabs of the Flemish combustion certificate workflow are fully operational, refined, styled, lag-free, and verified with pre-flight checks.
-- **Next Step:** Proceeding with Milestone 4 (Re-Wired PDF Generation & Local Completion).
-- **Blockers / Open Questions:** None. Ready for Milestone 4.
+    - Zero layout shift with reusable `TacticalGroupOutline`.
+    - Senior-friendly signature pad with 78% screen height and progressive exception disclosure.
+- **Active State:** All 7 tabs of the Flemish combustion certificate workflow are fully operational, refined, styled, lag-free, and verified with pre-flight checks. Checkpointed to GitHub (`main`).
+- **Next Step:** Awaiting owner decision: Milestone 4 (Re-Wired PDF Generation & Local Completion) or Milestone 5 (Basisregisters Vlaanderen Address Lookup).
+- **Blockers / Open Questions:** None. Ready to proceed upon owner selection.
