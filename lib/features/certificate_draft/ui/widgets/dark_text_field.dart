@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:hvac_app/app/theme/app_colors.dart';
 import 'package:hvac_app/app/theme/app_theme.dart';
@@ -7,9 +8,14 @@ import 'dark_input_label.dart';
 
 /// Reusable dark text form field with integrated label, prefix, and suffix slots.
 ///
-/// Ensures unified title alignment across all workflow tabs and bento cards.
-/// Supports embedding statutory norm text and tactical action buttons (e.g. [OK | NOK]).
-class DarkTextField extends StatelessWidget {
+/// Features:
+/// - Clean label above the box using [DarkInputLabel].
+/// - Validates strictly with [validator] and [AutovalidateMode.onUserInteraction].
+/// - Displays a crisp red border when invalid, with zero error text below and zero height jump.
+/// - Keeps [FormFieldState] and [TextEditingController] in continuous sync so
+///   programmatic text updates (QR scans, simulated values, clearing) immediately
+///   update the validation border.
+class DarkTextField extends StatefulWidget {
   final String label;
   final TextEditingController controller;
   final String? hintText;
@@ -22,6 +28,9 @@ class DarkTextField extends StatelessWidget {
   final TextInputAction textInputAction;
   final bool readOnly;
   final VoidCallback? onChanged;
+
+  /// Optional validator for pre-flight Form validation.
+  final String? Function(String?)? validator;
 
   const DarkTextField({
     super.key,
@@ -37,23 +46,72 @@ class DarkTextField extends StatelessWidget {
     this.textInputAction = TextInputAction.next,
     this.readOnly = false,
     this.onChanged,
+    this.validator,
   });
+
+  @override
+  State<DarkTextField> createState() => _DarkTextFieldState();
+}
+
+class _DarkTextFieldState extends State<DarkTextField> {
+  final GlobalKey<FormFieldState<String>> _fieldKey =
+      GlobalKey<FormFieldState<String>>();
+
+  @override
+  void initState() {
+    super.initState();
+    widget.controller.addListener(_onControllerChanged);
+  }
+
+  @override
+  void didUpdateWidget(covariant DarkTextField oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.controller != widget.controller) {
+      oldWidget.controller.removeListener(_onControllerChanged);
+      widget.controller.addListener(_onControllerChanged);
+    }
+  }
+
+  @override
+  void dispose() {
+    widget.controller.removeListener(_onControllerChanged);
+    super.dispose();
+  }
+
+  void _onControllerChanged() {
+    final state = _fieldKey.currentState;
+    if (!mounted || state == null || state.value == widget.controller.text) {
+      return;
+    }
+    if (SchedulerBinding.instance.schedulerPhase ==
+        SchedulerPhase.persistentCallbacks) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted &&
+            _fieldKey.currentState?.value != widget.controller.text) {
+          _fieldKey.currentState?.didChange(widget.controller.text);
+        }
+      });
+    } else {
+      state.didChange(widget.controller.text);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final bool hasExplicitSuffix =
-        (suffixText != null && suffixText!.isNotEmpty) || suffixIcon != null;
+        (widget.suffixText != null && widget.suffixText!.isNotEmpty) ||
+            widget.suffixIcon != null;
 
     Widget? effectiveSuffixIcon;
     if (hasExplicitSuffix) {
       effectiveSuffixIcon = Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (suffixText != null && suffixText!.isNotEmpty)
+          if (widget.suffixText != null && widget.suffixText!.isNotEmpty)
             Padding(
               padding: const EdgeInsets.only(right: 8.0),
               child: Text(
-                suffixText!,
+                widget.suffixText!,
                 style: const TextStyle(
                   fontFamily: AppTheme.fontFamily,
                   fontSize: 11.5,
@@ -63,7 +121,7 @@ class DarkTextField extends StatelessWidget {
                 ),
               ),
             ),
-          if (suffixIcon != null) suffixIcon!,
+          if (widget.suffixIcon != null) widget.suffixIcon!,
         ],
       );
     }
@@ -72,26 +130,30 @@ class DarkTextField extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        DarkInputLabel(label, isMuted: readOnly),
+        DarkInputLabel(widget.label, isMuted: widget.readOnly),
         TextFormField(
-          controller: controller,
-          readOnly: readOnly,
-          style: readOnly
+          key: _fieldKey,
+          controller: widget.controller,
+          readOnly: widget.readOnly,
+          autovalidateMode: AutovalidateMode.onUserInteraction,
+          style: widget.readOnly
               ? DarkInputBox.inputStyle.copyWith(color: Colors.white60)
               : DarkInputBox.inputStyle,
-          keyboardType: keyboardType,
-          textInputAction: textInputAction,
+          keyboardType: widget.keyboardType,
+          textInputAction: widget.textInputAction,
           inputFormatters: [
-            if (unit != null && unit!.isNotEmpty) UnitSuffixFormatter(unit!),
+            if (widget.unit != null && widget.unit!.isNotEmpty)
+              UnitSuffixFormatter(widget.unit!),
           ],
           decoration: DarkInputBox.decoration(
-            hintText: hintText,
-            prefixIcon: prefixIcon,
-            prefixText: prefixText,
+            hintText: widget.hintText,
+            prefixIcon: widget.prefixIcon,
+            prefixText: widget.prefixText,
             suffixIcon: effectiveSuffixIcon,
-            readOnly: readOnly,
+            readOnly: widget.readOnly,
           ),
-          onChanged: (_) => onChanged?.call(),
+          onChanged: (_) => widget.onChanged?.call(),
+          validator: widget.validator,
         ),
       ],
     );

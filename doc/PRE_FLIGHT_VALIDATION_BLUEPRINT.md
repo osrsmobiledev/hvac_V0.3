@@ -106,28 +106,37 @@ Widget build(BuildContext context) {
 In `lib/features/certificate_draft/ui/verbrandingsattest_screen.dart`:
 
 ```dart
-GlobalKey<FormState>? _tab2FormKey;
-GlobalKey<FormState>? _tab3FormKey;
-GlobalKey<FormState>? _tab4FormKey;
-// ...
+GlobalKey<FormState>? _tab2FormKey,
+    _tab3FormKey,
+    _tab4FormKey,
+    _tab5FormKey,
+    _tab6FormKey,
+    _tab7FormKey;
 
 void _handleFinalizeAttempt() {
-  final tab2Valid = _tab2FormKey?.currentState?.validate() ?? false;
-  final tab3Valid = _tab3FormKey?.currentState?.validate() ?? false;
-  final tab4Valid = _tab4FormKey?.currentState?.validate() ?? false;
+  final t2Valid = _tab2FormKey?.currentState?.validate() ?? false;
+  final t3Valid = _tab3FormKey?.currentState?.validate() ?? false;
+  final t4Valid = _tab4FormKey?.currentState?.validate() ?? false;
+  final t5Valid = _tab5FormKey?.currentState?.validate() ?? false;
+  final t6Valid = _tab6FormKey?.currentState?.validate() ?? false;
+  final t7Valid = _tab7FormKey?.currentState?.validate() ?? false;
 
-  void notify(int tabIndex, String msg) {
-    _tabController.animateTo(tabIndex);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(msg), duration: const Duration(seconds: 3)),
-    );
+  void notify(int idx, String msg, GlobalKey<FormState>? key) {
+    _tabController.animateTo(idx);
+    TacticalFeedback.showError(context, msg);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      FormScrollHelper.scrollToFirstInvalid(key?.currentContext);
+    });
   }
 
-  if (!tab2Valid) return notify(1, 'Vul alle verplichte velden in op Tab 2: Start');
-  if (!tab3Valid) return notify(2, 'Vul alle verplichte velden in op Tab 3: Firma - Technicus');
-  if (!tab4Valid) return notify(3, 'Vul alle verplichte velden in op Tab 4: Klant');
+  if (!t2Valid) return notify(1, 'Vul alle verplichte velden in op Tab 2: Start', _tab2FormKey);
+  if (!t3Valid) return notify(2, 'Vul alle verplichte velden in op Tab 3: Firma - Technicus', _tab3FormKey);
+  if (!t4Valid) return notify(3, 'Vul alle verplichte velden in op Tab 4: Klant', _tab4FormKey);
+  if (!t5Valid) return notify(4, 'Vul alle verplichte velden in op Tab 5: Stooktoestel', _tab5FormKey);
+  if (!t6Valid) return notify(5, 'Vul alle verplichte velden in op Tab 6: Meting', _tab6FormKey);
+  if (!t7Valid) return notify(6, 'Vul alle verplichte velden in op Tab 7: Eindbeoordeling', _tab7FormKey);
 
-  // All valid -> proceed to PDF generation
+  TacticalFeedback.showSuccess(context, 'Alle velden zijn geldig. PDF-generatie volgt in Milestone 4.');
 }
 ```
 
@@ -166,17 +175,40 @@ Centralized in `lib/core/utils/belgian_formatters.dart`:
   - If separate burner: Brander merk & model.
 
 ### Tab 6 (`MetingTab`)
-- **Required fields:**
-  - At least one active measurement slot completed (e.g. `Na onderhoud`).
-  - Required statutory values: O2 or CO2 (%), Rookgastemperatuur (°C), CO (mg/kWh or ppm).
-  - Safety checks: Verluchtingsopeningen, Rookgasafvoer.
+- **Single Form Key (`_formKey`):** Covers all 3 Bento cards simultaneously.
+- **Card 1 (Goede staat van werking):**
+  - Keteltemperatuur (°C): required for all fuels.
+  - Gas: Gasdruk teller, gasblok, branderbed (mbar).
+  - Vloeibaar (Stookolie): Sproeier merk/type, debiet, hoek, pompdruk, Bacharach rookindex (0–2).
+  - Vast (Hout/Pellets): Only keteltemperatuur.
+- **Card 2 (Rookgasmetingen):**
+  - Statutory required fields: O2 (%), CO2 (%), Rookgastemp Tg (°C), Verbrandingsluchttemp Ta (°C), Rendement Hi (%), CO (mg/kWh).
+  - **Multi-slot IndexedStack Architecture:** Keeps `Proef I`, `Proef II (Laaglast)`, and `Proef II (Hooglast)` mounted in memory simultaneously.
+  - **Both Tests Mandatory:** Both `Proef I` (initiële meting vóór onderhoud) and `Proef II: Laaglast` (eindmeting na onderhoud) are strictly validated as mandatory for the attest.
+  - **Optional Hooglast:** `Proef II: Hooglast` is treated as optional under VEKA rules (`isSlotRequired: false`), never showing error borders when empty.
+  - Formatted with `NumericCombustionField` and `StatutoryCombustionField` using standard empty checks.
+  - Switching between Proef I and Proef II preserves all validated red borders without clearing or losing error state.
+  - Net temperature display updates safely in post-frame callback to avoid `setState()` during layout.
+- **Card 3 (Veilige staat van werking):**
+  - Wrapped with `_ValidatedCheckRow` (`FormField<bool?>`).
+  - Highlights with high-visibility red border (`AppColors.errorRed`) if left unanswered (`null`).
+  - Statutorily filtered by fuel & boiler type:
+    - All: Druk rookgaskanaal, Verluchting & ventilatie stooklokaal.
+    - Gas: Dichtheid brandstoftoevoerleiding.
+    - Type C: Dichtheid rookgasafvoer.
+    - Type B: Geen ongewenste condensvorming.
+    - Vloeibaar: Geen zichtbaar oliespoor.
+    - Vast: Zelden hinderlijke/milieuverontreinigende rook.
 
 ### Tab 7 (`EindbeoordelingTab`)
-- **Required fields:**
+- **Form Key (`_formKey`):** Exposed via `onFormKeyReady` and registered as `_tab7FormKey` in `VerbrandingsattestScreen`.
+- **Card 1 (Staat van werking & Veiligheid):**
   - `toestelWerkingGoed`: must be `'Goed'` or `'Niet goed'`.
   - `toestelWerkingVeilig`: must be `'Veilig'` or `'Niet veilig'`.
-  - `technicianSignature`: must have at least one stroke drawn.
-  - `customerSignature`: must have at least one stroke drawn.
+  - Wrapped with `_ValidatedBinaryCheck` (`FormField<bool?>`), turning red on submission if unanswered.
+- **Card 3 (Handtekeningen):**
+  - `technicianSignaturePath`: required before finalization. Wrapped with `FormField<String>` and turns `SignatureTile` border red with red "Tik om te tekenen" prompt if missing.
+  - `customerSignaturePath` / `customerSignatureException`: must have either customer signature or exception (`'refused'` / `'absent'`). Wrapped with `FormField<String>` and illuminates customer signature tile in red if neither is provided. Selecting `[ 🚫 Weigert ]` or `[ 👤 Afwezig ]` or drawing a signature immediately clears the error state with zero layout shift.
 
 ---
 

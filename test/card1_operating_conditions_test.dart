@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hvac_app/app/theme/app_theme.dart';
 import 'package:hvac_app/features/certificate_draft/domain/boiler_draft.dart';
+import 'package:hvac_app/features/certificate_draft/domain/operating_conditions_draft.dart';
 import 'package:hvac_app/features/certificate_draft/ui/tabs/meting/bacharach_selector.dart';
 import 'package:hvac_app/features/certificate_draft/ui/tabs/meting/operating_conditions_card.dart';
 import 'package:hvac_app/features/certificate_draft/ui/tabs/meting/slider_input_row.dart';
@@ -576,6 +577,47 @@ void main() {
 
       final isValidFilled = formKey.currentState!.validate();
       expect(isValidFilled, isTrue);
+    });
+
+    test('OperatingConditionsDraft.copyWith correctly clears fields to null',
+        () {
+      final initial = OperatingConditionsDraft.empty().copyWith(
+        boilerTempCelsius: 60.0,
+        gasPressureMeterMbar: 22.0,
+        gasPressureBlockMbar: 18.0,
+        gasPressureBurnerBedMbar: 10.0,
+        nozzleBrandType: 'Danfoss',
+        nozzleFlowRate: '0.60',
+        nozzleAngleDegrees: 60.0,
+        pumpPressureBar: 12.0,
+        smokeIndexBacharach: 1,
+      );
+
+      expect(initial.boilerTempCelsius, 60.0);
+      expect(initial.gasPressureMeterMbar, 22.0);
+
+      // Now clear them to null
+      final cleared = initial.copyWith(
+        boilerTempCelsius: null,
+        gasPressureMeterMbar: null,
+        gasPressureBlockMbar: null,
+        gasPressureBurnerBedMbar: null,
+        nozzleBrandType: null,
+        nozzleFlowRate: null,
+        nozzleAngleDegrees: null,
+        pumpPressureBar: null,
+        smokeIndexBacharach: null,
+      );
+
+      expect(cleared.boilerTempCelsius, isNull);
+      expect(cleared.gasPressureMeterMbar, isNull);
+      expect(cleared.gasPressureBlockMbar, isNull);
+      expect(cleared.gasPressureBurnerBedMbar, isNull);
+      expect(cleared.nozzleBrandType, isNull);
+      expect(cleared.nozzleFlowRate, isNull);
+      expect(cleared.nozzleAngleDegrees, isNull);
+      expect(cleared.pumpPressureBar, isNull);
+      expect(cleared.smokeIndexBacharach, isNull);
     });
   });
 }

@@ -79,5 +79,29 @@ void main() {
       expect(separateDraft.effectiveBurnerSerialNumber, 'SN987654');
       expect(separateDraft.effectiveBurnerFlowRate, '2.4 kg/h');
     });
+
+    test('BoilerDraft.copyWith correctly clears nullable numbers to null', () {
+      const initial = BoilerDraft(
+        boilerConstructionYear: 2020,
+        boilerNominalPowerKw: 28.0,
+        burnerConstructionYear: 2019,
+        boilerBrand: 'Vaillant',
+      );
+
+      expect(initial.boilerConstructionYear, 2020);
+      expect(initial.boilerNominalPowerKw, 28.0);
+      expect(initial.burnerConstructionYear, 2019);
+
+      final cleared = initial.copyWith(
+        boilerConstructionYear: null,
+        boilerNominalPowerKw: null,
+        burnerConstructionYear: null,
+      );
+
+      expect(cleared.boilerConstructionYear, isNull);
+      expect(cleared.boilerNominalPowerKw, isNull);
+      expect(cleared.burnerConstructionYear, isNull);
+      expect(cleared.boilerBrand, 'Vaillant'); // Untouched string is preserved
+    });
   });
 }

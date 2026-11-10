@@ -138,6 +138,15 @@ class AppDatabase {
             debugPrint('[AppDatabase] v6 migration query warning: $e\n$stack');
           }
         }
+        if (oldVersion < 7) {
+          try {
+            await db.execute(
+              'ALTER TABLE maintenance_visits ADD COLUMN customer_signature_exception TEXT;',
+            );
+          } catch (e, stack) {
+            debugPrint('[AppDatabase] v7 migration query warning: $e\n$stack');
+          }
+        }
       },
     );
   }

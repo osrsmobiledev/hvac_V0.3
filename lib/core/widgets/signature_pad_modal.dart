@@ -1,5 +1,5 @@
 // File: lib/core/widgets/signature_pad_modal.dart
-// Responsibility: Modal canvas allowing technician/customer to draw a digital signature in BO2 style.
+// Responsibility: Spacious modal canvas allowing technician/customer to draw a digital signature in BO2 style.
 
 import 'dart:convert';
 import 'dart:ui' as ui;
@@ -39,6 +39,7 @@ class SignaturePadModal extends StatefulWidget {
 class _SignaturePadModalState extends State<SignaturePadModal> {
   final List<Offset?> _points = [];
   bool _isSaving = false;
+  Size _canvasSize = const Size(400, 300);
 
   void _clear() => setState(() => _points.clear());
 
@@ -50,16 +51,27 @@ class _SignaturePadModalState extends State<SignaturePadModal> {
     setState(() => _isSaving = true);
 
     try {
+      final renderWidth =
+          (_canvasSize.width > 0 ? _canvasSize.width : 400.0).round();
+      final renderHeight =
+          (_canvasSize.height > 0 ? _canvasSize.height : 300.0).round();
+
       final recorder = ui.PictureRecorder();
-      final canvas = Canvas(recorder, const Rect.fromLTWH(0, 0, 400, 200));
+      final canvas = Canvas(
+        recorder,
+        Rect.fromLTWH(0, 0, renderWidth.toDouble(), renderHeight.toDouble()),
+      );
 
       final bgPaint = Paint()..color = Colors.white;
-      canvas.drawRect(const Rect.fromLTWH(0, 0, 400, 200), bgPaint);
+      canvas.drawRect(
+        Rect.fromLTWH(0, 0, renderWidth.toDouble(), renderHeight.toDouble()),
+        bgPaint,
+      );
 
       final strokePaint = Paint()
         ..color = const Color(0xFF0F172A)
         ..strokeCap = StrokeCap.round
-        ..strokeWidth = 3.2;
+        ..strokeWidth = 3.4;
 
       for (int i = 0; i < _points.length - 1; i++) {
         if (_points[i] != null && _points[i + 1] != null) {
@@ -68,7 +80,7 @@ class _SignaturePadModalState extends State<SignaturePadModal> {
       }
 
       final picture = recorder.endRecording();
-      final img = await picture.toImage(400, 200);
+      final img = await picture.toImage(renderWidth, renderHeight);
       final byteData = await img.toByteData(format: ui.ImageByteFormat.png);
 
       if (byteData != null && mounted) {
@@ -86,28 +98,40 @@ class _SignaturePadModalState extends State<SignaturePadModal> {
 
   @override
   Widget build(BuildContext context) {
+    final screenSize = MediaQuery.sizeOf(context);
+    final isTablet = screenSize.width >= 600;
+
     return Dialog(
       backgroundColor: const Color(0xFF141414),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
-        side: const BorderSide(color: AppColors.antiqueGold, width: 1.0),
+        side: const BorderSide(color: AppColors.antiqueGold, width: 1.2),
       ),
-      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+      insetPadding: EdgeInsets.symmetric(
+        horizontal: isTablet ? 32 : 12,
+        vertical: isTablet ? 32 : 16,
+      ),
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 460),
+        constraints: BoxConstraints(
+          maxWidth: isTablet ? 680 : 540,
+          maxHeight: screenSize.height * 0.78,
+          minHeight: 380,
+        ),
         child: Padding(
-          padding: const EdgeInsets.all(18),
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
           child: Column(
-            mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               SignatureModalHeader(title: widget.title),
               const SizedBox(height: 12),
-              SignatureCanvasArea(
-                points: _points,
-                onPanStart: (pos) => setState(() => _points.add(pos)),
-                onPanUpdate: (pos) => setState(() => _points.add(pos)),
-                onPanEnd: () => setState(() => _points.add(null)),
+              Expanded(
+                child: SignatureCanvasArea(
+                  points: _points,
+                  onPanStart: (pos) => setState(() => _points.add(pos)),
+                  onPanUpdate: (pos) => setState(() => _points.add(pos)),
+                  onPanEnd: () => setState(() => _points.add(null)),
+                  onSizeChanged: (size) => _canvasSize = size,
+                ),
               ),
               const SizedBox(height: 16),
               SignatureModalFooter(

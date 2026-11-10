@@ -41,7 +41,8 @@ class _VerbrandingsattestScreenState extends State<VerbrandingsattestScreen>
       _tab3FormKey,
       _tab4FormKey,
       _tab5FormKey,
-      _tab6FormKey;
+      _tab6FormKey,
+      _tab7FormKey;
   int _activeVisitId =
       AppWarmupService.instance.cachedResult?.activeDraft?.id ?? 1;
   bool _isAppletLoading = true;
@@ -88,6 +89,7 @@ class _VerbrandingsattestScreenState extends State<VerbrandingsattestScreen>
     final t4Valid = _tab4FormKey?.currentState?.validate() ?? false;
     final t5Valid = _tab5FormKey?.currentState?.validate() ?? false;
     final t6Valid = _tab6FormKey?.currentState?.validate() ?? false;
+    final t7Valid = _tab7FormKey?.currentState?.validate() ?? false;
 
     void notify(int idx, String msg, GlobalKey<FormState>? key) {
       _tabController.animateTo(idx);
@@ -98,19 +100,32 @@ class _VerbrandingsattestScreenState extends State<VerbrandingsattestScreen>
     }
 
     if (!t2Valid) {
-      return notify(1, 'Vul alle verplichte velden in op Tab 2: Start', _tab2FormKey);
+      return notify(
+          1, 'Vul alle verplichte velden in op Tab 2: Start', _tab2FormKey);
     }
     if (!t3Valid) {
-      return notify(2, 'Vul alle verplichte velden in op Tab 3: Firma - Technicus', _tab3FormKey);
+      return notify(
+          2,
+          'Vul alle verplichte velden in op Tab 3: Firma - Technicus',
+          _tab3FormKey);
     }
     if (!t4Valid) {
-      return notify(3, 'Vul alle verplichte velden in op Tab 4: Klant', _tab4FormKey);
+      return notify(
+          3, 'Vul alle verplichte velden in op Tab 4: Klant', _tab4FormKey);
     }
     if (!t5Valid) {
-      return notify(4, 'Vul alle verplichte velden in op Tab 5: Stooktoestel', _tab5FormKey);
+      return notify(4, 'Vul alle verplichte velden in op Tab 5: Stooktoestel',
+          _tab5FormKey);
     }
     if (!t6Valid) {
-      return notify(5, 'Vul alle verplichte velden in op Tab 6: Meting (Goede staat van werking)', _tab6FormKey);
+      return notify(
+          5, 'Vul alle verplichte velden in op Tab 6: Meting', _tab6FormKey);
+    }
+    if (!t7Valid) {
+      return notify(
+          6,
+          'Vul alle verplichte velden in op Tab 7: Eindbeoordeling',
+          _tab7FormKey);
     }
 
     TacticalFeedback.showSuccess(context,
@@ -213,6 +228,7 @@ class _VerbrandingsattestScreenState extends State<VerbrandingsattestScreen>
                           boilerNotifier: _boilerNotifier,
                           assessmentNotifier: _assessmentNotifier,
                           onComplete: _handleFinalizeAttempt,
+                          onFormKeyReady: (key) => _tab7FormKey = key,
                         ),
                       ),
                     ],

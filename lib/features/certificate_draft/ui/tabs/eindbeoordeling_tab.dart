@@ -17,6 +17,9 @@ class EindbeoordelingTab extends StatefulWidget {
   final VoidCallback? onComplete;
   final EindbeoordelingRepository? repositoryOverride;
 
+  /// Callback exposing this tab's [GlobalKey<FormState>] to the coordinator.
+  final ValueChanged<GlobalKey<FormState>>? onFormKeyReady;
+
   const EindbeoordelingTab({
     super.key,
     required this.visitId,
@@ -24,6 +27,7 @@ class EindbeoordelingTab extends StatefulWidget {
     this.assessmentNotifier,
     this.onComplete,
     this.repositoryOverride,
+    this.onFormKeyReady,
   });
 
   @override
@@ -35,6 +39,7 @@ class _EindbeoordelingTabState extends State<EindbeoordelingTab>
   late final EindbeoordelingRepository _repository;
   late final Debouncer _debouncer;
 
+  final _formKey = GlobalKey<FormState>();
   final _defectsController = TextEditingController();
   final _remarksController = TextEditingController();
 
@@ -50,6 +55,9 @@ class _EindbeoordelingTabState extends State<EindbeoordelingTab>
     super.initState();
     _repository = widget.repositoryOverride ?? EindbeoordelingRepository();
     _debouncer = Debouncer(duration: const Duration(milliseconds: 350));
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => widget.onFormKeyReady?.call(_formKey),
+    );
     widget.boilerNotifier?.addListener(_onBoilerChanged);
     widget.assessmentNotifier?.addListener(_onAssessmentChanged);
 
@@ -215,20 +223,23 @@ class _EindbeoordelingTabState extends State<EindbeoordelingTab>
   Widget build(BuildContext context) {
     super.build(context);
 
-    return EindbeoordelingTabBody(
-      draft: _draft,
-      fuelType: _fuelType,
-      visitDate: _visitDate,
-      boilerType: widget.boilerNotifier?.draft.centraalType ?? 'C',
-      defectsController: _defectsController,
-      remarksController: _remarksController,
-      onGoedChanged: (val) => _updateConclusion(goed: val, isGoed: true),
-      onVeiligChanged: (val) => _updateConclusion(veilig: val, isGoed: false),
-      onDateChanged: (val) =>
-          _saveDirect(_draft.copyWith(nextInspectionDate: val)),
-      onDraftChanged: _saveDirect,
-      onTextInputsChanged: _onTextInputsChanged,
-      onCompletePressed: _onCompletePressed,
+    return Form(
+      key: _formKey,
+      child: EindbeoordelingTabBody(
+        draft: _draft,
+        fuelType: _fuelType,
+        visitDate: _visitDate,
+        boilerType: widget.boilerNotifier?.draft.centraalType ?? 'C',
+        defectsController: _defectsController,
+        remarksController: _remarksController,
+        onGoedChanged: (val) => _updateConclusion(goed: val, isGoed: true),
+        onVeiligChanged: (val) => _updateConclusion(veilig: val, isGoed: false),
+        onDateChanged: (val) =>
+            _saveDirect(_draft.copyWith(nextInspectionDate: val)),
+        onDraftChanged: _saveDirect,
+        onTextInputsChanged: _onTextInputsChanged,
+        onCompletePressed: _onCompletePressed,
+      ),
     );
   }
 }

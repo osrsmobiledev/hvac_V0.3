@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hvac_app/app/localization/app_dictionary.dart';
 import 'package:hvac_app/core/services/app_warmup_service.dart';
 import 'package:hvac_app/core/utils/debouncer.dart';
+import 'package:hvac_app/core/widgets/tactical_group_outline.dart';
 import 'package:hvac_app/core/widgets/workflow_tab_container.dart';
 import '../../data/draft_repository.dart';
 import '../widgets/bento_main_section.dart';
@@ -157,33 +158,36 @@ class _StartTabState extends State<StartTab>
                   builder: (field) {
                     final isError = field.hasError && _activityType.isEmpty;
 
-                    return Row(
-                      children: [
-                        Expanded(
-                          child: ActivityOptionTile(
-                            title: AppDictionary.activityMaintenance,
-                            isSelected: _activityType == 'onderhoud',
-                            isError: isError,
-                            onTap: () {
-                              _onActivityChanged('onderhoud');
-                              field.didChange(_activityType);
-                            },
+                    return TacticalGroupOutline(
+                      hasError: isError,
+                      borderRadius: 14.0,
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: ActivityOptionTile(
+                              title: AppDictionary.activityMaintenance,
+                              isSelected: _activityType == 'onderhoud',
+                              onTap: () {
+                                _onActivityChanged('onderhoud');
+                                field.didChange(_activityType);
+                              },
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: ActivityOptionTile(
-                            title: AppDictionary.activityCommissioningShort,
-                            subtitle: AppDictionary.captionCommissioning,
-                            isSelected: _activityType == 'eerste_ingebruikname',
-                            isError: isError,
-                            onTap: () {
-                              _onActivityChanged('eerste_ingebruikname');
-                              field.didChange(_activityType);
-                            },
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: ActivityOptionTile(
+                              title: AppDictionary.activityCommissioningShort,
+                              subtitle: AppDictionary.captionCommissioning,
+                              isSelected:
+                                  _activityType == 'eerste_ingebruikname',
+                              onTap: () {
+                                _onActivityChanged('eerste_ingebruikname');
+                                field.didChange(_activityType);
+                              },
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     );
                   },
                 ),

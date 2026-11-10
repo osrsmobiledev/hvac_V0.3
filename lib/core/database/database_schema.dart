@@ -10,7 +10,7 @@ import 'package:sqflite/sqflite.dart';
 /// 5. maintenance_visits (Attest draft, measurements, assessments, PDF & VEKA state)
 /// 6. measurement_captures (Flue gas data captured manually or via Eurolyzer QR)
 abstract final class DatabaseSchema {
-  static const int version = 6;
+  static const int version = 7;
   static const String databaseName = 'hvac_service.db';
 
   /// Executes all CREATE TABLE and CREATE INDEX statements on database initialization.
@@ -162,6 +162,7 @@ abstract final class DatabaseSchema {
         technician_signature_path TEXT,
         customer_signature_path TEXT,
         customer_signature_name TEXT,
+        customer_signature_exception TEXT,
         snapshot_json TEXT,
         pdf_status TEXT NOT NULL DEFAULT 'draft',
         pdf_path TEXT,

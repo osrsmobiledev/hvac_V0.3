@@ -22,6 +22,7 @@ class StatutoryCombustionField extends StatelessWidget {
   final bool Function(double val)? isCompliant;
   final bool? checkValue;
   final ValueChanged<bool?>? onCheckChanged;
+  final String? Function(String?)? validator;
 
   const StatutoryCombustionField({
     super.key,
@@ -35,6 +36,7 @@ class StatutoryCombustionField extends StatelessWidget {
     this.isCompliant,
     this.checkValue,
     this.onCheckChanged,
+    this.validator,
   });
 
   @override
@@ -78,6 +80,7 @@ class StatutoryCombustionField extends StatelessWidget {
                 )
               : null,
           onChanged: onChanged,
+          validator: validator,
         );
       },
     );

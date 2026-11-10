@@ -50,12 +50,14 @@ class _StooktoestelTabState extends State<StooktoestelTab>
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => widget.onFormKeyReady?.call(_formKey));
+    WidgetsBinding.instance
+        .addPostFrameCallback((_) => widget.onFormKeyReady?.call(_formKey));
     _repository = widget.repository ?? BoilerDraftRepository();
     widget.boilerNotifier?.addListener(_onBoilerNotifierChanged);
-    final initialDraft = (widget.boilerNotifier != null && !widget.boilerNotifier!.isLoading)
-        ? widget.boilerNotifier!.draft
-        : AppWarmupService.instance.cachedResult?.activeBoiler;
+    final initialDraft =
+        (widget.boilerNotifier != null && !widget.boilerNotifier!.isLoading)
+            ? widget.boilerNotifier!.draft
+            : AppWarmupService.instance.cachedResult?.activeBoiler;
     if (initialDraft != null && widget.repository == null) {
       _applyDraftToUi(initialDraft);
     } else {
@@ -225,7 +227,8 @@ class _StooktoestelTabState extends State<StooktoestelTab>
           _isCentral = _centraalType.isNotEmpty;
         }),
         onHeatingTypeChanged: (val) => _update(() => _heatingType = val),
-        onBoilerOperationChanged: (val) => _update(() => _boilerOperation = val),
+        onBoilerOperationChanged: (val) =>
+            _update(() => _boilerOperation = val),
         onFuelCategoryChanged: _onFuelCat,
         onFuelSubtypeChanged: _onFuelSubtype,
         onFuelOtherTextChanged: _onFuelOtherText,
@@ -235,10 +238,14 @@ class _StooktoestelTabState extends State<StooktoestelTab>
         onTypeCCodeChanged: (_) => _syncDraft(immediate: true),
         onSerialUnknownChanged: (val) => _update(() => _serialUnknown = val),
         onYearUnknownChanged: (val) => _update(() => _yearUnknown = val),
-        onBurnerSerialUnknownChanged: (v) => _update(() => _burnerSerialUnknown = v),
-        onBurnerYearUnknownChanged: (v) => _update(() => _burnerYearUnknown = v),
-        onScanToestelBarcode: () => _scanBarcode(_controllers.toestelSerial, AppDictionary.hintScanToestelSerial),
-        onScanBranderBarcode: () => _scanBarcode(_controllers.branderSerial, AppDictionary.hintScanBranderSerial),
+        onBurnerSerialUnknownChanged: (v) =>
+            _update(() => _burnerSerialUnknown = v),
+        onBurnerYearUnknownChanged: (v) =>
+            _update(() => _burnerYearUnknown = v),
+        onScanToestelBarcode: () => _scanBarcode(
+            _controllers.toestelSerial, AppDictionary.hintScanToestelSerial),
+        onScanBranderBarcode: () => _scanBarcode(
+            _controllers.branderSerial, AppDictionary.hintScanBranderSerial),
         onFormChanged: () => _syncDraft(immediate: false),
       ),
     );

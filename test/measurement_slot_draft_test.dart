@@ -88,6 +88,53 @@ void main() {
       expect(restored.efficiencyHs, 88.6);
       expect(restored.fluePressurePa, 12.0);
     });
+
+    test('MeasurementSlotDraft.copyWith correctly clears fields to null', () {
+      const original = MeasurementSlotDraft(
+        slot: 'proef1',
+        o2Percent: 5.2,
+        co2Percent: 9.0,
+        coMgKwh: 30.0,
+        coOk: true,
+        flueTempTg: 60.0,
+        ambientTempTa: 20.0,
+        efficiencyHi: 92.0,
+        efficiencyHiOk: true,
+        efficiencyHs: 85.0,
+        fluePressurePa: -10.0,
+        bacharach: 1,
+        bacharachOk: true,
+      );
+
+      final cleared = original.copyWith(
+        o2Percent: null,
+        co2Percent: null,
+        coMgKwh: null,
+        coOk: null,
+        flueTempTg: null,
+        ambientTempTa: null,
+        efficiencyHi: null,
+        efficiencyHiOk: null,
+        efficiencyHs: null,
+        fluePressurePa: null,
+        bacharach: null,
+        bacharachOk: null,
+      );
+
+      expect(cleared.slot, 'proef1');
+      expect(cleared.o2Percent, isNull);
+      expect(cleared.co2Percent, isNull);
+      expect(cleared.coMgKwh, isNull);
+      expect(cleared.coOk, isNull);
+      expect(cleared.flueTempTg, isNull);
+      expect(cleared.ambientTempTa, isNull);
+      expect(cleared.efficiencyHi, isNull);
+      expect(cleared.efficiencyHiOk, isNull);
+      expect(cleared.efficiencyHs, isNull);
+      expect(cleared.fluePressurePa, isNull);
+      expect(cleared.bacharach, isNull);
+      expect(cleared.bacharachOk, isNull);
+    });
   });
 
   group('Slice 3.2 — OperatingConditionsDraft Unit Tests', () {

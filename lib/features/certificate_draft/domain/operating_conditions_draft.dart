@@ -134,15 +134,15 @@ class OperatingConditionsDraft {
 
   /// Copies this instance with optional updated fields.
   OperatingConditionsDraft copyWith({
-    double? boilerTempCelsius,
-    double? gasPressureMeterMbar,
-    double? gasPressureBlockMbar,
-    double? gasPressureBurnerBedMbar,
-    String? nozzleBrandType,
-    String? nozzleFlowRate,
-    double? nozzleAngleDegrees,
-    double? pumpPressureBar,
-    int? smokeIndexBacharach,
+    Object? boilerTempCelsius = _sentinel,
+    Object? gasPressureMeterMbar = _sentinel,
+    Object? gasPressureBlockMbar = _sentinel,
+    Object? gasPressureBurnerBedMbar = _sentinel,
+    Object? nozzleBrandType = _sentinel,
+    Object? nozzleFlowRate = _sentinel,
+    Object? nozzleAngleDegrees = _sentinel,
+    Object? pumpPressureBar = _sentinel,
+    Object? smokeIndexBacharach = _sentinel,
     Object? smokeIndexOk = _sentinel,
     Object? noOilTraceOk = _sentinel,
     Object? noUnwantedCondensationOk = _sentinel,
@@ -151,24 +151,41 @@ class OperatingConditionsDraft {
     Object? ventilationOk = _sentinel,
     Object? flueTightnessOk = _sentinel,
     Object? fuelSupplyTightnessOk = _sentinel,
-    String? verbrandingscontrole,
-    String? stooktoestelConform,
-    String? rookgasafvoerkanaalConform,
-    String? stookplaatsConform,
-    String? toestelWerkingGoed,
-    String? toestelWerkingVeilig,
+    Object? verbrandingscontrole = _sentinel,
+    Object? stooktoestelConform = _sentinel,
+    Object? rookgasafvoerkanaalConform = _sentinel,
+    Object? stookplaatsConform = _sentinel,
+    Object? toestelWerkingGoed = _sentinel,
+    Object? toestelWerkingVeilig = _sentinel,
   }) {
     return OperatingConditionsDraft(
-      boilerTempCelsius: boilerTempCelsius ?? this.boilerTempCelsius,
-      gasPressureMeterMbar: gasPressureMeterMbar ?? this.gasPressureMeterMbar,
-      gasPressureBlockMbar: gasPressureBlockMbar ?? this.gasPressureBlockMbar,
-      gasPressureBurnerBedMbar:
-          gasPressureBurnerBedMbar ?? this.gasPressureBurnerBedMbar,
-      nozzleBrandType: nozzleBrandType ?? this.nozzleBrandType,
-      nozzleFlowRate: nozzleFlowRate ?? this.nozzleFlowRate,
-      nozzleAngleDegrees: nozzleAngleDegrees ?? this.nozzleAngleDegrees,
-      pumpPressureBar: pumpPressureBar ?? this.pumpPressureBar,
-      smokeIndexBacharach: smokeIndexBacharach ?? this.smokeIndexBacharach,
+      boilerTempCelsius: identical(boilerTempCelsius, _sentinel)
+          ? this.boilerTempCelsius
+          : boilerTempCelsius as double?,
+      gasPressureMeterMbar: identical(gasPressureMeterMbar, _sentinel)
+          ? this.gasPressureMeterMbar
+          : gasPressureMeterMbar as double?,
+      gasPressureBlockMbar: identical(gasPressureBlockMbar, _sentinel)
+          ? this.gasPressureBlockMbar
+          : gasPressureBlockMbar as double?,
+      gasPressureBurnerBedMbar: identical(gasPressureBurnerBedMbar, _sentinel)
+          ? this.gasPressureBurnerBedMbar
+          : gasPressureBurnerBedMbar as double?,
+      nozzleBrandType: identical(nozzleBrandType, _sentinel)
+          ? this.nozzleBrandType
+          : nozzleBrandType as String?,
+      nozzleFlowRate: identical(nozzleFlowRate, _sentinel)
+          ? this.nozzleFlowRate
+          : nozzleFlowRate as String?,
+      nozzleAngleDegrees: identical(nozzleAngleDegrees, _sentinel)
+          ? this.nozzleAngleDegrees
+          : nozzleAngleDegrees as double?,
+      pumpPressureBar: identical(pumpPressureBar, _sentinel)
+          ? this.pumpPressureBar
+          : pumpPressureBar as double?,
+      smokeIndexBacharach: identical(smokeIndexBacharach, _sentinel)
+          ? this.smokeIndexBacharach
+          : smokeIndexBacharach as int?,
       smokeIndexOk: identical(smokeIndexOk, _sentinel)
           ? this.smokeIndexOk
           : smokeIndexOk as bool?,
@@ -193,13 +210,25 @@ class OperatingConditionsDraft {
       fuelSupplyTightnessOk: identical(fuelSupplyTightnessOk, _sentinel)
           ? this.fuelSupplyTightnessOk
           : fuelSupplyTightnessOk as bool?,
-      verbrandingscontrole: verbrandingscontrole ?? this.verbrandingscontrole,
-      stooktoestelConform: stooktoestelConform ?? this.stooktoestelConform,
+      verbrandingscontrole: identical(verbrandingscontrole, _sentinel)
+          ? this.verbrandingscontrole
+          : verbrandingscontrole as String?,
+      stooktoestelConform: identical(stooktoestelConform, _sentinel)
+          ? this.stooktoestelConform
+          : stooktoestelConform as String?,
       rookgasafvoerkanaalConform:
-          rookgasafvoerkanaalConform ?? this.rookgasafvoerkanaalConform,
-      stookplaatsConform: stookplaatsConform ?? this.stookplaatsConform,
-      toestelWerkingGoed: toestelWerkingGoed ?? this.toestelWerkingGoed,
-      toestelWerkingVeilig: toestelWerkingVeilig ?? this.toestelWerkingVeilig,
+          identical(rookgasafvoerkanaalConform, _sentinel)
+              ? this.rookgasafvoerkanaalConform
+              : rookgasafvoerkanaalConform as String?,
+      stookplaatsConform: identical(stookplaatsConform, _sentinel)
+          ? this.stookplaatsConform
+          : stookplaatsConform as String?,
+      toestelWerkingGoed: identical(toestelWerkingGoed, _sentinel)
+          ? this.toestelWerkingGoed
+          : toestelWerkingGoed as String?,
+      toestelWerkingVeilig: identical(toestelWerkingVeilig, _sentinel)
+          ? this.toestelWerkingVeilig
+          : toestelWerkingVeilig as String?,
     );
   }
 }

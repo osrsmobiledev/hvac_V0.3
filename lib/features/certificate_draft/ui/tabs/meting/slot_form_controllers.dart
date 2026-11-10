@@ -99,6 +99,15 @@ class SlotFormControllers {
       efficiencyHiOk != null ||
       fluePressurePa != null;
 
+  /// Returns true if all six mandatory Flemish statutory combustion fields are filled.
+  bool get isStatutorilyComplete =>
+      o2.text.trim().isNotEmpty &&
+      co2.text.trim().isNotEmpty &&
+      coMgKwh.text.trim().isNotEmpty &&
+      flueTempTg.text.trim().isNotEmpty &&
+      ambientTempTa.text.trim().isNotEmpty &&
+      efficiencyHi.text.trim().isNotEmpty;
+
   String get calculatedNetTemp {
     final tg = parseClean(flueTempTg.text);
     final ta = parseClean(ambientTempTa.text);

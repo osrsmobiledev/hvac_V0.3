@@ -114,37 +114,54 @@ class MeasurementSlotDraft {
   /// Copies this instance with updated fields.
   MeasurementSlotDraft copyWith({
     String? slot,
-    double? o2Percent,
-    double? co2Percent,
-    double? coMgKwh,
+    Object? o2Percent = _sentinel,
+    Object? co2Percent = _sentinel,
+    Object? coMgKwh = _sentinel,
     Object? coOk = _sentinel,
-    double? flueTempTg,
-    double? ambientTempTa,
-    double? netTemp,
-    double? efficiencyHi,
+    Object? flueTempTg = _sentinel,
+    Object? ambientTempTa = _sentinel,
+    Object? netTemp = _sentinel,
+    Object? efficiencyHi = _sentinel,
     Object? efficiencyHiOk = _sentinel,
-    double? efficiencyHs,
-    double? fluePressurePa,
-    int? bacharach,
+    Object? efficiencyHs = _sentinel,
+    Object? fluePressurePa = _sentinel,
+    Object? bacharach = _sentinel,
     Object? bacharachOk = _sentinel,
     String? rawQrPayload,
   }) {
     return MeasurementSlotDraft(
       slot: slot ?? this.slot,
-      o2Percent: o2Percent ?? this.o2Percent,
-      co2Percent: co2Percent ?? this.co2Percent,
-      coMgKwh: coMgKwh ?? this.coMgKwh,
+      o2Percent: identical(o2Percent, _sentinel)
+          ? this.o2Percent
+          : o2Percent as double?,
+      co2Percent: identical(co2Percent, _sentinel)
+          ? this.co2Percent
+          : co2Percent as double?,
+      coMgKwh:
+          identical(coMgKwh, _sentinel) ? this.coMgKwh : coMgKwh as double?,
       coOk: identical(coOk, _sentinel) ? this.coOk : coOk as bool?,
-      flueTempTg: flueTempTg ?? this.flueTempTg,
-      ambientTempTa: ambientTempTa ?? this.ambientTempTa,
-      netTemp: netTemp ?? this.netTemp,
-      efficiencyHi: efficiencyHi ?? this.efficiencyHi,
+      flueTempTg: identical(flueTempTg, _sentinel)
+          ? this.flueTempTg
+          : flueTempTg as double?,
+      ambientTempTa: identical(ambientTempTa, _sentinel)
+          ? this.ambientTempTa
+          : ambientTempTa as double?,
+      netTemp:
+          identical(netTemp, _sentinel) ? this.netTemp : netTemp as double?,
+      efficiencyHi: identical(efficiencyHi, _sentinel)
+          ? this.efficiencyHi
+          : efficiencyHi as double?,
       efficiencyHiOk: identical(efficiencyHiOk, _sentinel)
           ? this.efficiencyHiOk
           : efficiencyHiOk as bool?,
-      efficiencyHs: efficiencyHs ?? this.efficiencyHs,
-      fluePressurePa: fluePressurePa ?? this.fluePressurePa,
-      bacharach: bacharach ?? this.bacharach,
+      efficiencyHs: identical(efficiencyHs, _sentinel)
+          ? this.efficiencyHs
+          : efficiencyHs as double?,
+      fluePressurePa: identical(fluePressurePa, _sentinel)
+          ? this.fluePressurePa
+          : fluePressurePa as double?,
+      bacharach:
+          identical(bacharach, _sentinel) ? this.bacharach : bacharach as int?,
       bacharachOk: identical(bacharachOk, _sentinel)
           ? this.bacharachOk
           : bacharachOk as bool?,

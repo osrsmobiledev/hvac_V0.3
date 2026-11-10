@@ -24,12 +24,16 @@
 | **14** | **Hardcoded inline Dutch strings inside widget trees** | Inline strings like camera error messages and modal slot titles bypassed the dictionary. | Added missing strings to `MetingDictionary` and `AppDictionary`; zero inline Dutch strings allowed in widgets. |
 | **15** | **Manual `Center > ConstrainedBox > ListView` boilerplate duplicated in Tabs 4, 5, 6** | `klant_tab_body.dart`, `stooktoestel_tab_body.dart`, and `meting_tab.dart` each repeated the same scroll-container boilerplate instead of using `WorkflowTabContainer`. | Replaced manual boilerplate with shared `WorkflowTabContainer(scrollKey: '...')`. |
 | **16** | **Uncoordinated SQLite queries during gestures & cold applet teardown** | Caused dropped frames (jank/lag) during the first tab swipe on physical devices because tabs independently read SQLite mid-gesture, and navigating to Home destroyed the screen. | Implemented parallel startup pre-warm (`AppWarmupService`), synchronous Frame-1 `visitId` injection to tabs, and `IndexedStack` screen preservation in `AppShellScreen`. |
+| **17** | **`copyWith` ignoring `null` values on cleared inputs** (`field: field ?? this.field`) | Dart's `??` operator treats `null` as "no argument passed, use existing value". When the user cleared an input, the model retained the old number in memory and did not save `NULL` to SQLite, so the old value reappeared after app restart. | Implemented official Dart Sentinel pattern (`static const Object _sentinel = Object();`) in `copyWith` across domain draft models (`OperatingConditionsDraft`, `BoilerDraft`, `MeasurementSlotDraft`). |
+| **18** | **Duplicate text field widget implementations** (`DarkTextField` vs `DarkTextFormField`) | Multiple distinct text input widgets created inconsistent controller synchronization and validation borders across tabs. | Refactored `DarkTextField` to delegate directly to `DarkTextFormField`, giving all tabs the same zero-jump validation and real-time controller listener sync. |
+| **19** | **Fragmented red error borders on multi-choice button groups** | Individual buttons each turned red separately on validation errors, creating a cluttered look instead of a unified group border like Tab Meting. | Created `TacticalGroupOutline` in `lib/core/widgets/tactical_group_outline.dart` to enclose button pairs/groups with a single, zero-layout-shift red border. |
+| **20** | **Confrontational / contradictory signature exception controls** | Displaying permanent "Weigert" / "Afwezig" buttons right under the customer signature box looked awkward when presenting the device to customers, and allowed conflicting signed + refused states. | Implemented progressive disclosure via `CustomerSignatureSection`: exception choices are tucked behind a discreet chevron ("Klant kan niet ondertekenen? ▾") and completely hidden once the customer signs (mutual exclusivity). |
 
 ---
 
-## 2. 16-Point Post-Implementation Checklist
+## 2. 20-Point Post-Implementation Checklist
 
-Run through these exact 16 verification checks before marking any tab, applet, or slice complete:
+Run through these exact 20 verification checks before marking any tab, applet, or slice complete:
 
 ### [ ] 1. File Length Limit ($\le$ 250 Lines)
 - [ ] No Dart file in `lib/` exceeds **250 lines**. Split large widgets into small, private `StatelessWidget` classes or sibling files.
@@ -107,6 +111,23 @@ Run through these exact 16 verification checks before marking any tab, applet, o
 - [ ] Individual tabs must **never** fire uncoordinated background database queries (`getOrCreateActiveDraft`, profile fetches) mid-gesture during swipe animations.
 - [ ] Active workflow applets must be preserved in memory via `IndexedStack` (or `AutomaticKeepAliveClientMixin`) to prevent cold teardowns when navigating between Home and the applet.
 - [ ] Core SQLite engine opening and shared profiles must be pre-warmed during startup (`AppWarmupService`) while the splash animation plays.
+
+### [ ] 17. Nullable Fields in `copyWith` (Official Dart Sentinel Pattern)
+- [ ] For any domain draft model that contains nullable properties (`double?`, `int?`, `String?`), **never** use `field: field ?? this.field` in `copyWith`.
+- [ ] Always declare `static const Object _sentinel = Object();` and check `identical(field, _sentinel) ? this.field : field as Type?`.
+- [ ] This guarantees that when a user clears an input, passing `null` explicitly assigns `null` and saves `NULL` to SQLite rather than secretly reverting to the old value.
+
+### [ ] 18. Unified Form Input Validation & Controller Sync
+- [ ] All text form inputs must use `DarkTextFormField` (or `DarkTextField`), which encapsulates both `DarkInputLabel` and zero-layout-shift error borders.
+- [ ] Every form field must maintain real-time listener synchronization between `TextEditingController` and `FormFieldState` (`controller.addListener`) so simulated values, QR scans, and cleared inputs immediately update error borders and validators.
+
+### [ ] 19. Unified Choice Group Validation (`TacticalGroupOutline`)
+- [ ] Multi-choice button pairs or binary toggles (e.g. Tab "Start" activity buttons, Tab "Meting" binary checks) must enclose the entire button row/group inside a single `TacticalGroupOutline`.
+- [ ] Individual buttons within the group should maintain their resting border, while `TacticalGroupOutline(hasError: ...)` highlights the entire group with a single zero-layout-shift `AppColors.errorRed` border on validation error.
+
+### [ ] 20. Foolproof Signature Exception UX (Progressive Disclosure & Mutual Exclusivity)
+- [ ] Customer signature blocks must hide exception actions (refusal, absence) when a valid signature is present to prevent contradictory states.
+- [ ] When unsigned, administrative exception controls must be tucked behind a discreet progressive disclosure trigger rather than displayed prominently to customers.
 
 ---
 

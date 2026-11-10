@@ -46,47 +46,81 @@ class SignatureCanvasArea extends StatelessWidget {
     required this.onPanStart,
     required this.onPanUpdate,
     required this.onPanEnd,
+    this.onSizeChanged,
   });
 
   final List<Offset?> points;
   final ValueChanged<Offset> onPanStart;
   final ValueChanged<Offset> onPanUpdate;
   final VoidCallback onPanEnd;
+  final ValueChanged<Size>? onSizeChanged;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 190,
-      decoration: BoxDecoration(
-        color: const Color(0xFFF8FAFC),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.18),
-          width: 1.0,
-        ),
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(11),
-        child: Stack(
-          children: [
-            Positioned(
-              bottom: 32,
-              left: 20,
-              right: 20,
-              child: Container(height: 1, color: const Color(0xFFCBD5E1)),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (onSizeChanged != null &&
+            constraints.hasBoundedWidth &&
+            constraints.hasBoundedHeight) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            onSizeChanged!(Size(constraints.maxWidth, constraints.maxHeight));
+          });
+        }
+
+        return Container(
+          decoration: BoxDecoration(
+            color: const Color(0xFFF8FAFC),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.18),
+              width: 1.0,
             ),
-            GestureDetector(
-              onPanStart: (d) => onPanStart(d.localPosition),
-              onPanUpdate: (d) => onPanUpdate(d.localPosition),
-              onPanEnd: (_) => onPanEnd(),
-              child: CustomPaint(
-                painter: SignaturePainter(points: points),
-                size: Size.infinite,
-              ),
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(11),
+            child: Stack(
+              children: [
+                // Signature baseline with cross indicator for seniors / customer alignment
+                Positioned(
+                  bottom: 40,
+                  left: 20,
+                  right: 20,
+                  child: Row(
+                    children: [
+                      const Text(
+                        '✕',
+                        style: TextStyle(
+                          color: Color(0xFF94A3B8),
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Container(
+                          height: 1.2,
+                          color: const Color(0xFFCBD5E1),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Positioned.fill(
+                  child: GestureDetector(
+                    onPanStart: (d) => onPanStart(d.localPosition),
+                    onPanUpdate: (d) => onPanUpdate(d.localPosition),
+                    onPanEnd: (_) => onPanEnd(),
+                    child: CustomPaint(
+                      painter: SignaturePainter(points: points),
+                      size: Size.infinite,
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }

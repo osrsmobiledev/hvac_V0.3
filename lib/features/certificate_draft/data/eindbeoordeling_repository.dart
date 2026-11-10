@@ -46,6 +46,7 @@ class EindbeoordelingRepository {
           'technician_signature_path',
           'customer_signature_path',
           'customer_signature_name',
+          'customer_signature_exception',
         ],
         where: 'id = ?',
         whereArgs: [visitId],

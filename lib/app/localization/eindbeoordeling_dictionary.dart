@@ -100,6 +100,15 @@ abstract final class EindbeoordelingDictionary {
       'Weet u zeker dat u deze handtekening wilt wissen?';
   static const String feedbackSignatureCleared = 'Handtekening gewist';
 
+  // --- Customer Signature Exceptions ---
+  static const String lblKlantKanNietTekenen = 'Klant kan niet ondertekenen?';
+  static const String btnKlantWeigert = 'Weigert';
+  static const String btnKlantAfwezig = 'Afwezig';
+  static const String statusKlantWeigert = 'Klant weigert te ondertekenen';
+  static const String statusKlantAfwezig = 'Klant afwezig';
+  static const String subStatutairVermeld =
+      'Wordt statutair vermeld op het attest';
+
   // --- Actions & Feedback ---
   static const String btnVoltooien = 'Verbrandingsattest Voltooien';
   static const String toastSaved = 'Eindbeoordeling opgeslagen';

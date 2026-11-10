@@ -142,8 +142,12 @@ class MetingFormControllers {
       gasPressureBlockMbar: SlotFormControllers.parseClean(gasBlock.text),
       gasPressureBurnerBedMbar:
           SlotFormControllers.parseClean(gasBurnerBed.text),
-      nozzleBrandType: nozzleBrandType.text.trim(),
-      nozzleFlowRate: nozzleFlowRate.text.trim(),
+      nozzleBrandType: nozzleBrandType.text.trim().isEmpty
+          ? null
+          : nozzleBrandType.text.trim(),
+      nozzleFlowRate: nozzleFlowRate.text.trim().isEmpty
+          ? null
+          : nozzleFlowRate.text.trim(),
       nozzleAngleDegrees: SlotFormControllers.parseClean(nozzleAngle.text),
       pumpPressureBar: SlotFormControllers.parseClean(pumpPressure.text),
       smokeIndexBacharach: parseInt(smokeIndex.text),

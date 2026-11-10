@@ -65,8 +65,12 @@ class _KlantTabState extends State<KlantTab>
         widget.customerRepository == null &&
         widget.draftRepository == null) {
       _draftVisitId = c!.activeDraft!.id;
-      if (c.activeCustomer != null) _controllers.populateCustomer(_activeCustomer = c.activeCustomer!);
-      if (c.activeServiceLocation != null) _applyLocation(c.activeServiceLocation!);
+      if (c.activeCustomer != null) {
+        _controllers.populateCustomer(_activeCustomer = c.activeCustomer!);
+      }
+      if (c.activeServiceLocation != null) {
+        _applyLocation(c.activeServiceLocation!);
+      }
       _isLoading = false;
     } else {
       _loadInitialData();
@@ -85,7 +89,9 @@ class _KlantTabState extends State<KlantTab>
       final res = await _coord.loadDraftData();
       _draftVisitId = res.draftId;
       if (mounted) {
-        if (res.customer != null) _controllers.populateCustomer(_activeCustomer = res.customer!);
+        if (res.customer != null) {
+          _controllers.populateCustomer(_activeCustomer = res.customer!);
+        }
         if (res.location != null) _applyLocation(res.location!);
         setState(() => _isLoading = false);
       }
@@ -155,20 +161,26 @@ class _KlantTabState extends State<KlantTab>
   }
 
   Future<void> _onNewPressed() async {
-    if (!await KlantActionDialogs.confirmNewCustomer(context) || !mounted) return;
+    if (!await KlantActionDialogs.confirmNewCustomer(context) || !mounted) {
+      return;
+    }
     _takeSnapshot();
     _clearCustomerForm();
     setState(() => _isEditing = true);
   }
 
   Future<void> _onEditPressed() async {
-    if (!await KlantActionDialogs.confirmEditCustomer(context) || !mounted) return;
+    if (!await KlantActionDialogs.confirmEditCustomer(context) || !mounted) {
+      return;
+    }
     _takeSnapshot();
     setState(() => _isEditing = true);
   }
 
   Future<void> _onSavePressed() async {
-    if (!(_formKey.currentState?.validate() ?? true)) return;
+    if (!(_formKey.currentState?.validate() ?? true)) {
+      return;
+    }
     await _saveToDatabase();
     if (!mounted) return;
     setState(() => _isEditing = false);
@@ -176,7 +188,9 @@ class _KlantTabState extends State<KlantTab>
   }
 
   Future<void> _onCancelPressed() async {
-    if (!await KlantActionDialogs.confirmCancelEdit(context) || !mounted) return;
+    if (!await KlantActionDialogs.confirmCancelEdit(context) || !mounted) {
+      return;
+    }
     setState(() {
       _restoreSnapshot();
       _isEditing = false;
@@ -184,7 +198,9 @@ class _KlantTabState extends State<KlantTab>
   }
 
   Future<void> _onDeletePressed() async {
-    if (!await KlantActionDialogs.confirmDeleteCustomer(context) || !mounted) return;
+    if (!await KlantActionDialogs.confirmDeleteCustomer(context) || !mounted) {
+      return;
+    }
     _clearCustomerForm();
     setState(() => _isEditing = false);
   }

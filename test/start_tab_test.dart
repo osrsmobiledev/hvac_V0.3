@@ -4,6 +4,7 @@ import 'package:hvac_app/app/localization/app_dictionary.dart';
 import 'package:hvac_app/app/theme/app_colors.dart';
 import 'package:hvac_app/app/theme/app_theme.dart';
 import 'package:hvac_app/core/database/app_database.dart';
+import 'package:hvac_app/core/widgets/tactical_group_outline.dart';
 import 'package:hvac_app/features/certificate_draft/data/draft_repository.dart';
 import 'package:hvac_app/features/certificate_draft/domain/draft_visit.dart';
 import 'package:hvac_app/features/certificate_draft/ui/tabs/start/activity_option_tile.dart';
@@ -275,12 +276,50 @@ void main() {
       );
       expect(find.text('Volgnummer attest is verplicht'), findsNothing);
 
-      // Verify activity tiles have red border
+      // Verify unified TacticalGroupOutline has red border outlining both activity options
+      final groupOutline = tester.widget<TacticalGroupOutline>(
+        find.byType(TacticalGroupOutline),
+      );
+      expect(groupOutline.hasError, isTrue);
+
+      final groupContainer = tester.widget<Container>(
+        find
+            .descendant(
+              of: find.byType(TacticalGroupOutline),
+              matching: find.byType(Container),
+            )
+            .first,
+      );
+      final border = (groupContainer.decoration as BoxDecoration).border;
+      expect(border?.top.color, AppColors.errorRed);
+
+      // Verify individual buttons keep resting border (not individual error outlines)
       final activityTiles = tester.widgetList<ActivityOptionTile>(
         find.byType(ActivityOptionTile),
       );
-      expect(activityTiles.first.isError, isTrue);
-      expect(activityTiles.last.isError, isTrue);
+      expect(activityTiles.first.isError, isFalse);
+      expect(activityTiles.last.isError, isFalse);
+
+      // Selecting an activity option immediately clears the group error outline
+      await tester.tap(find.widgetWithText(ActivityOptionTile, 'Onderhoud'));
+      await tester.pump();
+
+      final updatedGroupOutline = tester.widget<TacticalGroupOutline>(
+        find.byType(TacticalGroupOutline),
+      );
+      expect(updatedGroupOutline.hasError, isFalse);
+
+      final updatedContainer = tester.widget<Container>(
+        find
+            .descendant(
+              of: find.byType(TacticalGroupOutline),
+              matching: find.byType(Container),
+            )
+            .first,
+      );
+      final updatedBorder =
+          (updatedContainer.decoration as BoxDecoration).border;
+      expect(updatedBorder?.top.color, Colors.transparent);
 
       // Verify sequence number input box has red border
       final attestTextField = tester.widget<TextField>(find.descendant(

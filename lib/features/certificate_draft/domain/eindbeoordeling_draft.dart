@@ -11,6 +11,7 @@ class EindbeoordelingDraft {
     this.technicianSignaturePath,
     this.customerSignaturePath,
     this.customerSignatureName,
+    this.customerSignatureException,
   });
 
   final String? toestelWerkingGoed;
@@ -21,6 +22,7 @@ class EindbeoordelingDraft {
   final String? technicianSignaturePath;
   final String? customerSignaturePath;
   final String? customerSignatureName;
+  final String? customerSignatureException; // 'refused' | 'absent' | null
 
   bool get isGood => toestelWerkingGoed == 'Goed';
   bool get isSafe => toestelWerkingVeilig == 'Veilig';
@@ -37,6 +39,10 @@ class EindbeoordelingDraft {
   bool get isCustomerSigned =>
       customerSignaturePath != null && customerSignaturePath!.trim().isNotEmpty;
 
+  /// True if customer signed or a statutory exception applies ('refused' | 'absent').
+  bool get isCustomerSignatureComplete =>
+      isCustomerSigned || customerSignatureException != null;
+
   /// Calculates statutory next inspection date per Flemish regulations:
   /// - Gas: +2 years from inspection date
   /// - Liquid (Stookolie) & Solid: +1 year from inspection date
@@ -48,10 +54,8 @@ class EindbeoordelingDraft {
     final trimmed = fuelType.trim();
     if (trimmed.isEmpty) return null;
     final base = fromDate ?? DateTime.now();
-    final isGas = trimmed.toLowerCase().contains('gas');
-    final yearsToAdd = isGas ? 2 : 1;
-    final nextDate = DateTime(base.year + yearsToAdd, base.month, base.day);
-    return formatDateDmy(nextDate);
+    final years = trimmed.toLowerCase().contains('gas') ? 2 : 1;
+    return formatDateDmy(DateTime(base.year + years, base.month, base.day));
   }
 
   /// Calculates the statutory 3-month remediation deadline date
@@ -169,20 +173,15 @@ class EindbeoordelingDraft {
   /// Parses standard ISO YYYY-MM-DD or DD/MM/YYYY into DateTime.
   static DateTime? parseDate(String? raw) {
     if (raw == null || raw.trim().isEmpty) return null;
-    final parts = raw.trim().split(RegExp(r'[-/]'));
-    if (parts.length != 3) return null;
-    if (parts[0].length == 4) {
-      final y = int.tryParse(parts[0]) ?? DateTime.now().year;
-      final m = int.tryParse(parts[1]) ?? 1;
-      final d = int.tryParse(parts[2]) ?? 1;
-      return DateTime(y, m, d);
-    } else {
-      final d = int.tryParse(parts[0]) ?? 1;
-      final m = int.tryParse(parts[1]) ?? 1;
-      final y = int.tryParse(parts[2]) ?? DateTime.now().year;
-      return DateTime(y, m, d);
-    }
+    final p = raw.trim().split(RegExp(r'[-/]'));
+    if (p.length != 3) return null;
+    final y = p[0].length == 4 ? int.tryParse(p[0]) : int.tryParse(p[2]);
+    final m = int.tryParse(p[1]) ?? 1;
+    final d = p[0].length == 4 ? int.tryParse(p[2]) : int.tryParse(p[0]);
+    return DateTime(y ?? DateTime.now().year, m, d ?? 1);
   }
+
+  static const Object _sentinel = Object();
 
   EindbeoordelingDraft copyWith({
     String? toestelWerkingGoed,
@@ -193,10 +192,12 @@ class EindbeoordelingDraft {
     String? technicianSignaturePath,
     String? customerSignaturePath,
     String? customerSignatureName,
+    Object? customerSignatureException = _sentinel,
     bool clearTechnicianSignature = false,
     bool clearCustomerSignature = false,
     bool clearToestelWerkingGoed = false,
     bool clearToestelWerkingVeilig = false,
+    bool clearCustomerSignatureException = false,
   }) {
     return EindbeoordelingDraft(
       toestelWerkingGoed: clearToestelWerkingGoed
@@ -216,6 +217,11 @@ class EindbeoordelingDraft {
           : (customerSignaturePath ?? this.customerSignaturePath),
       customerSignatureName:
           customerSignatureName ?? this.customerSignatureName,
+      customerSignatureException: clearCustomerSignatureException
+          ? null
+          : (identical(customerSignatureException, _sentinel)
+              ? this.customerSignatureException
+              : customerSignatureException as String?),
     );
   }
 
@@ -229,6 +235,8 @@ class EindbeoordelingDraft {
       technicianSignaturePath: map['technician_signature_path'] as String?,
       customerSignaturePath: map['customer_signature_path'] as String?,
       customerSignatureName: map['customer_signature_name'] as String?,
+      customerSignatureException:
+          map['customer_signature_exception'] as String?,
     );
   }
 
@@ -242,6 +250,7 @@ class EindbeoordelingDraft {
       'technician_signature_path': technicianSignaturePath,
       'customer_signature_path': customerSignaturePath,
       'customer_signature_name': customerSignatureName,
+      'customer_signature_exception': customerSignatureException,
     };
   }
 }

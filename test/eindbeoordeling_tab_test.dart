@@ -434,5 +434,68 @@ void main() {
       expect(find.text(EindbeoordelingDictionary.lblVerluchtingRookgasafvoer),
           findsOneWidget);
     });
+
+    testWidgets(
+        'Customer signature exception buttons (Weigert / Afwezig) toggle and update tile display',
+        (tester) async {
+      final repo = FakeEindbeoordelingRepository();
+      await pumpTabScreen(tester, repo: repo);
+
+      // Initially, prompt says 'Tik om te ondertekenen'
+      expect(find.text(EindbeoordelingDictionary.btnTikOmTeTekenen),
+          findsNWidgets(2)); // Tech + Customer
+
+      // Progressive disclosure trigger is present, buttons initially collapsed
+      expect(find.text(EindbeoordelingDictionary.lblKlantKanNietTekenen),
+          findsOneWidget);
+      expect(
+          find.text(EindbeoordelingDictionary.btnKlantWeigert), findsNothing);
+
+      // Tap trigger to expand
+      await tester
+          .tap(find.text(EindbeoordelingDictionary.lblKlantKanNietTekenen));
+      await tester.pumpAndSettle();
+
+      expect(
+          find.text(EindbeoordelingDictionary.btnKlantWeigert), findsOneWidget);
+      expect(
+          find.text(EindbeoordelingDictionary.btnKlantAfwezig), findsOneWidget);
+
+      // 1. Tap "Weigert"
+      await tester.tap(find.text(EindbeoordelingDictionary.btnKlantWeigert));
+      await tester.pumpAndSettle();
+
+      expect(repo.draft.customerSignatureException, 'refused');
+      expect(find.text(EindbeoordelingDictionary.statusKlantWeigert),
+          findsOneWidget);
+      expect(find.text(EindbeoordelingDictionary.subStatutairVermeld),
+          findsOneWidget);
+
+      // 2. Tap "Weigert" again to unselect (toggle off)
+      await tester.tap(find.text(EindbeoordelingDictionary.btnKlantWeigert));
+      await tester.pumpAndSettle();
+
+      expect(repo.draft.customerSignatureException, isNull);
+      expect(find.text(EindbeoordelingDictionary.btnTikOmTeTekenen),
+          findsNWidgets(2));
+
+      // 3. Tap "Afwezig"
+      await tester.tap(find.text(EindbeoordelingDictionary.btnKlantAfwezig));
+      await tester.pumpAndSettle();
+
+      expect(repo.draft.customerSignatureException, 'absent');
+      expect(find.text(EindbeoordelingDictionary.statusKlantAfwezig),
+          findsOneWidget);
+      expect(find.text(EindbeoordelingDictionary.subStatutairVermeld),
+          findsOneWidget);
+
+      // 4. Tap "Weigert" while "Afwezig" is active switches directly to refused
+      await tester.tap(find.text(EindbeoordelingDictionary.btnKlantWeigert));
+      await tester.pumpAndSettle();
+
+      expect(repo.draft.customerSignatureException, 'refused');
+      expect(find.text(EindbeoordelingDictionary.statusKlantWeigert),
+          findsOneWidget);
+    });
   });
 }

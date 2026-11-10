@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hvac_app/app/localization/meting_dictionary.dart';
-import 'package:hvac_app/app/theme/app_colors.dart';
+import 'package:hvac_app/core/widgets/tactical_group_outline.dart';
 import '../../widgets/bento_main_section.dart';
 import '../../widgets/dark_input_box.dart';
 import '../../widgets/dark_input_label.dart';
@@ -207,15 +207,8 @@ class OperatingConditionsCard extends StatelessWidget {
                 final hasError = fieldState.hasError &&
                     (smokeIndexController.text.trim().isEmpty ||
                         smokeIndexOk == null);
-                return Container(
-                  padding: const EdgeInsets.all(2.0),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(8.0),
-                    border: Border.all(
-                      color: hasError ? AppColors.errorRed : Colors.transparent,
-                      width: hasError ? 1.2 : 0.0,
-                    ),
-                  ),
+                return TacticalGroupOutline(
+                  hasError: hasError,
                   child: BacharachSelector(
                     controller: smokeIndexController,
                     isOk: smokeIndexOk,

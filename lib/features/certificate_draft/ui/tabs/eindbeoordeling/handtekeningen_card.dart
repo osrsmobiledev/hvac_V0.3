@@ -10,6 +10,7 @@ import 'package:hvac_app/core/widgets/tactical_confirm_dialog.dart';
 import 'package:hvac_app/core/widgets/tactical_feedback.dart';
 import 'package:hvac_app/features/certificate_draft/domain/eindbeoordeling_draft.dart';
 import 'package:hvac_app/features/certificate_draft/ui/widgets/bento_main_section.dart';
+import 'customer_signature_section.dart';
 import 'signature_tile.dart';
 
 class HandtekeningenCard extends StatelessWidget {
@@ -63,45 +64,57 @@ class HandtekeningenCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // 1. Handtekening technicus
-          SignatureTile(
-            label: EindbeoordelingDictionary.lblHandtekeningTechnicus,
-            signatureData: draft.technicianSignaturePath,
-            onTapSign: () => _openSignatureModal(
-              context,
-              title: EindbeoordelingDictionary.modalTitleTechnicianSignature,
-              onSigned: (path) => onDraftChanged(
-                draft.copyWith(technicianSignaturePath: path),
-              ),
-            ),
-            onClear: () => _confirmClearSignature(
-              context,
-              title: EindbeoordelingDictionary.dlgClearTechnicianSignatureTitle,
-              onConfirmed: () => onDraftChanged(
-                draft.copyWith(clearTechnicianSignature: true),
-              ),
-            ),
+          // 1. Handtekening technicus — required pre-flight field
+          FormField<String>(
+            key: const ValueKey('signature_technician_field'),
+            initialValue: draft.technicianSignaturePath,
+            validator: (_) {
+              final hasSig = draft.technicianSignaturePath != null &&
+                  draft.technicianSignaturePath!.trim().isNotEmpty;
+              return hasSig ? null : '';
+            },
+            builder: (field) {
+              final hasSig = draft.technicianSignaturePath != null &&
+                  draft.technicianSignaturePath!.trim().isNotEmpty;
+              final isError = field.hasError && !hasSig;
+
+              return SignatureTile(
+                label: EindbeoordelingDictionary.lblHandtekeningTechnicus,
+                signatureData: draft.technicianSignaturePath,
+                isError: isError,
+                onTapSign: () => _openSignatureModal(
+                  context,
+                  title:
+                      EindbeoordelingDictionary.modalTitleTechnicianSignature,
+                  onSigned: (path) {
+                    onDraftChanged(
+                      draft.copyWith(technicianSignaturePath: path),
+                    );
+                    field.didChange(path);
+                  },
+                ),
+                onClear: () => _confirmClearSignature(
+                  context,
+                  title: EindbeoordelingDictionary
+                      .dlgClearTechnicianSignatureTitle,
+                  onConfirmed: () {
+                    onDraftChanged(
+                      draft.copyWith(clearTechnicianSignature: true),
+                    );
+                    field.didChange(null);
+                  },
+                ),
+              );
+            },
           ),
           const SizedBox(height: 14),
 
-          // 2. Handtekening klant
-          SignatureTile(
-            label: EindbeoordelingDictionary.lblHandtekeningKlant,
-            signatureData: draft.customerSignaturePath,
-            onTapSign: () => _openSignatureModal(
-              context,
-              title: EindbeoordelingDictionary.modalTitleCustomerSignature,
-              onSigned: (path) => onDraftChanged(
-                draft.copyWith(customerSignaturePath: path),
-              ),
-            ),
-            onClear: () => _confirmClearSignature(
-              context,
-              title: EindbeoordelingDictionary.dlgClearCustomerSignatureTitle,
-              onConfirmed: () => onDraftChanged(
-                draft.copyWith(clearCustomerSignature: true),
-              ),
-            ),
+          // 2. Handtekening klant — progressive disclosure for statutory exceptions
+          CustomerSignatureSection(
+            draft: draft,
+            onDraftChanged: onDraftChanged,
+            onOpenSignatureModal: _openSignatureModal,
+            onConfirmClearSignature: _confirmClearSignature,
           ),
         ],
       ),

@@ -106,5 +106,45 @@ void main() {
       );
       expect(solidDate, '25/10/2026');
     });
+
+    test('customerSignatureException serialization and completion logic', () {
+      // 1. Initial unselected
+      const draftEmpty = EindbeoordelingDraft();
+      expect(draftEmpty.customerSignatureException, isNull);
+      expect(draftEmpty.isCustomerSignatureComplete, isFalse);
+
+      // 2. Customer refused
+      final draftRefused = draftEmpty.copyWith(
+        customerSignatureException: 'refused',
+      );
+      expect(draftRefused.customerSignatureException, 'refused');
+      expect(draftRefused.isCustomerSignatureComplete, isTrue);
+
+      final map = draftRefused.toMap();
+      expect(map['customer_signature_exception'], 'refused');
+      final restored = EindbeoordelingDraft.fromMap(map);
+      expect(restored.customerSignatureException, 'refused');
+      expect(restored.isCustomerSignatureComplete, isTrue);
+
+      // 3. Customer absent
+      final draftAbsent = draftEmpty.copyWith(
+        customerSignatureException: 'absent',
+      );
+      expect(draftAbsent.customerSignatureException, 'absent');
+      expect(draftAbsent.isCustomerSignatureComplete, isTrue);
+
+      // 4. Clearing exception
+      final draftCleared = draftAbsent.copyWith(
+        clearCustomerSignatureException: true,
+      );
+      expect(draftCleared.customerSignatureException, isNull);
+      expect(draftCleared.isCustomerSignatureComplete, isFalse);
+
+      // 5. Signed with path
+      const draftSigned = EindbeoordelingDraft(
+        customerSignaturePath: 'data:image/png;base64,sig',
+      );
+      expect(draftSigned.isCustomerSignatureComplete, isTrue);
+    });
   });
 }

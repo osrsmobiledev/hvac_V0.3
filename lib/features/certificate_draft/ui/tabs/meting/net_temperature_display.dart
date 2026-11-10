@@ -33,7 +33,15 @@ class _NetTemperatureDisplayState extends State<NetTemperatureDisplay> {
   void didUpdateWidget(covariant NetTemperatureDisplay oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.calculatedNetTemp != widget.calculatedNetTemp) {
-      _controller.text = _formatText(widget.calculatedNetTemp);
+      // Defer the controller update to the post-frame phase so that
+      // FormState._fieldDidChange is never called during a layout rebuild.
+      // Without this deferral the Form ancestor triggers setState() during
+      // LayoutBuilder's layout pass, causing a markNeedsBuild() exception.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          _controller.text = _formatText(widget.calculatedNetTemp);
+        }
+      });
     }
   }
 

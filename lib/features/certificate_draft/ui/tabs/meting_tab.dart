@@ -39,7 +39,10 @@ class _MetingTabState extends State<MetingTab>
     with AutomaticKeepAliveClientMixin {
   final MeasurementDraftRepository _repository = MeasurementDraftRepository();
   final MetingFormControllers _controllers = MetingFormControllers();
-  final GlobalKey<FormState> _card1FormKey = GlobalKey<FormState>();
+
+  /// Single form key covering all three Meting cards (Card 1, 2 and 3).
+  /// Exposed to the coordinator via [widget.onFormKeyReady].
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   BoilerDraft _boiler = BoilerDraft.initial();
   OperatingConditionsDraft _operatingConditions =
@@ -54,12 +57,17 @@ class _MetingTabState extends State<MetingTab>
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => widget.onFormKeyReady?.call(_card1FormKey));
+    WidgetsBinding.instance
+        .addPostFrameCallback((_) => widget.onFormKeyReady?.call(_formKey));
     widget.boilerNotifier?.addListener(_onBoilerChanged);
     final cached = AppWarmupService.instance.cachedResult;
-    if (cached?.operatingConditions != null && cached?.measurementSlots != null) {
-      final boiler = widget.boilerNotifier?.draft ?? cached!.activeBoiler ?? BoilerDraft.initial();
-      _populateInitialData(boiler, cached!.operatingConditions!, cached.measurementSlots!);
+    if (cached?.operatingConditions != null &&
+        cached?.measurementSlots != null) {
+      final boiler = widget.boilerNotifier?.draft ??
+          cached!.activeBoiler ??
+          BoilerDraft.initial();
+      _populateInitialData(
+          boiler, cached!.operatingConditions!, cached.measurementSlots!);
     } else {
       _loadInitialData();
     }
@@ -118,10 +126,14 @@ class _MetingTabState extends State<MetingTab>
 
   Future<void> _loadInitialData() async {
     try {
-      final boiler = widget.boilerNotifier?.draft ?? await _repository.loadActiveBoilerDraft();
-      final conditions = await _repository.loadOperatingConditions(widget.visitId);
+      final boiler = widget.boilerNotifier?.draft ??
+          await _repository.loadActiveBoilerDraft();
+      final conditions =
+          await _repository.loadOperatingConditions(widget.visitId);
       final slots = await _repository.loadMeasurementSlots(widget.visitId);
-      if (mounted) setState(() => _populateInitialData(boiler, conditions, slots));
+      if (mounted) {
+        setState(() => _populateInitialData(boiler, conditions, slots));
+      }
     } catch (e, stack) {
       debugPrint('[MetingTab] _loadInitialData error: $e\n$stack');
       if (mounted) setState(() => _isLoading = false);
@@ -156,13 +168,12 @@ class _MetingTabState extends State<MetingTab>
   }
 
   void _trigger(Function fn) => fn(
-        context: context,
-        repository: _repository,
-        visitId: widget.visitId,
-        controllers: _controllers,
-        activeSlot: _activeSlot,
-        onFormChanged: _onFormChanged,
-      );
+      context: context,
+      repository: _repository,
+      visitId: widget.visitId,
+      controllers: _controllers,
+      activeSlot: _activeSlot,
+      onFormChanged: _onFormChanged);
 
   @override
   Widget build(BuildContext context) {
@@ -176,13 +187,13 @@ class _MetingTabState extends State<MetingTab>
     final p2Laag = _controllers.slots['proef2_laaglast']?.hasAnyValues ?? false;
     final p2Hoog = _controllers.slots['proef2_hooglast']?.hasAnyValues ?? false;
 
-    return WorkflowTabContainer(
-      scrollKey: 'meting_tab_scroll',
-      children: [
-        MetingFuelBanner(boiler: _boiler),
-        Form(
-          key: _card1FormKey,
-          child: OperatingConditionsCard(
+    return Form(
+      key: _formKey,
+      child: WorkflowTabContainer(
+        scrollKey: 'meting_tab_scroll',
+        children: [
+          MetingFuelBanner(boiler: _boiler),
+          OperatingConditionsCard(
             boiler: _boiler,
             boilerTempController: _controllers.boilerTemp,
             gasMeterController: _controllers.gasMeter,
@@ -200,50 +211,34 @@ class _MetingTabState extends State<MetingTab>
             },
             onChanged: _onFormChanged,
           ),
-        ),
-        const SizedBox(height: AppTheme.bentoCardSpacing),
-        MeasurementSlotsCard(
-          boiler: _boiler,
-          activeSlot: _activeSlot,
-          onSlotChanged: (s) => setState(() => _activeSlot = s),
-          onCopyFromDataTab: () => _trigger(MetingSlotActions.copyFromDataTab),
-          onScanEurolyzer: () => _trigger(MetingSlotActions.scanEurolyzer),
-          onClearSlot: () => _trigger(MetingSlotActions.clearSlot),
-          canClear: slotCtrl.hasAnyValues,
-          proef1HasData: p1HasData,
-          proef2HasData: p2Laag || p2Hoog,
-          proef2LaagHasData: p2Laag,
-          proef2HoogHasData: p2Hoog,
-          o2Controller: slotCtrl.o2,
-          co2Controller: slotCtrl.co2,
-          coMgKwhController: slotCtrl.coMgKwh,
-          coOk: slotCtrl.coOk,
-          onCoOkChanged: (v) {
-            setState(() => slotCtrl.setManualCoOk(v, _boiler));
-            _onFormChanged();
-          },
-          flueTempTgController: slotCtrl.flueTempTg,
-          ambientTempTaController: slotCtrl.ambientTempTa,
-          calculatedNetTemp: slotCtrl.calculatedNetTemp,
-          efficiencyHiController: slotCtrl.efficiencyHi,
-          efficiencyHiOk: slotCtrl.efficiencyHiOk,
-          onEfficiencyHiOkChanged: (v) {
-            setState(() => slotCtrl.setManualHiOk(v, _boiler));
-            _onFormChanged();
-          },
-          efficiencyHsController: slotCtrl.efficiencyHs,
-          onChanged: _onFormChanged,
-        ),
-        const SizedBox(height: AppTheme.bentoCardSpacing),
-        SafetyChecksCard(
-          boiler: _boiler,
-          draft: _operatingConditions,
-          onDraftChanged: (updated) {
-            setState(() => _operatingConditions = updated);
-            _onFormChanged();
-          },
-        ),
-      ],
+          const SizedBox(height: AppTheme.bentoCardSpacing),
+          MeasurementSlotsCard(
+            boiler: _boiler,
+            activeSlot: _activeSlot,
+            onSlotChanged: (s) => setState(() => _activeSlot = s),
+            slots: _controllers.slots,
+            onCopyFromDataTab: () =>
+                _trigger(MetingSlotActions.copyFromDataTab),
+            onScanEurolyzer: () => _trigger(MetingSlotActions.scanEurolyzer),
+            onClearSlot: () => _trigger(MetingSlotActions.clearSlot),
+            canClear: slotCtrl.hasAnyValues,
+            proef1HasData: p1HasData,
+            proef2HasData: p2Laag || p2Hoog,
+            proef2LaagHasData: p2Laag,
+            proef2HoogHasData: p2Hoog,
+            onChanged: _onFormChanged,
+          ),
+          const SizedBox(height: AppTheme.bentoCardSpacing),
+          SafetyChecksCard(
+            boiler: _boiler,
+            draft: _operatingConditions,
+            onDraftChanged: (updated) {
+              setState(() => _operatingConditions = updated);
+              _onFormChanged();
+            },
+          ),
+        ],
+      ),
     );
   }
 }

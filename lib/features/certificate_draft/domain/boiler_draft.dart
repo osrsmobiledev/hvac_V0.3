@@ -172,6 +172,8 @@ class BoilerDraft {
     };
   }
 
+  static const Object _sentinel = Object();
+
   /// Copies this instance with optional updated fields.
   BoilerDraft copyWith({
     int? id,
@@ -190,16 +192,16 @@ class BoilerDraft {
     bool? boilerBrandUnknown,
     String? boilerModel,
     bool? boilerModelUnknown,
-    int? boilerConstructionYear,
+    Object? boilerConstructionYear = _sentinel,
     bool? boilerConstructionYearUnknown,
     String? boilerSerialNumber,
     bool? boilerSerialNumberUnknown,
-    double? boilerNominalPowerKw,
+    Object? boilerNominalPowerKw = _sentinel,
     String? boilerType,
     String? burnerBrand,
     String? burnerModel,
     String? burnerSerialNumber,
-    int? burnerConstructionYear,
+    Object? burnerConstructionYear = _sentinel,
     String? burnerType,
     String? burnerFlowRate,
   }) {
@@ -220,20 +222,24 @@ class BoilerDraft {
       boilerBrandUnknown: boilerBrandUnknown ?? this.boilerBrandUnknown,
       boilerModel: boilerModel ?? this.boilerModel,
       boilerModelUnknown: boilerModelUnknown ?? this.boilerModelUnknown,
-      boilerConstructionYear:
-          boilerConstructionYear ?? this.boilerConstructionYear,
+      boilerConstructionYear: identical(boilerConstructionYear, _sentinel)
+          ? this.boilerConstructionYear
+          : boilerConstructionYear as int?,
       boilerConstructionYearUnknown:
           boilerConstructionYearUnknown ?? this.boilerConstructionYearUnknown,
       boilerSerialNumber: boilerSerialNumber ?? this.boilerSerialNumber,
       boilerSerialNumberUnknown:
           boilerSerialNumberUnknown ?? this.boilerSerialNumberUnknown,
-      boilerNominalPowerKw: boilerNominalPowerKw ?? this.boilerNominalPowerKw,
+      boilerNominalPowerKw: identical(boilerNominalPowerKw, _sentinel)
+          ? this.boilerNominalPowerKw
+          : boilerNominalPowerKw as double?,
       boilerType: boilerType ?? this.boilerType,
       burnerBrand: burnerBrand ?? this.burnerBrand,
       burnerModel: burnerModel ?? this.burnerModel,
       burnerSerialNumber: burnerSerialNumber ?? this.burnerSerialNumber,
-      burnerConstructionYear:
-          burnerConstructionYear ?? this.burnerConstructionYear,
+      burnerConstructionYear: identical(burnerConstructionYear, _sentinel)
+          ? this.burnerConstructionYear
+          : burnerConstructionYear as int?,
       burnerType: burnerType ?? this.burnerType,
       burnerFlowRate: burnerFlowRate ?? this.burnerFlowRate,
     );
