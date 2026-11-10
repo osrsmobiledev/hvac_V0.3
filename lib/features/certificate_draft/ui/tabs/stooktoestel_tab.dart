@@ -167,11 +167,10 @@ class _StooktoestelTabState extends State<StooktoestelTab>
         final (sub, other) = _fuelMemory.resolveForCategory(val);
         _fuelSubtype = sub;
         _fuelOtherText = other;
-        _burnerType = val == 'vloeibaar'
+        _burnerType = (val == 'vloeibaar' ||
+                (val == 'gas' && _burnerTechnology == 'ventilatorbrander'))
             ? 'afzonderlijk'
-            : (val == 'gas' && _burnerTechnology == 'ventilatorbrander')
-                ? 'afzonderlijk'
-                : 'geintegreerd';
+            : 'geintegreerd';
       });
 
   void _onFuelSubtype(String val) => _update(() {
@@ -194,9 +193,8 @@ class _StooktoestelTabState extends State<StooktoestelTab>
         }
       });
 
-  void _scanBarcode(TextEditingController target, String title) =>
-      TacticalFeedback.showInfo(
-          context, AppDictionary.barcodeScannerPlaceholder);
+  void _scanBarcode() => TacticalFeedback.showInfo(
+      context, AppDictionary.barcodeScannerPlaceholder);
 
   @override
   Widget build(BuildContext context) {
@@ -218,10 +216,8 @@ class _StooktoestelTabState extends State<StooktoestelTab>
         yearUnknown: _yearUnknown,
         burnerSerialUnknown: _burnerSerialUnknown,
         burnerYearUnknown: _burnerYearUnknown,
-        onCentralChanged: (v) => _update(() {
-          _isCentral = v;
-          if (!v) _centraalType = '';
-        }),
+        onCentralChanged: (v) => _update(
+            () => _centraalType = (_isCentral = v) ? _centraalType : ''),
         onCentraalTypeChanged: (val) => _update(() {
           _centraalType = (_centraalType == val && _isCentral) ? '' : val;
           _isCentral = _centraalType.isNotEmpty;
@@ -242,10 +238,8 @@ class _StooktoestelTabState extends State<StooktoestelTab>
             _update(() => _burnerSerialUnknown = v),
         onBurnerYearUnknownChanged: (v) =>
             _update(() => _burnerYearUnknown = v),
-        onScanToestelBarcode: () => _scanBarcode(
-            _controllers.toestelSerial, AppDictionary.hintScanToestelSerial),
-        onScanBranderBarcode: () => _scanBarcode(
-            _controllers.branderSerial, AppDictionary.hintScanBranderSerial),
+        onScanToestelBarcode: _scanBarcode,
+        onScanBranderBarcode: _scanBarcode,
         onFormChanged: () => _syncDraft(immediate: false),
       ),
     );

@@ -27,12 +27,70 @@ abstract final class EurolyzerQrParser {
     return _buildDraftFromMap(entries, slot, clean);
   }
 
+  /// Extracts the Eurolyzer instrument serial number (Tag 248 or 'SN=').
+  static String extractToolSerialNumber(String raw) {
+    final clean = raw.trim();
+    if (clean.isEmpty) return '';
+
+    // Check Systronik Tag 248: e.g. "248;06-52-01055"
+    final tagMatch =
+        RegExp(r'(?:^|[\r\n])248\s*;\s*([A-Za-z0-9\-]+)').firstMatch(clean);
+    if (tagMatch != null) return tagMatch.group(1)!.trim();
+
+    // Check key-value e.g. "SN=06-52-01055" or "SN: 06-52-01055"
+    final kvMatch =
+        RegExp(r'\b(?:sn|serial)[:=\s]+([A-Za-z0-9\-]+)', caseSensitive: false)
+            .firstMatch(clean);
+    if (kvMatch != null) return kvMatch.group(1)!.trim();
+
+    return '';
+  }
+
   /// Extracts key-value mappings from arbitrary delimited text.
   static Map<String, double> _extractKeyValuePairs(String text) {
     final Map<String, double> map = {};
-    // Split by newlines, semicolons, or commas
-    final tokens = text.split(RegExp(r'[\r\n;,]+'));
 
+    // 1. Check for Systronik tag-delimited lines (e.g. "26; 7.5 = Vol.% O2")
+    final lines = text.split(RegExp(r'[\r\n]+'));
+    for (final line in lines) {
+      final parts = line.split(';');
+      if (parts.length >= 2) {
+        final tag = parts[0].trim();
+        final rawVal = parts[1].split('=').first.trim().replaceAll(',', '.');
+        final val = double.tryParse(rawVal);
+        if (val != null) {
+          switch (tag) {
+            case '26':
+              map['o2'] = val;
+              break;
+            case '29':
+              map['comgkwh'] = val;
+              break;
+            case '5':
+              map['tg'] = val;
+              break;
+            case '7':
+              map['ta'] = val;
+              break;
+            case '11':
+              map['pa'] = val;
+              break;
+            case '36':
+              map['co2'] = val;
+              break;
+            case '62':
+              map['hi'] = val;
+              break;
+            case '205':
+              map['hs'] = val;
+              break;
+          }
+        }
+      }
+    }
+
+    // 2. Also check delimited tokens (lines, semicolons, commas) for key-value pairs
+    final tokens = text.split(RegExp(r'[\r\n;,]+'));
     for (final token in tokens) {
       final trimmed = token.trim();
       if (trimmed.isEmpty) continue;

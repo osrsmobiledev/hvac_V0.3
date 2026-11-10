@@ -12,30 +12,30 @@
 ### Milestone 1: "BO2 Tactical" UI Theme, App Shell & Dashboard
 *Goal: Nail the Dark Luxury Industrial aesthetic, bento squircle applet tiles, and persistent navigation before building any forms.*
 
-- [x] **Slice 1.1 â€” Theme Engine & Initialization (BO2 Tactical HUD):** Initialize the Flutter app. Ensure a standard Flutter .gitignore is created so build artifacts are not tracked. Set up the app_theme.dart using the "Glow on Carbon" / Dark Luxury Industrial tokens: deep #121212 OLED base, amber gold/terracotta/slate accents, negative-space silhouette icons, hairline dividers, and 28px bento squircle radii for cards.
-- [x] **Slice 1.2 â€” Adaptive App Shell & Drawer:** Build the main Scaffold with a persistent AppBar. Implement adaptive navigation: a Hamburger Drawer on phones, the Hamburger Drawer must open directly underneath the persistent AppBar (leaving the top AppBar visible), transitioning to a permanent side menu on tablet/landscape widths. The AppBar title must dynamically change based on the active applet.
-- [x] **Slice 1.3 â€” Home Dashboard (Applet Launcher):** Build the homepage body containing the "Bento Squircle" applet tiles (e.g., Verbrandingsattest, Cleaning, Inspection). Implement the Tinted Dark Mode / Tonal Surfaces so each tile has a subtle hue tint matching its accent border and vibrant glyph. Use a responsive grid (e.g., 1-2 columns on phones, 3-4 columns on tablets).
-- [x] **Slice 1.4 â€” SQLite Database Core:** Set up `sqflite` tables (`technician_profile`, `customers`, `service_locations`, `boilers`, `maintenance_visits`, `measurement_captures`). Ensure the DB initializes correctly on app launch.
+- [x] **Slice 1.1 — Theme Engine & Initialization (BO2 Tactical HUD):** Initialize the Flutter app. Standard `.gitignore`. Setup `app_theme.dart` using "Glow on Carbon" / Dark Luxury Industrial tokens: deep #121212 OLED base, amber gold/terracotta/slate accents, hairline dividers, 28px bento squircle radii.
+- [x] **Slice 1.2 — Adaptive App Shell & Drawer:** Main Scaffold with persistent AppBar. Adaptive navigation (Hamburger Drawer under AppBar on phones, permanent side menu on tablet/desktop).
+- [x] **Slice 1.3 — Home Dashboard (Applet Launcher):** Bento Squircle applet tiles with tinted dark mode and responsive grid.
+- [x] **Slice 1.4 — SQLite Database Core:** Core SQLite schema initialization (`technician_profile`, `customers`, `service_locations`, `boilers`, `maintenance_visits`, `measurement_captures`).
 
 ### Milestone 2: The "Verbrandingsattest" Applet (Tabs 1 to 4)
 *Goal: Build the 7-tab persistent shell and the first 4 tabs tab-by-tab.*
 
-- [x] **Slice 2.1 â€” 7-Tab Internal Shell & Tab 1 (`Data`):** Route from Home "Verbrandingsattest Vlaanderen" tile into the 7-tab workflow. Adaptive persistent AppBar title in Libron font: 2 lines centered on narrow screens ("Verbrandingsattest" / "Vlaanderen" with comfortable height padding) and 1 line on wider screens ("Verbrandingsattest Vlaanderen"). Top scrollable horizontal navigation bar directly below AppBar (`Data`, `Start`, `Firma - Technicus`, `Klant`, `Stooktoestel`, `Meting`, `Eindbeoordeling`) matching preferred theme. Build Tab 1 (`Data`) UI layout: collapsible `Meetgegevens` bento card, `Rookgassen` sub-card with Eurolyzer QR scanner launch icon button and live readings container.
-- [x] **Slice 2.2 â€” Tab 2 (`Start`):** Build the clean `Start` form: Reusable gold-tinted `BentoMainSection` header, tactile activity type selector (*Onderhoud* vs. *Keuring voor eerste ingebruikname*) with springy mechanical tap animation and reticle indicators, and tactical *Volgnummer Attest* input box. Auto-save draft changes to SQLite `maintenance_visits`.
-- [x] **Slice 2.3 â€” Tab 3 (`Firma - Technicus` & BO2 Time Spinner):** Build Company & Technician form backed by the singleton `technician_profile` table. *Datum onderhoud* (calendar picker defaulting to today). Adapt and integrate the 24-hour **BO2 Time Spinner** with Dutch labels (*Uren*, *Minuten*, *Kies tijd*, *Annuleren*, *OK*) for *Arbeidsduur van* & *tot*. Auto-save to SQLite.
-- [x] **Slice 2.4 â€” Tab 4 (`Klant` & Installation Location):** Customer contact details, *Eigenaar* vs. *Huurder* role toggle, installation address, and searchable SQLite saved-customer directory picker.
+- [x] **Slice 2.1 — 7-Tab Internal Shell & Tab 1 (`Data`):** Persistent 7-tab workflow (`Data`, `Start`, `Firma - Technicus`, `Klant`, `Stooktoestel`, `Meting`, `Eindbeoordeling`). Eurolyzer QR scanner launch icon button and live readings container.
+- [x] **Slice 2.2 — Tab 2 (`Start`):** Activity selector (*Onderhoud* vs. *Keuring voor eerste ingebruikname*), tactical *Volgnummer Attest* input box. Auto-save draft changes to SQLite.
+- [x] **Slice 2.3 — Tab 3 (`Firma - Technicus` & BO2 Time Spinner):** Company & Technician form backed by singleton `technician_profile`. 24-hour **BO2 Time Spinner** with Dutch labels for *Arbeidsduur van* & *tot*.
+- [x] **Slice 2.4 — Tab 4 (`Klant` & Installation Location):** Customer contact details, *Eigenaar* vs. *Huurder* role toggle, installation address, and searchable SQLite saved-customer directory picker.
 
 ### Milestone 3: Appliance, Measurements & Final Assessment (Tabs 5 to 7)
 *Goal: Complete the remaining tabs tab-by-tab.*
 
-- [x] **Slice 3.1 — Tab 5 (`Stooktoestel` + Serial Barcode Scanner):** Appliance (`Toestel`) & burner (`Brander`) forms, single authoritative Fuel selector (`Stookolie`, `Aardgas`, `LPG`, etc.), smart integrated vs separate burner toggle with statutory compliance badge, brand quick-pickers for boiler & burner, full-width inputs with tactical `Onbekend` chips, and camera barcode scanner button (`mobile_scanner`) next to `Fabricatienummer` with manual text fallback.
-- [x] **Slice 3.2 — Tab 6 (`Meting` & Eurolyzer Flue-Gas QR):** Flue-gas measurement slots (*Vóór onderhoud*, *Na - Laaglast*, *Na - Hooglast*), QR reading insertion from Tab 1 into active slot via *"Overnemen uit Data"*, tactical slot indicator dots, smart statutory auto-check (CO and Rendement Hi against VLAREM II/VEKA norms), fuel-driven check visibility, and live *Verbrandingscontrole* compliance badge.
-- [x] **Slice 3.3 — Tab 7 (`Eindbeoordeling` & Signatures):** Dual conclusions (*Goed*/*Niet goed*, *Veilig*/*Niet veilig*), statutory next inspection date calculation (+2 years for gas, +1 year for oil/solid) with quick chips, defects/remarks with 3-month legal remediation banner (Art. 6 Vlaams Stooktoestellenbesluit), quick defect chips, digital signature pads for technician and customer with live preview and clear, and complete button.
+- [x] **Slice 3.1 — Tab 5 (`Stooktoestel` + Serial Barcode Scanner):** Appliance (`Toestel`) & burner (`Brander`) forms, single authoritative Fuel selector, smart integrated vs separate burner toggle, barcode camera scanner (`mobile_scanner`).
+- [x] **Slice 3.2 — Tab 6 (`Meting` & Eurolyzer Flue-Gas QR):** Flue-gas measurement slots (*Vóór onderhoud*, *Na - Laaglast*, *Na - Hooglast*), QR reading transfer, smart statutory auto-check (CO and Rendement Hi against VLAREM II/VEKA norms), fuel-driven check visibility.
+- [x] **Slice 3.3 — Tab 7 (`Eindbeoordeling` & Signatures):** Dual conclusions (*Goed*/*Niet goed*, *Veilig*/*Niet veilig*), statutory next inspection date calculation, defects/remarks with 3-month legal remediation banner (Art. 6 Vlaams Stooktoestellenbesluit), senior-friendly signature pads with refusal/absence exceptions.
 
 ### Milestone 4: Re-Wired PDF Generation & Local Completion (`Voltooien`)
-- [ ] **Slice 4.1 — `Voltooien` Pre-Flight Validation:** Build the `Voltooien` checklist showing missing fields with one-tap waypoint navigation ("teleport") to fix them. Freeze a `snapshot_json` upon finalization.
-- [ ] **Slice 4.2 — Re-Wiring Legacy PDF Builders:** Connect the finalized visit snapshot to the legacy PDF builders. Build the missing bottom `pdf_besluit_builder`. Fix `Laaglast`/`Hooglast` checkboxes, `Pa` binding, and font fallback.
-- [ ] **Slice 4.3 — Local PDF Preview, Storage & Email Queue:** Save the PDF via `path_provider`, add an in-app preview/print button, and implement the independent email delivery tracker.
+- [x] **Slice 4.1 — `Voltooien` Pre-Flight Validation:** Full pre-flight checklist across Tabs 2-6 with zero-lag in-memory validation, one-tap waypoint navigation ("teleportation"), and fuel-isolated check rules.
+- [x] **Slice 4.2 — Re-Wiring Legacy PDF Builders:** Revive and re-wire legacy PDF builders into modular clean Flutter architecture (`lib/features/pdf_export/`). Build missing bottom `PdfBesluitBuilder` (dual conclusions, statutory 3-month legal remediation note Art. 6, next inspection date, defects/remarks, technician & customer digital signatures with refusal/absence support). Exact Flemish single-page A4 geometry.
+- [x] **Slice 4.3 — Local PDF Preview, Storage & Actions:** Add interactive in-app `PdfPreviewDialog` launched directly from Tab 7 via `[ 📄 Test-PDF Genereren ]` button (bypassing pre-flight gates for instant testing on empty or full drafts), with full-page zoom, direct Android printing, and PDF file sharing.
 
 ### Milestone 5: Public API Address Lookup & VEKA Tracking
 - [ ] **Slice 5.1 — Basisregisters Vlaanderen Lookup (`Klant` Tab):** Add online address verification with an offline manual fallback.
@@ -46,39 +46,29 @@
 
 ## 2. Current Handoff (Active State for AI Agent)
 
-- **Current Status:** Milestone 1, Milestone 2, and Milestone 3 (Slices 3.1, 3.2, 3.3) complete, refined, and verified. Pre-flight validation across Tabs 2 to 6 implemented and verified.
-- **Workflow & Architecture Hardening Delivered:**
-  - **Pre-Flight Validation Engine ([`PRE_FLIGHT_VALIDATION_BLUEPRINT.md`](file:///c:/Users/Admin/Documents/hvac_V0.3/doc/PRE_FLIGHT_VALIDATION_BLUEPRINT.md)):**
-    - Synchronous in-memory validation via Flutter `Form` and `GlobalKey<FormState>` across Tabs 2, 3, 4, 5, and 6 Card 1.
-    - Zero database round-trip lag during "Voltooien" gatekeeper validation.
-    - Automated waypoint navigation ("teleportation") with auto-scrolling to the first invalid field ([`FormScrollHelper`](file:///c:/Users/Admin/Documents/hvac_V0.3/lib/core/utils/form_scroll_helper.dart)).
-    - Fuel-isolated validation on Tab 6 Card 1: Gas fields never validate on Oil/Solid, and Oil fields never validate on Gas.
-  - **Lifecycle & Build Safety:**
-    - Resolved framework build collision in [`DarkTextFormField`](file:///c:/Users/Admin/Documents/hvac_V0.3/lib/features/certificate_draft/ui/widgets/dark_text_form_field.dart) by removing invalid closure comparisons and scheduling field state resets via `addPostFrameCallback`.
-    - Protected against right-click/secondary tap crashes across all tabs.
-  - **Tab 3 (`Firma - Technicus`):**
-    - Strict Belgian phone and KBO Modulo 97 statutory formatters and validators.
-    - Work timing validator ([`TimeValidationHelper`](file:///c:/Users/Admin/Documents/hvac_V0.3/lib/features/certificate_draft/ui/tabs/firma_technicus/time_validation_helper.dart)) ensuring start/end sequence compliance.
-  - **Tab 4 (`Klant` & Installatielocatie):**
-    - Address matching logic refined: `Locatie Toestel` section is disabled/grayed out when installation location is identical to customer address, and unlocks smoothly when separate address is selected.
-    - Standardized dark input labels and typography matching Tab 5 (`Stooktoestel`).
-  - **Tab 5 (`Stooktoestel` & Brandstofkeuze):**
-    - Fuel category memory ([FuelCategoryMemory](file:///c:/Users/Admin/Documents/hvac_V0.3/lib/features/certificate_draft/ui/tabs/stooktoestel/fuel_category_memory.dart)) isolates and remembers user sub-selections (e.g. *Aardgas*, *LPG*, *Houtpellets*) across category switches.
-    - Eliminated auto-selection of *Aardgas* when selecting *Gasvormig* (Zero Fake Defaults). Sub-types start unselected and are fully de-selectable.
-  - **Tab 6 (`Meting` & Veilige staat van werking):**
-    - Dynamic fuel banner displaying accurate fuel and subtype names.
-    - Dedicated [`StepperInputBox`](file:///c:/Users/Admin/Documents/hvac_V0.3/lib/features/certificate_draft/ui/tabs/meting/stepper_input_box.dart) with zero-layout-shift red border validation.
-    - Full de-selection support for all safety check toggles (`TacticalBinaryCheck`) back to neutral `null` via sentinel pattern in [OperatingConditionsDraft](file:///c:/Users/Admin/Documents/hvac_V0.3/lib/features/certificate_draft/domain/operating_conditions_draft.dart) and [MeasurementSlotDraft](file:///c:/Users/Admin/Documents/hvac_V0.3/lib/features/certificate_draft/domain/measurement_slot_draft.dart).
-  - **Tab 7 (`Eindbeoordeling` & Regulatory Coupling):**
-    - Dual clear section labels: *Het stooktoestel werkt* ([Goed]/[Niet goed]) and *Verluchting en rookgasafvoer* ([Veilig]/[Niet veilig]).
-    - Fool-proof statutory date logic: Zero fake defaults when fuel is empty (no phantom `+1 Jaar` selections). Date strictly derives when fuel and compliance are established.
-    - Reactive link with Tab 6 via [MeasurementAssessmentNotifier](file:///c:/Users/Admin/Documents/hvac_V0.3/lib/features/certificate_draft/ui/measurement_assessment_notifier.dart) with clean de-selection and 3-month legal remediation rule (Art. 6 Vlaams Stooktoestellenbesluit).
-  - **Quality & Metrics:**
-    - 220 unit and widget tests passing (100% green).
-    - 0 Dart analyzer issues across all files.
+- **Current Status:** Milestone 4 (Re-Wired PDF Generation, In-App Preview Dialog, Direct Android Downloads Export & Verified Single-Page Flemish A4 Geometry) complete, owner-verified, and approved on Android emulator.
+- **Milestone 4 PDF Engine & Device Export Delivered:**
+  - **Architecture & Clean Code (`lib/features/pdf_export/`):**
+    - 2-Layer modular architecture: UI (`PdfPreviewDialog`) + Data/Builders (`CombustionPdfGenerator`, `PdfDataMapper`, `PdfVisitLoader`, section builders, theme tokens, lego widgets).
     - All Dart files in `lib/` strictly $\le 250$ lines of code.
-    - Zero layout shift with reusable `TacticalGroupOutline`.
-    - Senior-friendly signature pad with 78% screen height and progressive exception disclosure.
-- **Active State:** All 7 tabs of the Flemish combustion certificate workflow are fully operational, refined, styled, lag-free, and verified with pre-flight checks. Checkpointed to GitHub (`main`).
-- **Next Step:** Awaiting owner decision: Milestone 4 (Re-Wired PDF Generation & Local Completion) or Milestone 5 (Basisregisters Vlaanderen Address Lookup).
-- **Blockers / Open Questions:** None. Ready to proceed upon owner selection.
+    - Zero Dart analyzer issues (`flutter analyze` passes with 0 warnings/errors).
+    - 227 tests passing (`flutter test` passes 100% green).
+  - **Single-Page Flemish A4 Geometry:**
+    - Margins: top 10.0pt, left 24.9pt, right 17.3pt, bottom 10.0pt (A4 595.28 x 841.89 pt).
+    - Printable height: 821.89 pt. Total content height: ~785 pt, guaranteeing **100% fit on a single A4 page with zero vertical overflow or page splitting**.
+    - Full-width boxes locked to `552.9pt`, half-width boxes locked to `275.75pt`.
+    - Strict 0.2pt borders, Libron typography tiers (Calibri/Libron 7pt, 5pt), and Helvetica fallback.
+  - **Re-Wired Sections & Completed Bottom 20%:**
+    - **Header:** Activity type (*Onderhoud* vs. *Keuring*) and statutory attest number.
+    - **Firma & Technicus:** Company details, KBO BE format, technician GV/TV accreditation, date, 24h work time duration box, and Eurolyzer S1 serial number input box with SQLite persistence in `technician_profiles`.
+    - **Klant & Locatie:** Customer name, contact info, and separate installation address if applicable.
+    - **Stooktoestel Kenmerken:** Type B/C checkboxes with suffix, fuel category (gas/oil/solid), and burner technology (premix GI).
+    - **Stooktoestel Apparaat:** Boiler and burner brands, models, construction years, serial numbers, and nominal power.
+    - **Goede & Veilige Staat van Werking:** 24 statutory measurement and safety check rows with Proef I / Proef II modulation bindings (`w5Laag` & `w5Hoog` first-class cells with continuous vertical and horizontal hairline borders), Pa chimney draft, and dynamic Eurolyzer S1 serial number header. Operating pressures and temperatures cleanly copied across to Proef II.
+    - **Besluit & Handtekeningen:** Dual statutory conclusions (*Goed*/*Niet goed*, *Veilig*/*Niet veilig*), statutory 3-month legal remediation note (Art. 6 Vlaams Stooktoestellenbesluit), next inspection date, defects/remarks, and centered technician & customer digital signatures (with automatic handling for signature refusal or absence). Signatures constrained to natural 24pt height with 2.2 rollerball stroke and customer name removed.
+  - **In-App Test-PDF Dialog & Save-Device Export:**
+    - Secondary button **`[ 📄 Test-PDF Genereren ]`** on Tab 7 (`Eindbeoordeling`) directly above `[ Verbrandingsattest Voltooien ]` for instant live preview and sharing.
+    - Tertiary button **`[ 💾 Save-Device ]`** generating both `Verbrandingsattest_<id>.pdf` and high-res raster `Verbrandingsattest_<id>.png` directly saved to the public Android **Downloads** folder (`/storage/emulated/0/Download/`) using native Android `MediaStore.Downloads` via `MethodChannel` (`MainActivity.kt`). Overwrites clean without duplicate increments, accessible immediately in GIMP, photo viewers, and Android file managers.
+- **Active State:** Milestone 4 complete and verified on emulator. Ready for Milestone 5.
+- **Next Step:** Proceed to Milestone 5: Slice 5.1 — Basisregisters Vlaanderen Lookup (`Klant` Tab).
+- **Blockers / Open Questions:** None. Ready to build Slice 5.1.

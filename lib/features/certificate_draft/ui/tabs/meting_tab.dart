@@ -45,8 +45,7 @@ class _MetingTabState extends State<MetingTab>
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   BoilerDraft _boiler = BoilerDraft.initial();
-  OperatingConditionsDraft _operatingConditions =
-      OperatingConditionsDraft.empty();
+  OperatingConditionsDraft _operatingConditions = OperatingConditionsDraft.empty();
   String _activeSlot = 'proef1';
   bool _isLoading = true;
   final _debouncer = Debouncer();
@@ -100,6 +99,7 @@ class _MetingTabState extends State<MetingTab>
   void dispose() {
     widget.boilerNotifier?.removeListener(_onBoilerChanged);
     _debouncer.dispose();
+    _saveToDatabase();
     _controllers.dispose();
     super.dispose();
   }
@@ -157,10 +157,13 @@ class _MetingTabState extends State<MetingTab>
       await _repository.saveOperatingConditions(widget.visitId, updated);
       if (!mounted) return;
       _operatingConditions = updated;
-      final slotCtrl = _controllers.slots[_activeSlot];
-      if (slotCtrl != null) {
-        await _repository.saveMeasurementSlot(
-            widget.visitId, slotCtrl.buildDraft(_activeSlot));
+      for (final entry in _controllers.slots.entries) {
+        if (entry.value.hasAnyValues) {
+          await _repository.saveMeasurementSlot(
+            widget.visitId,
+            entry.value.buildDraft(entry.key),
+          );
+        }
       }
     } catch (e, stack) {
       debugPrint('[MetingTab] _saveToDatabase error: $e\n$stack');
@@ -215,7 +218,10 @@ class _MetingTabState extends State<MetingTab>
           MeasurementSlotsCard(
             boiler: _boiler,
             activeSlot: _activeSlot,
-            onSlotChanged: (s) => setState(() => _activeSlot = s),
+            onSlotChanged: (s) {
+              _saveToDatabase();
+              setState(() => _activeSlot = s);
+            },
             slots: _controllers.slots,
             onCopyFromDataTab: () =>
                 _trigger(MetingSlotActions.copyFromDataTab),

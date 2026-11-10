@@ -1,0 +1,26 @@
+240;SYSTRONIK GMBH
+242;5.0120-5
+243;Jul 24 2025
+244;JS297350
+115;10
+4;  52000202500001
+241;EUROLYZER S1
+248;06-52-01055 = Serienummer TOOL
+67;Aardgas H    = Fuel type
+2;13:13:36      = Time
+1;03.10.26      = Date
+26;   7.5 = Vol.% O2
+29;    15 = mg/KWh CO
+5;  48.5  = °C Tgas
+7;  22.5  = °C Tomg
+9;  26.0  = °C Tver.
+11;    -7 = Pa Druk/trek
+36;   7.7 = Vol.% CO2
+65;  1.56 = Lambda
+64;   1.5 = % Verlies
+132;    23= mg/KWh COref
+62;  98.5 = % Rend.Hi
+205;  88.9= % Rend.HS
+24;  49.3 = °C Dauwpunt
+66;   0.0
+81; ---- 

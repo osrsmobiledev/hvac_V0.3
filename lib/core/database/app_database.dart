@@ -147,6 +147,15 @@ class AppDatabase {
             debugPrint('[AppDatabase] v7 migration query warning: $e\n$stack');
           }
         }
+        if (oldVersion < 8) {
+          try {
+            await db.execute(
+              'ALTER TABLE technician_profile ADD COLUMN analyzer_serial_number TEXT;',
+            );
+          } catch (e, stack) {
+            debugPrint('[AppDatabase] v8 migration query warning: $e\n$stack');
+          }
+        }
       },
     );
   }

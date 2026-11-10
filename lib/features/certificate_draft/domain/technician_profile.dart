@@ -17,6 +17,7 @@ class TechnicianProfile {
   final String technicianLastName;
   final String gvNumber;
   final String tvNumber;
+  final String analyzerSerialNumber;
 
   const TechnicianProfile({
     this.id,
@@ -33,6 +34,7 @@ class TechnicianProfile {
     this.technicianLastName = '',
     this.gvNumber = '',
     this.tvNumber = '',
+    this.analyzerSerialNumber = '',
   });
 
   factory TechnicianProfile.fromMap(Map<String, Object?> map) {
@@ -51,6 +53,7 @@ class TechnicianProfile {
       technicianLastName: (map['technician_last_name'] as String?) ?? '',
       gvNumber: (map['gv_number'] as String?) ?? '',
       tvNumber: (map['tv_number'] as String?) ?? '',
+      analyzerSerialNumber: (map['analyzer_serial_number'] as String?) ?? '',
     );
   }
 
@@ -69,6 +72,7 @@ class TechnicianProfile {
     String? technicianLastName,
     String? gvNumber,
     String? tvNumber,
+    String? analyzerSerialNumber,
   }) {
     return TechnicianProfile(
       id: id ?? this.id,
@@ -85,6 +89,7 @@ class TechnicianProfile {
       technicianLastName: technicianLastName ?? this.technicianLastName,
       gvNumber: gvNumber ?? this.gvNumber,
       tvNumber: tvNumber ?? this.tvNumber,
+      analyzerSerialNumber: analyzerSerialNumber ?? this.analyzerSerialNumber,
     );
   }
 
@@ -104,6 +109,7 @@ class TechnicianProfile {
       'technician_last_name': technicianLastName,
       'gv_number': gvNumber,
       'tv_number': tvNumber,
+      'analyzer_serial_number': analyzerSerialNumber,
       'updated_at': now,
     };
   }

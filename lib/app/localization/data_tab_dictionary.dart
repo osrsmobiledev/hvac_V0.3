@@ -4,6 +4,9 @@
 /// Centralized statutory parameter names for Tab 1 (Data) flue gas measurements
 /// matching the official Flemish Combustion Certificate (Verbrandingsattest Vlaanderen).
 abstract final class DataTabDictionary {
+  static const String headerMeetgegevens = 'Meetgegevens';
+  static const String headerRookgassen = 'Rookgassen';
+  static const String tooltipScanEurolyzerQr = 'Eurolyzer QR scannen';
   static const String lblBrandstof = 'Brandstof';
   static const String lblDrukHpa = 'Druk [hPa]';
   static const String lblFlueTempTg = 'Rookgastemperatuur (tg) [°C]';

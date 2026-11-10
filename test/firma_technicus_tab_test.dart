@@ -531,5 +531,25 @@ void main() {
         isNot(AppColors.errorRed),
       );
     });
+
+    testWidgets('Entering analyzer serial number updates and persists profile',
+        (tester) async {
+      await pumpTab(tester);
+
+      final analyzerField =
+          find.byKey(const ValueKey('technician_analyzerSerial'));
+      expect(analyzerField, findsOneWidget);
+
+      await tester.enterText(analyzerField, '06-52-01055');
+      await tester.pump(const Duration(milliseconds: 350));
+
+      late TechnicianProfile profile;
+      await tester.runAsync(() async {
+        await Future<void>.delayed(const Duration(milliseconds: 100));
+        profile = await profileRepository.getProfile();
+      });
+
+      expect(profile.analyzerSerialNumber, equals('06-52-01055'));
+    });
   });
 }

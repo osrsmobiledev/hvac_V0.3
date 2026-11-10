@@ -54,7 +54,7 @@ abstract final class AppDictionary {
     'Klant',
     'Stooktoestel',
     'Meting',
-    tabEindbeoordeling,
+    tabEindbeoordeling
   ];
 
   // --- Setup / Start Tab ---
@@ -72,6 +72,7 @@ abstract final class AppDictionary {
   static const String lblKBO = 'Ondernemingsnummer (KBO)';
   static const String lblGV = 'GV-nummer';
   static const String lblTV = 'TV-nummer';
+  static const String lblAnalyzerSerial = 'Serienummer meettoestel';
   static const String lblDate = 'Datum onderhoud';
   static const String lblTimeFrom = 'Arbeidsduur van';
   static const String lblTimeTo = 'tot';
@@ -85,6 +86,7 @@ abstract final class AppDictionary {
   static const String hintTechLastName = 'bv. Janssens';
   static const String hintGvNumber = 'GV01234';
   static const String hintTvNumber = 'TV01234';
+  static const String hintAnalyzerSerial = 'bv. 06-52-01055 (Eurolyzer)';
   static const String hintDateFormat = 'JJJJ-MM-DD';
   static const String hintTimeStart = '08:00';
   static const String hintTimeEnd = '10:00';
@@ -242,8 +244,6 @@ abstract final class AppDictionary {
       'Camera niet beschikbaar.\nVoer het nummer handmatig in.';
   static const String scannerInstruction =
       'Plaats de barcode of QR-code van het toestel in het kader.';
-  static const String placeholderEindbeoordelingPending =
-      'Wordt geïmplementeerd in Slice 3.3';
   static const String loadingAppletTitle = 'Werkbon initialiseren...';
   static const String loadingAppletSubtitle =
       'Formulieren en metingen voorbereiden';

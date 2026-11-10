@@ -110,8 +110,12 @@ abstract final class EindbeoordelingDictionary {
       'Wordt statutair vermeld op het attest';
 
   // --- Actions & Feedback ---
+  static const String btnTestPdf = 'Test-PDF Genereren';
+  static const String btnSaveDevice = 'Save-Device';
   static const String btnVoltooien = 'Verbrandingsattest Voltooien';
   static const String toastSaved = 'Eindbeoordeling opgeslagen';
+  static const String toastPdfSaved = 'PDF opgeslagen in Downloads: ';
+  static const String toastPdfSaveFailed = 'Fout bij opslaan van PDF: ';
   static const String toastValidationMissingConclusions =
       'Duid eerst de beoordeling aan (Goed/Niet goed, Veilig/Niet veilig)';
 }

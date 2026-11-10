@@ -74,5 +74,36 @@ Hi: 97.8 %
       expect(parsed.o2Percent, 4.8);
       expect(parsed.efficiencyHi, 98.4);
     });
+
+    test(
+        'Parses real Systronik Eurolyzer S1 QR code payload and extracts serial number',
+        () {
+      const payload = '''
+240;SYSTRONIK GMBH
+241;EUROLYZER S1
+248;06-52-01055 = Serienummer TOOL
+26;   7.5 = Vol.% O2
+29;    15 = mg/KWh CO
+5;  48.5  = °C Tgas
+7;  22.5  = °C Tomg
+11;    -7 = Pa Druk/trek
+36;   7.7 = Vol.% CO2
+62;  98.5 = % Rend.Hi
+205;  88.9= % Rend.HS
+''';
+      final sn = EurolyzerQrParser.extractToolSerialNumber(payload);
+      expect(sn, '06-52-01055');
+
+      final draft = EurolyzerQrParser.parse(payload, slot: 'proef1');
+      expect(draft.o2Percent, 7.5);
+      expect(draft.coMgKwh, 15.0);
+      expect(draft.flueTempTg, 48.5);
+      expect(draft.ambientTempTa, 22.5);
+      expect(draft.fluePressurePa, -7.0);
+      expect(draft.co2Percent, 7.7);
+      expect(draft.efficiencyHi, 98.5);
+      expect(draft.efficiencyHs, 88.9);
+      expect(draft.netTemp, 26.0); // 48.5 - 22.5
+    });
   });
 }

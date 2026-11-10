@@ -51,27 +51,47 @@ class _SignaturePadModalState extends State<SignaturePadModal> {
     setState(() => _isSaving = true);
 
     try {
-      final renderWidth =
-          (_canvasSize.width > 0 ? _canvasSize.width : 400.0).round();
-      final renderHeight =
-          (_canvasSize.height > 0 ? _canvasSize.height : 300.0).round();
+      // Compute the tight bounding box around the signature strokes
+      double minX = double.infinity, minY = double.infinity;
+      double maxX = double.negativeInfinity, maxY = double.negativeInfinity;
+      for (final p in _points) {
+        if (p != null) {
+          if (p.dx < minX) minX = p.dx;
+          if (p.dx > maxX) maxX = p.dx;
+          if (p.dy < minY) minY = p.dy;
+          if (p.dy > maxY) maxY = p.dy;
+        }
+      }
+
+      const double pad = 12.0;
+      final canvasW = _canvasSize.width > 0 ? _canvasSize.width : 400.0;
+      final canvasH = _canvasSize.height > 0 ? _canvasSize.height : 300.0;
+      minX = (minX - pad).clamp(0.0, canvasW);
+      minY = (minY - pad).clamp(0.0, canvasH);
+      maxX = (maxX + pad).clamp(0.0, canvasW);
+      maxY = (maxY + pad).clamp(0.0, canvasH);
+
+      final cropWidth = (maxX - minX).clamp(40.0, canvasW).round();
+      final cropHeight = (maxY - minY).clamp(24.0, canvasH).round();
 
       final recorder = ui.PictureRecorder();
       final canvas = Canvas(
         recorder,
-        Rect.fromLTWH(0, 0, renderWidth.toDouble(), renderHeight.toDouble()),
+        Rect.fromLTWH(0, 0, cropWidth.toDouble(), cropHeight.toDouble()),
       );
 
       final bgPaint = Paint()..color = Colors.white;
       canvas.drawRect(
-        Rect.fromLTWH(0, 0, renderWidth.toDouble(), renderHeight.toDouble()),
+        Rect.fromLTWH(0, 0, cropWidth.toDouble(), cropHeight.toDouble()),
         bgPaint,
       );
 
       final strokePaint = Paint()
         ..color = const Color(0xFF0F172A)
         ..strokeCap = StrokeCap.round
-        ..strokeWidth = 3.4;
+        ..strokeWidth = 2.2;
+
+      canvas.translate(-minX, -minY);
 
       for (int i = 0; i < _points.length - 1; i++) {
         if (_points[i] != null && _points[i + 1] != null) {
@@ -80,7 +100,7 @@ class _SignaturePadModalState extends State<SignaturePadModal> {
       }
 
       final picture = recorder.endRecording();
-      final img = await picture.toImage(renderWidth, renderHeight);
+      final img = await picture.toImage(cropWidth, cropHeight);
       final byteData = await img.toByteData(format: ui.ImageByteFormat.png);
 
       if (byteData != null && mounted) {

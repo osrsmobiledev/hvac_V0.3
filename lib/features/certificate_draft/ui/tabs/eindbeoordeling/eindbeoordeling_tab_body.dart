@@ -23,6 +23,8 @@ class EindbeoordelingTabBody extends StatelessWidget {
   final ValueChanged<String> onDateChanged;
   final ValueChanged<EindbeoordelingDraft> onDraftChanged;
   final VoidCallback onTextInputsChanged;
+  final VoidCallback onTestPdfPressed;
+  final VoidCallback onSaveDevicePressed;
   final VoidCallback onCompletePressed;
 
   const EindbeoordelingTabBody({
@@ -38,6 +40,8 @@ class EindbeoordelingTabBody extends StatelessWidget {
     required this.onDateChanged,
     required this.onDraftChanged,
     required this.onTextInputsChanged,
+    required this.onTestPdfPressed,
+    required this.onSaveDevicePressed,
     required this.onCompletePressed,
   });
 
@@ -77,7 +81,17 @@ class EindbeoordelingTabBody extends StatelessWidget {
         ),
         const SizedBox(height: 24),
 
-        // Tactical Completion Action
+        // Tactical Actions: Test-PDF Preview, Save-Device & Formal Completion
+        TacticalDialogButton.secondary(
+          label: EindbeoordelingDictionary.btnTestPdf,
+          onPressed: onTestPdfPressed,
+        ),
+        const SizedBox(height: 10),
+        TacticalDialogButton.secondary(
+          label: EindbeoordelingDictionary.btnSaveDevice,
+          onPressed: onSaveDevicePressed,
+        ),
+        const SizedBox(height: 12),
         TacticalDialogButton.primary(
           label: EindbeoordelingDictionary.btnVoltooien,
           onPressed: onCompletePressed,

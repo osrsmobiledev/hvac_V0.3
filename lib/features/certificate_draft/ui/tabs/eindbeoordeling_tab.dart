@@ -2,12 +2,18 @@
 // Responsibility: Tab 7 — Eindbeoordeling & Handtekeningen coordinator.
 
 import 'package:flutter/material.dart';
-import 'package:hvac_app/core/services/app_warmup_service.dart';
+import 'package:hvac_app/app/localization/eindbeoordeling_dictionary.dart';
 import 'package:hvac_app/core/utils/debouncer.dart';
+import 'package:hvac_app/core/widgets/tactical_feedback.dart';
 import 'package:hvac_app/features/certificate_draft/data/eindbeoordeling_repository.dart';
 import 'package:hvac_app/features/certificate_draft/domain/eindbeoordeling_draft.dart';
+import 'package:hvac_app/features/pdf_export/combustion_pdf_generator.dart';
+import 'package:hvac_app/features/pdf_export/data/pdf_data_mapper.dart';
+import 'package:hvac_app/features/pdf_export/services/pdf_file_saver.dart';
+import 'package:hvac_app/features/pdf_export/ui/pdf_preview_dialog.dart';
 import '../boiler_draft_notifier.dart';
 import '../measurement_assessment_notifier.dart';
+import 'eindbeoordeling/eindbeoordeling_loader.dart';
 import 'eindbeoordeling/eindbeoordeling_tab_body.dart';
 
 class EindbeoordelingTab extends StatefulWidget {
@@ -16,8 +22,6 @@ class EindbeoordelingTab extends StatefulWidget {
   final MeasurementAssessmentNotifier? assessmentNotifier;
   final VoidCallback? onComplete;
   final EindbeoordelingRepository? repositoryOverride;
-
-  /// Callback exposing this tab's [GlobalKey<FormState>] to the coordinator.
   final ValueChanged<GlobalKey<FormState>>? onFormKeyReady;
 
   const EindbeoordelingTab({
@@ -61,46 +65,22 @@ class _EindbeoordelingTabState extends State<EindbeoordelingTab>
     widget.boilerNotifier?.addListener(_onBoilerChanged);
     widget.assessmentNotifier?.addListener(_onAssessmentChanged);
 
-    final cached = AppWarmupService.instance.cachedResult;
-    if (cached?.eindbeoordeling != null && widget.repositoryOverride == null) {
-      final nFuel = widget.boilerNotifier?.draft.fuelCategory;
-      _applyInitialDraft(
-        cached!.eindbeoordeling!,
-        (nFuel != null && nFuel.isNotEmpty)
-            ? nFuel
-            : (cached.activeBoiler?.fuelCategory ?? ''),
-        cached.activeDraft?.visitDate ?? '',
-      );
-    } else {
-      _loadInitialData();
-    }
-  }
-
-  void _applyInitialDraft(
-    EindbeoordelingDraft loaded,
-    String fuel,
-    String date, [
-    String? customerName,
-  ]) {
-    _fuelType = fuel;
-    _visitDate = date;
-    var effectiveDraft = loaded;
-    final assessment = widget.assessmentNotifier?.state;
-    if (loaded.toestelWerkingGoed == null &&
-        loaded.toestelWerkingVeilig == null &&
-        assessment != null &&
-        (assessment.combustionPassed != null ||
-            assessment.safetyChecksPassed != null)) {
-      effectiveDraft = loaded.withAssessmentState(
-        combustionPassed: assessment.combustionPassed,
-        safetyChecksPassed: assessment.safetyChecksPassed,
-        fuelType: fuel,
-        visitDate: EindbeoordelingDraft.parseDate(date),
-      );
-    }
-    _draft = effectiveDraft;
-    _defectsController.text = effectiveDraft.defectsNotes ?? '';
-    _remarksController.text = effectiveDraft.generalRemarks ?? '';
+    EindbeoordelingLoader.load(
+      visitId: widget.visitId,
+      repository: _repository,
+      boilerNotifier: widget.boilerNotifier,
+      assessmentNotifier: widget.assessmentNotifier,
+      onLoaded: (draft, fuel, date) {
+        if (!mounted) return;
+        setState(() {
+          _draft = draft;
+          _fuelType = fuel;
+          _visitDate = date;
+          _defectsController.text = draft.defectsNotes ?? '';
+          _remarksController.text = draft.generalRemarks ?? '';
+        });
+      },
+    );
   }
 
   @override
@@ -158,35 +138,6 @@ class _EindbeoordelingTabState extends State<EindbeoordelingTab>
     if (updated != _draft) _saveDirect(updated);
   }
 
-  Future<void> _loadInitialData() async {
-    try {
-      final summary =
-          await _repository.loadVisitContext(visitId: widget.visitId);
-      final loaded = await _repository.loadDraft(visitId: widget.visitId);
-      final draft = await _repository.resolveInitialDraft(
-        visitId: widget.visitId,
-        summary: summary,
-        notifierFuel: widget.boilerNotifier?.draft.fuelCategory,
-      );
-
-      if (mounted) {
-        final nFuel = widget.boilerNotifier?.draft.fuelCategory;
-        final f =
-            (nFuel != null && nFuel.isNotEmpty) ? nFuel : summary.fuelType;
-        setState(() {
-          _applyInitialDraft(
-            draft,
-            f,
-            summary.visitDate,
-            loaded.customerSignatureName ?? summary.customerName,
-          );
-        });
-      }
-    } catch (e, stack) {
-      debugPrint('[EindbeoordelingTab] _loadInitialData error: $e\n$stack');
-    }
-  }
-
   Future<void> _saveDirect(EindbeoordelingDraft updated) async {
     setState(() => _draft = updated);
     try {
@@ -214,6 +165,37 @@ class _EindbeoordelingTabState extends State<EindbeoordelingTab>
     ));
   }
 
+  Future<void> _onTestPdfPressed() async {
+    _debouncer.flush();
+    final data = await PdfDataMapper.loadVisitData(widget.visitId);
+    if (!mounted) return;
+    await PdfPreviewDialog.show(context, data);
+  }
+
+  Future<void> _onSaveDevicePressed() async {
+    _debouncer.flush();
+    final data = await PdfDataMapper.loadVisitData(widget.visitId);
+    final pdfBytes = await CombustionPdfGenerator.generateCertificate(data);
+    final result = await PdfFileSaver.saveToDevice(
+      pdfBytes: pdfBytes,
+      attestNumber: data.volgnummerAttest,
+    );
+    if (!mounted) return;
+    if (result.isSuccess) {
+      TacticalFeedback.showSuccess(
+        context,
+        '${EindbeoordelingDictionary.toastPdfSaved}${result.filePath}',
+        duration: const Duration(seconds: 4),
+      );
+    } else {
+      TacticalFeedback.showError(
+        context,
+        '${EindbeoordelingDictionary.toastPdfSaveFailed}${result.errorMessage}',
+        duration: const Duration(seconds: 4),
+      );
+    }
+  }
+
   void _onCompletePressed() {
     _debouncer.flush();
     widget.onComplete?.call();
@@ -238,6 +220,8 @@ class _EindbeoordelingTabState extends State<EindbeoordelingTab>
             _saveDirect(_draft.copyWith(nextInspectionDate: val)),
         onDraftChanged: _saveDirect,
         onTextInputsChanged: _onTextInputsChanged,
+        onTestPdfPressed: _onTestPdfPressed,
+        onSaveDevicePressed: _onSaveDevicePressed,
         onCompletePressed: _onCompletePressed,
       ),
     );
