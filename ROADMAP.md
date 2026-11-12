@@ -46,29 +46,34 @@
 
 ## 2. Current Handoff (Active State for AI Agent)
 
-- **Current Status:** Milestone 4 (Re-Wired PDF Generation, In-App Preview Dialog, Direct Android Downloads Export & Verified Single-Page Flemish A4 Geometry) complete, owner-verified, and approved on Android emulator.
-- **Milestone 4 PDF Engine & Device Export Delivered:**
+- **Current Status:** Milestone 4 (PDF Generation, In-App Interactive Preview, Direct Android Downloads Export & Verified Single-Page Flemish A4 Geometry) hardened, polished, owner-verified, and checkpointed to GitHub.
+- **Milestone 4 PDF Engine & Polish Delivered:**
   - **Architecture & Clean Code (`lib/features/pdf_export/`):**
-    - 2-Layer modular architecture: UI (`PdfPreviewDialog`) + Data/Builders (`CombustionPdfGenerator`, `PdfDataMapper`, `PdfVisitLoader`, section builders, theme tokens, lego widgets).
-    - All Dart files in `lib/` strictly $\le 250$ lines of code.
+    - 2-Layer modular architecture: UI (`PdfPreviewDialog`, `PdfPageCard`) + Data/Builders (`CombustionPdfGenerator`, `PdfDataMapper`, `PdfVisitLoader`, section builders, theme tokens, lego widgets).
+    - Every Dart file in `lib/` strictly $\le 250$ lines of code.
     - Zero Dart analyzer issues (`flutter analyze` passes with 0 warnings/errors).
-    - 227 tests passing (`flutter test` passes 100% green).
-  - **Single-Page Flemish A4 Geometry:**
-    - Margins: top 10.0pt, left 24.9pt, right 17.3pt, bottom 10.0pt (A4 595.28 x 841.89 pt).
-    - Printable height: 821.89 pt. Total content height: ~785 pt, guaranteeing **100% fit on a single A4 page with zero vertical overflow or page splitting**.
-    - Full-width boxes locked to `552.9pt`, half-width boxes locked to `275.75pt`.
-    - Strict 0.2pt borders, Libron typography tiers (Calibri/Libron 7pt, 5pt), and Helvetica fallback.
-  - **Re-Wired Sections & Completed Bottom 20%:**
-    - **Header:** Activity type (*Onderhoud* vs. *Keuring*) and statutory attest number.
-    - **Firma & Technicus:** Company details, KBO BE format, technician GV/TV accreditation, date, 24h work time duration box, and Eurolyzer S1 serial number input box with SQLite persistence in `technician_profiles`.
-    - **Klant & Locatie:** Customer name, contact info, and separate installation address if applicable.
-    - **Stooktoestel Kenmerken:** Type B/C checkboxes with suffix, fuel category (gas/oil/solid), and burner technology (premix GI).
-    - **Stooktoestel Apparaat:** Boiler and burner brands, models, construction years, serial numbers, and nominal power.
-    - **Goede & Veilige Staat van Werking:** 24 statutory measurement and safety check rows with Proef I / Proef II modulation bindings (`w5Laag` & `w5Hoog` first-class cells with continuous vertical and horizontal hairline borders), Pa chimney draft, and dynamic Eurolyzer S1 serial number header. Operating pressures and temperatures cleanly copied across to Proef II.
-    - **Besluit & Handtekeningen:** Dual statutory conclusions (*Goed*/*Niet goed*, *Veilig*/*Niet veilig*), statutory 3-month legal remediation note (Art. 6 Vlaams Stooktoestellenbesluit), next inspection date, defects/remarks, and centered technician & customer digital signatures (with automatic handling for signature refusal or absence). Signatures constrained to natural 24pt height with 2.2 rollerball stroke and customer name removed.
-  - **In-App Test-PDF Dialog & Save-Device Export:**
-    - Secondary button **`[ 📄 Test-PDF Genereren ]`** on Tab 7 (`Eindbeoordeling`) directly above `[ Verbrandingsattest Voltooien ]` for instant live preview and sharing.
-    - Tertiary button **`[ 💾 Save-Device ]`** generating both `Verbrandingsattest_<id>.pdf` and high-res raster `Verbrandingsattest_<id>.png` directly saved to the public Android **Downloads** folder (`/storage/emulated/0/Download/`) using native Android `MediaStore.Downloads` via `MethodChannel` (`MainActivity.kt`). Overwrites clean without duplicate increments, accessible immediately in GIMP, photo viewers, and Android file managers.
-- **Active State:** Milestone 4 complete and verified on emulator. Ready for Milestone 5.
+    - Full test suite passes 100% green.
+  - **Single-Page Flemish A4 Precision Geometry ($\le 825.89\text{ pt}$):**
+    - Margins: top 8.0pt, left 24.9pt, right 17.3pt, bottom 8.0pt (A4 595.28 x 841.89 pt).
+    - Total content height: 823.95 pt, leaving a guaranteed +1.94 pt safety headroom before the 8.0 pt bottom margin, strictly fitting on **1 single A4 page with zero vertical overflow**.
+    - Full-width boxes locked to `552.9pt`, half-width boxes locked to `275.75pt`. Strict 0.2pt borders, Libron typography tiers.
+  - **Mathematically Bounded Two-Zone Defect & Signature Box (Table 4):**
+    - Eliminated elastic `pw.Spacer()` to prevent text wrapping from ever displacing signatures.
+    - **Zone 1 (Defects & Remarks):** Bounded at 46.5 pt with 5.2 pt font, comfortably holding 2 full lines of defects (even 6 items / 200 chars) + 2 lines of remarks with 8.5 pt headroom.
+    - **Zone 2 (Signatures):** Fixed at 38.0 pt with 30.0 pt signature containers and 27.0 pt signature images, permanently anchored at their exact coordinates.
+  - **Interactive Mobile Pinch-to-Zoom (`PdfPreviewDialog`):**
+    - Switched from default list view to `PdfPreview.builder` with Flutter's native `InteractiveViewer`.
+    - 240 DPI raster rendering for razor-sharp magnification.
+    - Multi-touch pinch-to-zoom (1.0× to 5.0×), 1-finger fluid pan, double-tap 2.5× toggle, and top-bar zoom controls (`+`, `-`, `Fit`).
+  - **Dual Flue-Gas Analyzer Tool Inputs:**
+    - Type/merk and serienummer stacked full-width in Tab 3 (`Firma - Technicus`). Backed by schema v9 SQLite migration in `technician_profile`. Mapped dynamically to the PDF measurement table header (`Meettoestel: <brand> (SN: <serial>)`).
+  - **Statutory Clean Blanking:**
+    - Brander details (5 lines) left completely blank on the PDF when burner is integrated per official Flemish template.
+    - Installation address left completely blank when identical to customer address via 5-field normalization.
+  - **Lifecycle Debouncer Safety:**
+    - Eliminated redundant unawaited `_saveToDatabase()` in `meting_tab.dart` `dispose()`, preventing closed-database errors.
+  - **Checklist Expansion:**
+    - `IMPLEMENTATION_CHECKLIST.md` updated with Mistakes #21-#25 and Checklist Items #22-#25.
+- **Active State:** Milestone 4 complete, hardened, and verified. Ready for Milestone 5.
 - **Next Step:** Proceed to Milestone 5: Slice 5.1 — Basisregisters Vlaanderen Lookup (`Klant` Tab).
 - **Blockers / Open Questions:** None. Ready to build Slice 5.1.

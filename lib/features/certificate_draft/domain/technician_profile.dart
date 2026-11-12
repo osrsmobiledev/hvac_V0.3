@@ -17,6 +17,7 @@ class TechnicianProfile {
   final String technicianLastName;
   final String gvNumber;
   final String tvNumber;
+  final String analyzerBrandModel;
   final String analyzerSerialNumber;
 
   const TechnicianProfile({
@@ -34,6 +35,7 @@ class TechnicianProfile {
     this.technicianLastName = '',
     this.gvNumber = '',
     this.tvNumber = '',
+    this.analyzerBrandModel = '',
     this.analyzerSerialNumber = '',
   });
 
@@ -53,6 +55,7 @@ class TechnicianProfile {
       technicianLastName: (map['technician_last_name'] as String?) ?? '',
       gvNumber: (map['gv_number'] as String?) ?? '',
       tvNumber: (map['tv_number'] as String?) ?? '',
+      analyzerBrandModel: (map['analyzer_brand_model'] as String?) ?? '',
       analyzerSerialNumber: (map['analyzer_serial_number'] as String?) ?? '',
     );
   }
@@ -72,6 +75,7 @@ class TechnicianProfile {
     String? technicianLastName,
     String? gvNumber,
     String? tvNumber,
+    String? analyzerBrandModel,
     String? analyzerSerialNumber,
   }) {
     return TechnicianProfile(
@@ -89,6 +93,7 @@ class TechnicianProfile {
       technicianLastName: technicianLastName ?? this.technicianLastName,
       gvNumber: gvNumber ?? this.gvNumber,
       tvNumber: tvNumber ?? this.tvNumber,
+      analyzerBrandModel: analyzerBrandModel ?? this.analyzerBrandModel,
       analyzerSerialNumber: analyzerSerialNumber ?? this.analyzerSerialNumber,
     );
   }
@@ -109,6 +114,7 @@ class TechnicianProfile {
       'technician_last_name': technicianLastName,
       'gv_number': gvNumber,
       'tv_number': tvNumber,
+      'analyzer_brand_model': analyzerBrandModel,
       'analyzer_serial_number': analyzerSerialNumber,
       'updated_at': now,
     };

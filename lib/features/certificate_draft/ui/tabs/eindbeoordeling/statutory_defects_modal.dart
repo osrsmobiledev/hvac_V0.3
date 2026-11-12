@@ -14,12 +14,18 @@ class StatutoryDefectsModal extends StatefulWidget {
   final String fuelType;
   final String boilerType;
   final ValueChanged<List<StatutoryDefectPreset>> onApply;
+  final String existingDefects;
+  final String existingRemarks;
+  final int maxChars;
 
   const StatutoryDefectsModal({
     super.key,
     required this.fuelType,
     required this.boilerType,
     required this.onApply,
+    this.existingDefects = '',
+    this.existingRemarks = '',
+    this.maxChars = 200,
   });
 
   static Future<void> show({
@@ -27,18 +33,23 @@ class StatutoryDefectsModal extends StatefulWidget {
     required String fuelType,
     required String boilerType,
     required ValueChanged<List<StatutoryDefectPreset>> onApply,
-  }) {
-    return showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) => StatutoryDefectsModal(
-        fuelType: fuelType,
-        boilerType: boilerType,
-        onApply: onApply,
-      ),
-    );
-  }
+    String existingDefects = '',
+    String existingRemarks = '',
+    int maxChars = 200,
+  }) =>
+      showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        builder: (_) => StatutoryDefectsModal(
+          fuelType: fuelType,
+          boilerType: boilerType,
+          onApply: onApply,
+          existingDefects: existingDefects,
+          existingRemarks: existingRemarks,
+          maxChars: maxChars,
+        ),
+      );
 
   @override
   State<StatutoryDefectsModal> createState() => _StatutoryDefectsModalState();
@@ -50,20 +61,40 @@ class _StatutoryDefectsModalState extends State<StatutoryDefectsModal> {
 
   void _togglePreset(String id) {
     HapticFeedback.selectionClick();
-    setState(() {
-      if (_selectedIds.contains(id)) {
-        _selectedIds.remove(id);
-      } else {
-        _selectedIds.add(id);
-      }
-    });
+    setState(() => _selectedIds.contains(id) ? _selectedIds.remove(id) : _selectedIds.add(id));
   }
 
   void _handleApply(List<StatutoryDefectPreset> allMatching) {
-    final selected =
-        allMatching.where((p) => _selectedIds.contains(p.id)).toList();
+    final selected = allMatching.where((p) => _selectedIds.contains(p.id)).toList();
     widget.onApply(selected);
     Navigator.of(context).pop();
+  }
+
+  bool _isAlreadyAdded(StatutoryDefectPreset preset) {
+    final d = widget.existingDefects.toLowerCase();
+    final r = widget.existingRemarks.toLowerCase();
+    return d.contains(preset.defectText.toLowerCase()) || r.contains(preset.measureText.toLowerCase());
+  }
+
+  int _calculateProjectedLen(
+    String base,
+    List<StatutoryDefectPreset> presets,
+    String Function(StatutoryDefectPreset) sel,
+  ) {
+    if (presets.isEmpty) return base.trim().length;
+    final b = StringBuffer(base.trim());
+    for (final p in presets) {
+      if (b.isNotEmpty) b.write('\n');
+      b.write('• ${sel(p)}');
+    }
+    return b.length;
+  }
+
+  bool _wouldExceedLimit(StatutoryDefectPreset preset, List<StatutoryDefectPreset> allMatching) {
+    final list = [...allMatching.where((p) => _selectedIds.contains(p.id)), preset];
+    final d = _calculateProjectedLen(widget.existingDefects, list, (p) => p.defectText);
+    final r = _calculateProjectedLen(widget.existingRemarks, list, (p) => p.measureText);
+    return d > widget.maxChars || r > widget.maxChars;
   }
 
   @override
@@ -77,6 +108,15 @@ class _StatutoryDefectsModalState extends State<StatutoryDefectsModal> {
       fuel: widget.fuelType,
       boilerType: widget.boilerType,
     );
+    final selectedPresets =
+        allMatching.where((p) => _selectedIds.contains(p.id)).toList();
+    final currentDefectsLen = _calculateProjectedLen(
+      widget.existingDefects,
+      selectedPresets,
+      (p) => p.defectText,
+    );
+    final remainingChars =
+        (widget.maxChars - currentDefectsLen).clamp(0, widget.maxChars);
 
     return Container(
       height: MediaQuery.of(context).size.height * 0.85,
@@ -105,6 +145,7 @@ class _StatutoryDefectsModalState extends State<StatutoryDefectsModal> {
             fuel: widget.fuelType,
             boilerType: widget.boilerType,
             onClose: () => Navigator.of(context).pop(),
+            remainingChars: remainingChars,
           ),
           const Divider(height: 1, color: AppColors.goldHairline),
 
@@ -123,9 +164,16 @@ class _StatutoryDefectsModalState extends State<StatutoryDefectsModal> {
               itemBuilder: (context, index) {
                 final preset = matchingPresets[index];
                 final isSelected = _selectedIds.contains(preset.id);
+                final isAlreadyAdded = _isAlreadyAdded(preset);
+                final isOverLimit = !isSelected &&
+                    !isAlreadyAdded &&
+                    _wouldExceedLimit(preset, allMatching);
+
                 return StatutoryDefectPresetCard(
                   preset: preset,
                   isSelected: isSelected,
+                  isAlreadyAdded: isAlreadyAdded,
+                  isOverLimit: isOverLimit,
                   onTap: () => _togglePreset(preset.id),
                 );
               },

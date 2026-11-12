@@ -149,9 +149,7 @@ abstract final class PdfFirmaBuilder {
                           ),
                           pw.Expanded(
                             child: pw.Text(
-                              data.datumOnderhoud.isNotEmpty
-                                  ? data.datumOnderhoud
-                                  : '_______-________-___________',
+                              _formatDate(data.datumOnderhoud),
                               style: PdfComponents.inputBlue,
                             ),
                           ),
@@ -207,5 +205,21 @@ abstract final class PdfFirmaBuilder {
         ),
       ],
     );
+  }
+
+  static String _formatDate(String raw) {
+    final trimmed = raw.trim();
+    if (trimmed.isEmpty) return '_______-________-___________';
+    if (RegExp(r'^\d{2}[/-]\d{2}[/-]\d{4}').hasMatch(trimmed)) {
+      return trimmed.replaceAll('-', '/');
+    }
+    try {
+      final dt = DateTime.parse(trimmed);
+      final day = dt.day.toString().padLeft(2, '0');
+      final month = dt.month.toString().padLeft(2, '0');
+      return '$day/$month/${dt.year}';
+    } catch (_) {
+      return trimmed;
+    }
   }
 }

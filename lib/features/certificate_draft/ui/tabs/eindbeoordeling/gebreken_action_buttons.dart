@@ -2,6 +2,7 @@
 // Responsibility: Tactical action buttons, multiline input with embedded delete button, and remediation banner.
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:hvac_app/app/localization/eindbeoordeling_dictionary.dart';
 import 'package:hvac_app/app/theme/app_colors.dart';
 import 'package:hvac_app/app/theme/app_theme.dart';
@@ -17,6 +18,7 @@ class TacticalMultilineInput extends StatelessWidget {
   final VoidCallback onClear;
   final int minLines;
   final int maxLines;
+  final int? maxLength;
 
   const TacticalMultilineInput({
     super.key,
@@ -26,6 +28,7 @@ class TacticalMultilineInput extends StatelessWidget {
     required this.onClear,
     this.minLines = 3,
     this.maxLines = 5,
+    this.maxLength = 200,
   });
 
   @override
@@ -37,9 +40,33 @@ class TacticalMultilineInput extends StatelessWidget {
           onChanged: (_) => onChanged(),
           maxLines: maxLines,
           minLines: minLines,
+          maxLength: maxLength,
+          maxLengthEnforcement: MaxLengthEnforcement.enforced,
           keyboardType: TextInputType.multiline,
           textInputAction: TextInputAction.newline,
           style: DarkInputBox.inputStyle,
+          buildCounter: (
+            context, {
+            required currentLength,
+            required isFocused,
+            maxLength,
+          }) {
+            if (maxLength == null) return null;
+            final isNearLimit = currentLength >= maxLength - 20;
+            return Padding(
+              padding: const EdgeInsets.only(top: 2.0),
+              child: Text(
+                '$currentLength / $maxLength',
+                style: TextStyle(
+                  fontSize: 11.0,
+                  color: isNearLimit
+                      ? AppColors.amberGold
+                      : AppColors.textSecondary.withValues(alpha: 0.6),
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            );
+          },
           decoration: DarkInputBox.decoration(
             hintText: hintText,
             contentPadding: const EdgeInsets.only(

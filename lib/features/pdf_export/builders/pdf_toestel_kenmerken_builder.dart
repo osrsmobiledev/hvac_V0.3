@@ -41,23 +41,9 @@ abstract final class PdfToestelKenmerkenBuilder {
                 isChecked: data.isCentraal,
                 textStyle: PdfComponents.titleBoldText,
               ),
-              PdfComponents.buildInlineInputCheckbox(
-                prefix: 'aangesloten als type B ',
-                emptyPlaceholder: '.........',
-                suffix: ' (open)',
-                isChecked: data.centraalType == 'B',
-                inputText: data.typeBText,
-                textStyle: PdfComponents.titleBoldText,
-              ),
+              _buildTypeBCheckbox(data),
               pw.SizedBox(),
-              PdfComponents.buildInlineInputCheckbox(
-                prefix: 'aangesloten als type C ',
-                emptyPlaceholder: '.........',
-                suffix: ' (gesloten)',
-                isChecked: data.centraalType == 'C',
-                inputText: data.typeCText,
-                textStyle: PdfComponents.titleBoldText,
-              ),
+              _buildTypeCCheckbox(data),
               pw.FittedBox(
                 fit: pw.BoxFit.scaleDown,
                 alignment: pw.Alignment.centerRight,
@@ -198,6 +184,38 @@ abstract final class PdfToestelKenmerkenBuilder {
         PdfComponents.debugWrap(pw.SizedBox(width: w4, child: c4)),
         PdfComponents.debugWrap(pw.Expanded(child: c5)),
       ],
+    );
+  }
+
+  static pw.Widget _buildTypeBCheckbox(PdfVisitData data) {
+    final bRaw = data.typeBText.trim();
+    final bSub =
+        bRaw.toUpperCase().startsWith('B') ? bRaw.substring(1).trim() : bRaw;
+    final hasBSub = bSub.isNotEmpty && data.centraalType == 'B';
+    return PdfComponents.buildInlineInputCheckbox(
+      prefix:
+          hasBSub ? 'aangesloten als type B' : 'aangesloten als type B ',
+      emptyPlaceholder: '.........',
+      suffix: ' (open)',
+      isChecked: data.centraalType == 'B',
+      inputText: bSub,
+      textStyle: PdfComponents.titleBoldText,
+    );
+  }
+
+  static pw.Widget _buildTypeCCheckbox(PdfVisitData data) {
+    final cRaw = data.typeCText.trim();
+    final cSub =
+        cRaw.toUpperCase().startsWith('C') ? cRaw.substring(1).trim() : cRaw;
+    final hasCSub = cSub.isNotEmpty && data.centraalType == 'C';
+    return PdfComponents.buildInlineInputCheckbox(
+      prefix:
+          hasCSub ? 'aangesloten als type C' : 'aangesloten als type C ',
+      emptyPlaceholder: '.........',
+      suffix: ' (gesloten)',
+      isChecked: data.centraalType == 'C',
+      inputText: cSub,
+      textStyle: PdfComponents.titleBoldText,
     );
   }
 }

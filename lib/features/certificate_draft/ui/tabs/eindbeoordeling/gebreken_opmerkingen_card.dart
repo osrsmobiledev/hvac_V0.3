@@ -37,6 +37,8 @@ class GebrekenOpmerkingenCard extends StatelessWidget {
       context: context,
       fuelType: fuelType,
       boilerType: boilerType,
+      existingDefects: defectsController.text,
+      existingRemarks: remarksController.text,
       onApply: (presets) => _applyPresets(context, presets),
     );
   }
@@ -45,22 +47,42 @@ class GebrekenOpmerkingenCard extends StatelessWidget {
       BuildContext context, List<StatutoryDefectPreset> presets) {
     if (presets.isEmpty) return;
 
+    const int maxChars = 200;
     final existingDefects = defectsController.text.trim();
     final newDefects = presets.map((p) => '• ${p.defectText}').join('\n');
-    defectsController.text =
-        existingDefects.isEmpty ? newDefects : '$existingDefects\n$newDefects';
+    final combinedDefects = existingDefects.isEmpty
+        ? newDefects
+        : '$existingDefects\n$newDefects';
 
     final existingRemarks = remarksController.text.trim();
     final newMeasures = presets.map((p) => '• ${p.measureText}').join('\n');
-    remarksController.text = existingRemarks.isEmpty
+    final combinedRemarks = existingRemarks.isEmpty
         ? newMeasures
         : '$existingRemarks\n$newMeasures';
 
+    final bool isTruncated = combinedDefects.length > maxChars ||
+        combinedRemarks.length > maxChars;
+
+    defectsController.text = combinedDefects.length > maxChars
+        ? combinedDefects.substring(0, maxChars)
+        : combinedDefects;
+
+    remarksController.text = combinedRemarks.length > maxChars
+        ? combinedRemarks.substring(0, maxChars)
+        : combinedRemarks;
+
     onChanged();
-    TacticalFeedback.showSuccess(
-      context,
-      '${presets.length} ${EindbeoordelingDictionary.feedbackApplied}',
-    );
+    if (isTruncated) {
+      TacticalFeedback.showInfo(
+        context,
+        '${presets.length} ${EindbeoordelingDictionary.feedbackApplied} (max 200 tekens)',
+      );
+    } else {
+      TacticalFeedback.showSuccess(
+        context,
+        '${presets.length} ${EindbeoordelingDictionary.feedbackApplied}',
+      );
+    }
   }
 
   Future<void> _confirmClear(

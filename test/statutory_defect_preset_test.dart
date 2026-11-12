@@ -131,7 +131,7 @@ void main() {
       // Verify modal is open with subtitle badge
       expect(find.text(EindbeoordelingDictionary.modalTitleSnelselectie),
           findsOneWidget);
-      expect(find.text('Aardgas • Type C (Gesloten)'), findsOneWidget);
+      expect(find.textContaining('Aardgas • Type C (Gesloten)'), findsOneWidget);
 
       // Tap the top preset (Expansievat defect)
       final presetTitleFinder = find.text('Expansievat defect');
@@ -196,6 +196,40 @@ void main() {
 
       expect(defectsCtrl.text, isEmpty);
       expect(changed, isTrue);
+    });
+
+    testWidgets(
+        'Preset already present in text box appears disabled with Reeds toegevoegd badge',
+        (tester) async {
+      final defectsCtrl = TextEditingController(
+          text: '• Expansievat membraan gescheurd');
+      final remarksCtrl = TextEditingController(
+          text: '• Expansievat vervangen');
+
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.darkTheme,
+          home: Scaffold(
+            body: SingleChildScrollView(
+              child: GebrekenOpmerkingenCard(
+                defectsController: defectsCtrl,
+                remarksController: remarksCtrl,
+                hasNegativeAssessment: false,
+                fuelType: 'gas',
+                boilerType: 'C',
+                onChanged: () {},
+              ),
+            ),
+          ),
+        ),
+      );
+
+      // Open Snelselectie
+      await tester.tap(find.byIcon(Icons.lightbulb_outline_rounded));
+      await tester.pumpAndSettle();
+
+      // Expansievat preset is already present -> displays "Reeds toegevoegd" badge
+      expect(find.text('Reeds toegevoegd'), findsOneWidget);
     });
   });
 }

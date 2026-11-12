@@ -18,6 +18,7 @@ class FirmaTechnicusControllers {
   final lastName = TextEditingController();
   final gv = TextEditingController();
   final tv = TextEditingController();
+  final analyzerBrand = TextEditingController();
   final analyzerSerial = TextEditingController();
   final date = TextEditingController();
   final startTime = TextEditingController();
@@ -38,6 +39,7 @@ class FirmaTechnicusControllers {
       lastName,
       gv,
       tv,
+      analyzerBrand,
       analyzerSerial,
       date,
       startTime,
@@ -71,6 +73,7 @@ abstract final class FirmaProfileSync {
     controllers.lastName.text = profile.technicianLastName;
     controllers.gv.text = profile.gvNumber;
     controllers.tv.text = profile.tvNumber;
+    controllers.analyzerBrand.text = profile.analyzerBrandModel;
     controllers.analyzerSerial.text = profile.analyzerSerialNumber;
     final today = draft.visitDate.isNotEmpty
         ? draft.visitDate
@@ -96,6 +99,7 @@ abstract final class FirmaProfileSync {
       technicianLastName: c.lastName.text.trim(),
       gvNumber: c.gv.text.trim(),
       tvNumber: c.tv.text.trim(),
+      analyzerBrandModel: c.analyzerBrand.text.trim(),
       analyzerSerialNumber: c.analyzerSerial.text.trim(),
     );
   }

@@ -124,5 +124,31 @@ void main() {
           of: closeFinder, matching: find.byType(TacticalMultilineInput));
       expect(inputFinder, findsOneWidget);
     });
+
+    testWidgets(
+        'TacticalMultilineInput displays live character counter capped at 200',
+        (tester) async {
+      final defectsController = TextEditingController();
+      final remarksController = TextEditingController();
+      addTearDown(() {
+        defectsController.dispose();
+        remarksController.dispose();
+      });
+
+      await tester.pumpWidget(buildCard(
+        defectsController: defectsController,
+        remarksController: remarksController,
+      ));
+      await tester.pumpAndSettle();
+
+      // Check initial counter displays 0 / 200 for both inputs
+      expect(find.text('0 / 200'), findsNWidgets(2));
+
+      // Type some text into defects
+      defectsController.text = 'Defect test';
+      await tester.pumpAndSettle();
+
+      expect(find.text('11 / 200'), findsOneWidget);
+    });
   });
 }

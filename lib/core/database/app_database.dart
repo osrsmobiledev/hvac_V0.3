@@ -156,6 +156,15 @@ class AppDatabase {
             debugPrint('[AppDatabase] v8 migration query warning: $e\n$stack');
           }
         }
+        if (oldVersion < 9) {
+          try {
+            await db.execute(
+              'ALTER TABLE technician_profile ADD COLUMN analyzer_brand_model TEXT;',
+            );
+          } catch (e, stack) {
+            debugPrint('[AppDatabase] v9 migration query warning: $e\n$stack');
+          }
+        }
       },
     );
   }

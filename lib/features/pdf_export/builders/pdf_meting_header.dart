@@ -29,11 +29,12 @@ abstract final class PdfMetingHeader {
                   style: PdfComponents.titleBoldText,
                 ),
               ),
-              if (data.meetToestelSerienummer.isNotEmpty)
+              if (data.meetToestelSerienummer.isNotEmpty ||
+                  data.meetToestelNaam.isNotEmpty)
                 pw.Padding(
                   padding: const pw.EdgeInsets.only(top: 1.0),
                   child: pw.Text(
-                    'Meettoestel SN: ${data.meetToestelSerienummer}',
+                    _formatMeettoestelLine(data),
                     style: PdfComponents.subTitleText,
                   ),
                 ),
@@ -167,5 +168,18 @@ abstract final class PdfMetingHeader {
         ),
       ],
     );
+  }
+
+  static String _formatMeettoestelLine(PdfVisitData data) {
+    final name = data.meetToestelNaam.trim();
+    final sn = data.meetToestelSerienummer.trim();
+    if (name.isNotEmpty && sn.isNotEmpty) {
+      return 'Meettoestel: $name (SN: $sn)';
+    } else if (name.isNotEmpty) {
+      return 'Meettoestel: $name';
+    } else if (sn.isNotEmpty) {
+      return 'Meettoestel SN: $sn';
+    }
+    return '';
   }
 }

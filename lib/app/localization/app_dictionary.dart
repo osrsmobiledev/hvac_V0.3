@@ -72,6 +72,7 @@ abstract final class AppDictionary {
   static const String lblKBO = 'Ondernemingsnummer (KBO)';
   static const String lblGV = 'GV-nummer';
   static const String lblTV = 'TV-nummer';
+  static const String lblAnalyzerBrand = 'Type / merk meettoestel';
   static const String lblAnalyzerSerial = 'Serienummer meettoestel';
   static const String lblDate = 'Datum onderhoud';
   static const String lblTimeFrom = 'Arbeidsduur van';
@@ -86,7 +87,8 @@ abstract final class AppDictionary {
   static const String hintTechLastName = 'bv. Janssens';
   static const String hintGvNumber = 'GV01234';
   static const String hintTvNumber = 'TV01234';
-  static const String hintAnalyzerSerial = 'bv. 06-52-01055 (Eurolyzer)';
+  static const String hintAnalyzerBrand = 'bv. Eurolyzer S1, Testo 300';
+  static const String hintAnalyzerSerial = 'bv. 06-52-01055';
   static const String hintDateFormat = 'JJJJ-MM-DD';
   static const String hintTimeStart = '08:00';
   static const String hintTimeEnd = '10:00';
@@ -199,11 +201,9 @@ abstract final class AppDictionary {
   static const String headerBurner = 'Brander';
   static const String subBurner = '(enkel CV)';
   static const String lblSeparateBurner = 'Afzonderlijke brander';
-  static const String subSeparateBurner =
-      'Schakel in als de brander een apart toestel is (bv. stookolie)';
+  static const String subSeparateBurner = 'Schakel in als de brander een apart toestel is (bv. stookolie)';
   static const String lblBurnerIntegratedBadge = 'Geïntegreerde brander';
-  static const String descBurnerIntegrated =
-      'De brander maakt integraal deel uit van de ketel. Gegevens worden automatisch overgenomen voor het attest en VEKA.';
+  static const String descBurnerIntegrated = 'De brander maakt integraal deel uit van de ketel. Gegevens worden automatisch overgenomen voor het attest en VEKA.';
   static const String lblBrand = 'Merk';
   static const String lblModel = 'Type / Model';
   static const String lblConstructionYear = 'Bouwjaar';
@@ -245,6 +245,5 @@ abstract final class AppDictionary {
   static const String scannerInstruction =
       'Plaats de barcode of QR-code van het toestel in het kader.';
   static const String loadingAppletTitle = 'Werkbon initialiseren...';
-  static const String loadingAppletSubtitle =
-      'Formulieren en metingen voorbereiden';
+  static const String loadingAppletSubtitle = 'Formulieren en metingen voorbereiden';
 }

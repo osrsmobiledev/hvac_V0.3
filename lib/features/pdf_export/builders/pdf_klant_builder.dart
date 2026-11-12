@@ -23,6 +23,17 @@ abstract final class PdfKlantBuilder {
       naamText = fullName.isNotEmpty ? fullName : data.klantNaam;
     }
 
+    final bool hasSeparateAddress = _hasSeparateInstallationAddress(data);
+
+    // When identical to customer address, leave fields blank per "(indien verschillend van adres klant)"
+    final String displayLocStreet =
+        hasSeparateAddress ? data.locatieStraat : '';
+    final String displayLocNr = hasSeparateAddress ? data.locatieNr : '';
+    final String displayLocBus = hasSeparateAddress ? data.locatieBus : '';
+    final String displayLocCity = hasSeparateAddress
+        ? '${data.locatiePostcode} ${data.locatieGemeente}'.trim()
+        : '';
+
     return pw.Row(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
@@ -91,15 +102,15 @@ abstract final class PdfKlantBuilder {
               children: [
                 PdfComponents.buildAddressLine(
                   'straat en nummer: ',
-                  data.locatieStraat,
-                  data.locatieNr,
-                  data.locatieBus,
+                  displayLocStreet,
+                  displayLocNr,
+                  displayLocBus,
                   installatieLabelWidth,
                 ),
                 pw.SizedBox(height: 6.0),
                 PdfComponents.buildDynamicLine(
                   'postnummer en gemeente: ',
-                  '${data.locatiePostcode} ${data.locatieGemeente}'.trim(),
+                  displayLocCity,
                   installatieLabelWidth,
                 ),
               ],
@@ -108,5 +119,39 @@ abstract final class PdfKlantBuilder {
         ),
       ],
     );
+  }
+
+  /// Returns `true` only if an installation address is actually entered
+  /// and genuinely differs from the customer address across any of the
+  /// 5 statutory address components: street, house number, box, postal code, or municipality.
+  static bool _hasSeparateInstallationAddress(PdfVisitData data) {
+    String norm(String? s) => (s ?? '').trim().toLowerCase();
+
+    final locStreet = norm(data.locatieStraat);
+    final locNr = norm(data.locatieNr);
+    final locBus = norm(data.locatieBus);
+    final locPostal = norm(data.locatiePostcode);
+    final locCity = norm(data.locatieGemeente);
+
+    // If no installation address was entered at all, it's not a separate address.
+    final bool hasAnyLocData = locStreet.isNotEmpty ||
+        locNr.isNotEmpty ||
+        locPostal.isNotEmpty ||
+        locCity.isNotEmpty;
+    if (!hasAnyLocData) return false;
+
+    final custStreet = norm(data.klantStraat);
+    final custNr = norm(data.klantNr);
+    final custBus = norm(data.klantBus);
+    final custPostal = norm(data.klantPostcode);
+    final custCity = norm(data.klantGemeente);
+
+    final bool isIdentical = locStreet == custStreet &&
+        locNr == custNr &&
+        locBus == custBus &&
+        locPostal == custPostal &&
+        locCity == custCity;
+
+    return !isIdentical;
   }
 }

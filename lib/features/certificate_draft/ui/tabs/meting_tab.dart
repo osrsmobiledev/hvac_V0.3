@@ -99,7 +99,6 @@ class _MetingTabState extends State<MetingTab>
   void dispose() {
     widget.boilerNotifier?.removeListener(_onBoilerChanged);
     _debouncer.dispose();
-    _saveToDatabase();
     _controllers.dispose();
     super.dispose();
   }

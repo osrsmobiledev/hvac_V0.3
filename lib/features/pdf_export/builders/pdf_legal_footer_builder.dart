@@ -9,7 +9,7 @@ abstract final class PdfLegalFooterBuilder {
   static pw.Widget buildLegalFooter() {
     return pw.Container(
       width: PdfThemeTokens.fullWidth,
-      padding: const pw.EdgeInsets.only(top: 2.0),
+      padding: const pw.EdgeInsets.only(top: 1.5),
       decoration: const pw.BoxDecoration(
         border: pw.Border(
           top: pw.BorderSide(width: 0.2, color: PdfColors.black),
@@ -44,7 +44,7 @@ abstract final class PdfLegalFooterBuilder {
               ],
             ),
           ),
-          pw.SizedBox(height: 1.5),
+          pw.SizedBox(height: 1.0),
           pw.RichText(
             text: const pw.TextSpan(
               style: pw.TextStyle(

@@ -169,6 +169,7 @@ class _FirmaTechnicusTabState extends State<FirmaTechnicusTab>
             lastNameController: _c.lastName,
             gvController: _c.gv,
             tvController: _c.tv,
+            analyzerBrandController: _c.analyzerBrand,
             analyzerSerialController: _c.analyzerSerial,
             dateController: _c.date,
             startTimeController: _c.startTime,

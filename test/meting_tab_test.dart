@@ -439,7 +439,7 @@ void main() {
 
       // 5. Tap Proef I -> switches back cleanly
       await tester.tap(find.text(MetingDictionary.slotProef1));
-      await tester.pumpAndSettle();
+      await settleDebounce(tester);
       expect(find.text(MetingDictionary.slotProef2Sub), findsOneWidget);
     });
 

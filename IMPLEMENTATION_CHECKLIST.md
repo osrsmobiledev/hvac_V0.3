@@ -28,10 +28,15 @@
 | **18** | **Duplicate text field widget implementations** (`DarkTextField` vs `DarkTextFormField`) | Multiple distinct text input widgets created inconsistent controller synchronization and validation borders across tabs. | Refactored `DarkTextField` to delegate directly to `DarkTextFormField`, giving all tabs the same zero-jump validation and real-time controller listener sync. |
 | **19** | **Fragmented red error borders on multi-choice button groups** | Individual buttons each turned red separately on validation errors, creating a cluttered look instead of a unified group border like Tab Meting. | Created `TacticalGroupOutline` in `lib/core/widgets/tactical_group_outline.dart` to enclose button pairs/groups with a single, zero-layout-shift red border. |
 | **20** | **Confrontational / contradictory signature exception controls** | Displaying permanent "Weigert" / "Afwezig" buttons right under the customer signature box looked awkward when presenting the device to customers, and allowed conflicting signed + refused states. | Implemented progressive disclosure via `CustomerSignatureSection`: exception choices are tucked behind a discreet chevron ("Klant kan niet ondertekenen? ▾") and completely hidden once the customer signs (mutual exclusivity). |
+| **21** | **`pw.Spacer()` in fixed-height PDF bounding box** (`pdf_gebreken_handtekeningen_builder.dart`) | Adding 6 defect items wrapped text to line 2. `pw.Spacer()` collapsed to 0 and continuing text pushed the signature row down past the bottom border of the box, where the legal footer underneath painted over it, making signatures disappear/show blank. | Replaced `pw.Spacer()` with mathematically bounded Two-Zone Vertical Partitioning (Zone 1: fixed 46.5 pt for defects/remarks with font 5.2 pt; Zone 2: fixed 38.0 pt for signatures). Zone 1 can never push Zone 2, and signatures are permanently anchored at their exact coordinates. |
+| **22** | **PDF Preview lacking touch pinch-to-zoom gestures in mobile dialog** | `PdfPreview` default constructor renders pages inside a `ListView.builder` that intercepts single-touch vertical scroll gestures and ignores two-finger pinch-to-zoom gestures, making small statutory text illegible on phones. | Switched to `PdfPreview.builder` with `InteractiveViewer` at 240 DPI, supporting 1.0x-5.0x multi-touch pinch-to-zoom, 1-finger pan, double-tap 2.5x toggle, and top-bar zoom controls (`+`, `-`, `Fit`). |
+| **23** | **Redundant unawaited async DB call in widget `dispose()`** (`meting_tab.dart`) | `_debouncer.dispose()` already flushes pending saves. Calling `_saveToDatabase()` a second time in `dispose()` without await caused SQLite transactions to execute after widget disposal and database closure, throwing `Bad state: This database has already been closed`. | Removed redundant `_saveToDatabase()` in `dispose()`, letting `_debouncer.dispose()` handle the single synchronous flush. |
+| **24** | **Burner type database enum leaking into PDF type line when integrated** | Official Flemish statutory template requires all 5 burner lines to remain completely blank when the boiler has an integrated burner. Mapping `burner_type` ('geintegreerd') into the `Type:` line violated the official government layout. | Added `final isSepBurner = str(boiler, 'burner_type') == 'afzonderlijk';` in `PdfDataMapper`. All 5 burner fields map to `''` when integrated. |
+| **25** | **Redundant installation address printed when identical to customer address** | Under Flemish regulations, when installation address is identical to the customer address, the right-side installation box must be left blank. | Implemented `_hasSeparateInstallationAddress` in `PdfKlantBuilder` with 5-field normalization (`street`, `house_number`, `box_number`, `postal_code`, `city`). If identical, right-side address lines remain clean and blank. |
 
 ---
 
-## 2. 20-Point Post-Implementation Checklist
+## 2. 25-Point Post-Implementation Checklist
 
 Run through these exact 20 verification checks before marking any tab, applet, or slice complete:
 
@@ -135,6 +140,23 @@ Run through these exact 20 verification checks before marking any tab, applet, o
   - If `gebouweenheidId` is missing or null, automatically derive `gebouweenheidIdNietGekend = true` (or `false` if found).
   - If `gebouwId` is missing or null, automatically derive `gebouwIdNietGekend = true` (or `false` if found).
 - [ ] **Nieuwbouw & Offline Safe-Harbor:** Unmapped new developments, unassigned municipal house numbers, or offline basements must **never** block local certificate generation, digital signing, or PDF creation (Golden Rule #5). A missing `adresId` is flagged for manual VEKA web portal reporting or later re-sync, keeping the on-site workflow 100% operational. See [`BASISREGISTER_AND_VEKA_API_SPECIFICATION.md`](file:///c:/Users/Admin/Documents/hvac_V0.3/doc/BASISREGISTER_AND_VEKA_API_SPECIFICATION.md) for full endpoint and payload rules.
+
+### [ ] 22. PDF Vertical Budgeting & Zero Elastic Overflow (`pw.Spacer()` Prohibition in Fixed Containers)
+- [ ] **Never** use `pw.Spacer()` or unconstrained `pw.Expanded` inside fixed-height PDF bounding boxes that hold user-supplied multi-line text (e.g. defects, remarks).
+- [ ] Always partition variable-content boxes into explicit, bounded vertical zones with fixed heights (e.g. Zone 1: Text bounded at 46.5 pt; Zone 2: Signatures fixed at 38.0 pt).
+- [ ] This mathematically guarantees that text overflow can never displace, push down, or clip downstream elements such as signatures or legal footers.
+
+### [ ] 23. PDF Text Budgeting vs Input Character Limits (`maxLength: 200` & Font Sizing)
+- [ ] Input fields feeding into PDF text zones must enforce strict character boundaries (e.g., `maxLength: 200` with `MaxLengthEnforcement.enforced`).
+- [ ] Text styling in the PDF builder must mathematically fit within `maxLines`: at font size 5.2 pt, a 544 pt line holds ~210 characters, guaranteeing that 200 characters never exceed 2 lines.
+
+### [ ] 24. Single-Page A4 Precision Layout ($\le 825.89\text{ pt}$)
+- [ ] The total sum of all statutory section heights, title bars, and inter-section gaps must strictly sum to $\le 825.89\text{ pt}$ (841.89 pt A4 height minus 16 pt vertical margins).
+- [ ] Maintain a positive headroom of at least +1.5 to +2.0 pt to absorb minor sub-pixel font rendering variations across different PDF rasterizers.
+
+### [ ] 25. Lifecycle Debouncer Disposal (Zero Unawaited Calls in `dispose()`)
+- [ ] In widget `dispose()`, call `_debouncer.dispose()`, which automatically flushes any pending debounced callback.
+- [ ] **Never** fire a second, unawaited `_saveToDatabase()` call in `dispose()`. Doing so triggers asynchronous SQLite transactions after the widget unmounts and the test database closes, resulting in `Bad state: This database has already been closed`.
 
 ---
 

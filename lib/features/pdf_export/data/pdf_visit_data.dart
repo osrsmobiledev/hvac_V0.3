@@ -69,6 +69,7 @@ class PdfVisitData {
   final String branderDebiet;
 
   // --- Metingen (Operating conditions & Combustion) ---
+  final String meetToestelNaam;
   final String meetToestelSerienummer;
   final String ketelTemp;
   final String sproeierMerkType;
@@ -189,6 +190,7 @@ class PdfVisitData {
     this.branderBouwjaar = '',
     this.branderFabNummer = '',
     this.branderDebiet = '',
+    this.meetToestelNaam = '',
     this.meetToestelSerienummer = '',
     this.ketelTemp = '',
     this.sproeierMerkType = '',
@@ -241,9 +243,7 @@ class PdfVisitData {
     this.volgendeControleDatum = '',
     this.gebrekenOpmerkingen = '',
     this.andereOpmerkingen = '',
-    this.technicusHandtekeningBytes,
-    this.klantHandtekeningBytes,
-    this.klantHandtekeningNaam = '',
-    this.klantHandtekeningUitzondering = '',
+    this.technicusHandtekeningBytes, this.klantHandtekeningBytes,
+    this.klantHandtekeningNaam = '', this.klantHandtekeningUitzondering = '',
   });
 }

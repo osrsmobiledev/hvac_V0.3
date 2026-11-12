@@ -91,6 +91,8 @@ abstract final class PdfDataMapper {
         ? str(visit, 'customer_signature_name')
         : custNameFallback;
 
+    final isSepBurner = str(boiler, 'burner_type') == 'afzonderlijk';
+
     return PdfVisitData(
       activiteitType: str(visit, 'activity_type'),
       volgnummerAttest: str(visit, 'attest_number'),
@@ -107,7 +109,7 @@ abstract final class PdfDataMapper {
       technicusAchternaam: str(profile, 'technician_last_name'),
       technicusGv: str(profile, 'gv_number'),
       technicusTv: str(profile, 'tv_number'),
-      datumOnderhoud: str(visit, 'visit_date'),
+      datumOnderhoud: _formatDate(str(visit, 'visit_date')),
       arbeidsduurVan: str(visit, 'start_time'),
       arbeidsduurTot: str(visit, 'end_time'),
       klantNaam: custNameFromCustomer.isNotEmpty
@@ -143,11 +145,14 @@ abstract final class PdfDataMapper {
       toestelBouwjaar: numStr(boiler, 'boiler_construction_year'),
       toestelFabNummer: str(boiler, 'boiler_serial_number'),
       toestelVermogen: numStr(boiler, 'boiler_nominal_power_kw'),
-      branderMerk: str(boiler, 'burner_brand'),
-      branderType: str(boiler, 'burner_type'),
-      branderBouwjaar: numStr(boiler, 'burner_construction_year'),
-      branderFabNummer: str(boiler, 'burner_serial_number'),
-      branderDebiet: str(boiler, 'burner_flow_rate'),
+      branderMerk: isSepBurner ? str(boiler, 'burner_brand') : '',
+      branderType: isSepBurner ? str(boiler, 'burner_model') : '',
+      branderBouwjaar:
+          isSepBurner ? numStr(boiler, 'burner_construction_year') : '',
+      branderFabNummer:
+          isSepBurner ? str(boiler, 'burner_serial_number') : '',
+      branderDebiet: isSepBurner ? str(boiler, 'burner_flow_rate') : '',
+      meetToestelNaam: str(profile, 'analyzer_brand_model'),
       meetToestelSerienummer: str(profile, 'analyzer_serial_number'),
       ketelTemp: numStr(visit, 'operating_temp_celsius'),
       sproeierMerkType: str(visit, 'nozzle_brand_type'),
@@ -224,9 +229,20 @@ abstract final class PdfDataMapper {
     return false;
   }
 
-  static String _okStr(int? value) {
-    if (value == 1) return 'OK';
-    if (value == 0) return 'Niet OK';
-    return '';
+  static String _okStr(int? value) =>
+      value == 1 ? 'OK' : (value == 0 ? 'Niet OK' : '');
+
+  static String _formatDate(String raw) {
+    final t = raw.trim();
+    if (t.isEmpty) return '';
+    if (RegExp(r'^\d{2}[/-]\d{2}[/-]\d{4}').hasMatch(t)) {
+      return t.replaceAll('-', '/');
+    }
+    try {
+      final dt = DateTime.parse(t);
+      return '${dt.day.toString().padLeft(2, '0')}/${dt.month.toString().padLeft(2, '0')}/${dt.year}';
+    } catch (_) {
+      return t;
+    }
   }
 }

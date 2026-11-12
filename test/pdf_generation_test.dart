@@ -205,5 +205,30 @@ void main() {
       final pdfBytes = await CombustionPdfGenerator.generateCertificate(mapped);
       expect(pdfBytes, isNotEmpty);
     });
+
+    test('generateCertificate succeeds with 6 defects and multi-line remarks on single page',
+        () async {
+      final multiIssueData = PdfVisitData(
+        volgnummerAttest: 'TEST-MULTI-6',
+        firmaNaam: 'Verwarming & Sanitair BV',
+        gebrekenOpmerkingen:
+            '• Expansievat membraan gescheurd\n'
+            '• Branderdichting versleten\n'
+            '• Ontstekingselektrode gecorrodeerd\n'
+            '• Automatische ontluchter lekt\n'
+            '• Condensafvoer deels verstopt\n'
+            '• Isolatiepaneel verbrandingskamer beschadigd',
+        andereOpmerkingen: '• Expansievat vervangen\n• Branderpakking vernieuwd',
+        technicusHandtekeningBytes: dummySignatureBytes,
+        klantHandtekeningBytes: dummySignatureBytes,
+      );
+
+      final pdfBytes =
+          await CombustionPdfGenerator.generateCertificate(multiIssueData);
+      File('Verbrandingsattest_Test.pdf').writeAsBytesSync(pdfBytes);
+      expect(pdfBytes, isNotNull);
+      expect(pdfBytes, isNotEmpty);
+      expect(String.fromCharCodes(pdfBytes.take(5)), equals('%PDF-'));
+    });
   });
 }

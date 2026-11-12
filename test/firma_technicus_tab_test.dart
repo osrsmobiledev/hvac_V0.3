@@ -532,14 +532,18 @@ void main() {
       );
     });
 
-    testWidgets('Entering analyzer serial number updates and persists profile',
+    testWidgets('Entering analyzer brand and serial updates and persists profile',
         (tester) async {
       await pumpTab(tester);
 
+      final brandField =
+          find.byKey(const ValueKey('technician_analyzerBrand'));
       final analyzerField =
           find.byKey(const ValueKey('technician_analyzerSerial'));
+      expect(brandField, findsOneWidget);
       expect(analyzerField, findsOneWidget);
 
+      await tester.enterText(brandField, 'Eurolyzer S1');
       await tester.enterText(analyzerField, '06-52-01055');
       await tester.pump(const Duration(milliseconds: 350));
 
@@ -549,6 +553,7 @@ void main() {
         profile = await profileRepository.getProfile();
       });
 
+      expect(profile.analyzerBrandModel, equals('Eurolyzer S1'));
       expect(profile.analyzerSerialNumber, equals('06-52-01055'));
     });
   });

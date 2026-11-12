@@ -12,6 +12,7 @@ class TechnicianSection extends StatefulWidget {
   final TextEditingController lastNameController;
   final TextEditingController gvController;
   final TextEditingController tvController;
+  final TextEditingController analyzerBrandController;
   final TextEditingController analyzerSerialController;
   final TextEditingController dateController;
   final TextEditingController startTimeController;
@@ -25,6 +26,7 @@ class TechnicianSection extends StatefulWidget {
     required this.lastNameController,
     required this.gvController,
     required this.tvController,
+    required this.analyzerBrandController,
     required this.analyzerSerialController,
     required this.dateController,
     required this.startTimeController,
@@ -125,7 +127,15 @@ class _TechnicianSectionState extends State<TechnicianSection> {
           ),
           const SizedBox(height: 12),
 
-          // Flue-Gas Analyzer Instrument Serial Number (Eurolyzer)
+          // Flue-Gas Analyzer Instrument Details (Brand/Type + Serial stacked full-width)
+          FirmaField(
+            fieldKey: const ValueKey('technician_analyzerBrand'),
+            label: AppDictionary.lblAnalyzerBrand,
+            controller: widget.analyzerBrandController,
+            hint: AppDictionary.hintAnalyzerBrand,
+            onChanged: widget.onProfileChanged,
+          ),
+          const SizedBox(height: 12),
           FirmaField(
             fieldKey: const ValueKey('technician_analyzerSerial'),
             label: AppDictionary.lblAnalyzerSerial,
