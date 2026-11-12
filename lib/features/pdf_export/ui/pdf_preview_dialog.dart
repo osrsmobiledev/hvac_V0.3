@@ -62,8 +62,8 @@ class _PdfPreviewDialogState extends State<PdfPreviewDialog> {
     final dx = (w * (1.0 - newScale)) / 2.0;
     final dy = (h * (1.0 - newScale)) / 2.0;
     _transformationController.value = Matrix4.identity()
-      ..translate(dx, dy)
-      ..scale(newScale, newScale);
+      ..translateByDouble(dx, dy, 0.0, 1.0)
+      ..scaleByDouble(newScale, newScale, 1.0, 1.0);
   }
 
   void _zoomIn() => _zoomBy(1.35);
