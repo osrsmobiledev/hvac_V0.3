@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:hvac_app/app/localization/app_dictionary.dart';
 import 'package:hvac_app/app/theme/app_colors.dart';
 import 'package:hvac_app/app/theme/app_theme.dart';
-import '../../widgets/two_way_sliding_bar.dart';
+import '../../certificate_draft/ui/widgets/two_way_sliding_bar.dart';
 
 /// Renders the VEKA heating type and boiler operation selectors using Layout B:
 /// A full-width 50/50 symmetrical 2-way slider for the two primary choices,

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hvac_app/core/utils/debouncer.dart';
 
@@ -59,6 +61,28 @@ void main() {
       debouncer.dispose();
       expect(saved, isTrue);
       expect(debouncer.isPending, isFalse);
+    });
+
+    test('settle waits for the latest queued write and retries a failure',
+        () async {
+      final saves = Debouncer();
+      final first = Completer<void>();
+      final writes = <String>[];
+      var attempts = 0;
+      saves.runNow(() async {
+        await first.future;
+        writes.add('first');
+      });
+      saves.run(() {
+        if (attempts++ == 0) throw StateError('write failed');
+        writes.add('second');
+      });
+      final settled = saves.settle();
+      expect(writes, isEmpty);
+      first.complete();
+      await settled;
+      expect(writes, ['first', 'second']);
+      expect(attempts, 2);
     });
 
     test('cancel() drops pending action without executing', () async {

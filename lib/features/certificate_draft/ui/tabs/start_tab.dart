@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../draft_save_scope.dart';
 import 'package:hvac_app/app/localization/app_dictionary.dart';
 import 'package:hvac_app/core/services/app_warmup_service.dart';
 import 'package:hvac_app/core/utils/debouncer.dart';
@@ -102,16 +103,17 @@ class _StartTabState extends State<StartTab>
   }
 
   /// Immediately persists the current Start tab state to the SQLite database.
-  Future<void> _saveDraft() async {
-    if (_visitId == null) return;
-    try {
-      await _repository.updateStartTabDraft(
-        visitId: _visitId!,
-        activityType: _activityType,
-        attestNumber: _attestNumberController.text.trim(),
-      );
-    } catch (e, stack) {
-      debugPrint('[StartTab] _saveDraft error: $e\n$stack');
+  void _queueSave({bool immediate = false}) {
+    final id = _visitId;
+    if (id == null) return;
+    final activity = _activityType;
+    final number = _attestNumberController.text.trim();
+    Future<void> save() => _repository.updateStartTabDraft(
+        visitId: id, activityType: activity, attestNumber: number);
+    if (immediate) {
+      _debouncer.runNow(save);
+    } else {
+      _debouncer.run(save);
     }
   }
 
@@ -123,11 +125,11 @@ class _StartTabState extends State<StartTab>
         _activityType = newType;
       }
     });
-    _saveDraft();
+    _queueSave(immediate: true);
   }
 
   void _onAttestNumberChanged(String value) {
-    _debouncer.run(_saveDraft);
+    _queueSave();
   }
 
   void _onAttestNumberSubmitted(String value) {
@@ -137,6 +139,7 @@ class _StartTabState extends State<StartTab>
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    DraftSaveScope.of(context)?.register(_debouncer);
 
     return Form(
       key: _formKey,

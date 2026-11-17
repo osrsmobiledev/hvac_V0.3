@@ -16,7 +16,6 @@ class DraftRepository {
   /// if none currently exists.
   Future<DraftVisit> getOrCreateActiveDraft({Database? dbOverride}) async {
     final db = dbOverride ?? await _appDatabase.database;
-
     final rows = await db.query(
       'maintenance_visits',
       where: 'is_draft = 1',
@@ -77,7 +76,7 @@ class DraftRepository {
   }) async {
     final db = dbOverride ?? await _appDatabase.database;
 
-    await db.update(
+    final count = await db.update(
       'maintenance_visits',
       {
         'activity_type': activityType,
@@ -87,6 +86,7 @@ class DraftRepository {
       where: 'id = ?',
       whereArgs: [visitId],
     );
+    if (count != 1) throw StateError('Missing visit');
   }
 
   /// Updates the Tab 3 (Firma - Technicus) visit timings for the active draft.
@@ -99,7 +99,7 @@ class DraftRepository {
   }) async {
     final db = dbOverride ?? await _appDatabase.database;
 
-    await db.update(
+    final count = await db.update(
       'maintenance_visits',
       {
         'visit_date': visitDate,
@@ -110,6 +110,7 @@ class DraftRepository {
       where: 'id = ?',
       whereArgs: [visitId],
     );
+    if (count != 1) throw StateError('Missing visit');
   }
 
   /// Updates the Tab 4 (Klant) customer and service location links for the draft.

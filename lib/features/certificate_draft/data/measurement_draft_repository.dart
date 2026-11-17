@@ -79,7 +79,7 @@ class MeasurementDraftRepository {
       if (!db.isOpen) return;
       await db.update(
         'maintenance_visits',
-        draft.toMap(),
+        _measurementValues(draft),
         where: 'id = ?',
         whereArgs: [visitId],
       );
@@ -88,6 +88,37 @@ class MeasurementDraftRepository {
           '[MeasurementDraftRepository] saveOperatingConditions error: $e\n$stack');
     }
   }
+
+  /// Commits one Meting edit without overwriting conclusions from Tab 7.
+  Future<void> saveMeting(int visitId, OperatingConditionsDraft conditions,
+      Map<String, MeasurementSlotDraft?> slots) async {
+    final db = await _db;
+    final batch = db.batch();
+    batch.update('maintenance_visits', _measurementValues(conditions),
+        where: 'id = ?', whereArgs: [visitId]);
+    for (final entry in slots.entries) {
+      final draft = entry.value;
+      if (draft == null) {
+        batch.delete('measurement_captures',
+            where: 'visit_id = ? AND slot = ?',
+            whereArgs: [visitId, entry.key]);
+      } else {
+        batch.insert('measurement_captures', draft.toMap(visitId),
+            conflictAlgorithm: ConflictAlgorithm.replace);
+      }
+    }
+    final results = await batch.commit();
+    if (results.first != 1) throw StateError('Missing visit');
+  }
+
+  /// Tab 7 owns the conformity choices and final conclusions.
+  Map<String, Object?> _measurementValues(OperatingConditionsDraft draft) =>
+      draft.toMap()
+        ..remove('stooktoestel_conform')
+        ..remove('rookgasafvoerkanaal_conform')
+        ..remove('stookplaats_conform')
+        ..remove('toestel_werking_goed')
+        ..remove('toestel_werking_veilig');
 
   /// Loads all 3 measurement slots ('proef1', 'proef2_laaglast', 'proef2_hooglast').
   Future<Map<String, MeasurementSlotDraft>> loadMeasurementSlots(

@@ -7,19 +7,52 @@ import 'package:hvac_app/app/theme/app_theme.dart';
 import 'package:hvac_app/core/database/app_database.dart';
 import 'package:hvac_app/features/certificate_draft/data/draft_repository.dart';
 import 'package:hvac_app/features/certificate_draft/domain/draft_visit.dart';
+import 'package:hvac_app/features/certificate_draft/ui/tabs/klant/effective_location_preview.dart';
 import 'package:hvac_app/features/certificate_draft/ui/tabs/klant_tab.dart';
 import 'package:hvac_app/features/customers_installations/data/customer_repository.dart';
 import 'package:hvac_app/features/customers_installations/domain/customer.dart';
 import 'package:hvac_app/features/customers_installations/domain/service_location.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
+part 'klant_tab_customer_selection_cases.dart';
+
+late Database db;
+late CustomerRepository customerRepository;
+late DraftRepository draftRepository;
+
+Widget buildTestWidget() {
+  return MaterialApp(
+    theme: AppTheme.darkTheme,
+    home: Scaffold(
+      body: KlantTab(
+        customerRepository: customerRepository,
+        draftRepository: draftRepository,
+      ),
+    ),
+  );
+}
+
+Future<void> pumpAsync(WidgetTester tester) async {
+  for (int i = 0; i < 15; i++) {
+    await tester.runAsync(() async {
+      await Future<void>.delayed(const Duration(milliseconds: 30));
+    });
+    await tester.pump();
+  }
+}
+
+Future<void> pumpTab(WidgetTester tester) async {
+  tester.view.physicalSize = const Size(412, 1400);
+  tester.view.devicePixelRatio = 1.0;
+  addTearDown(() => tester.view.resetPhysicalSize());
+
+  await tester.pumpWidget(buildTestWidget());
+  await pumpAsync(tester);
+}
+
 void main() {
   sqfliteFfiInit();
   databaseFactory = databaseFactoryFfi;
-
-  late Database db;
-  late CustomerRepository customerRepository;
-  late DraftRepository draftRepository;
 
   setUp(() async {
     db = await AppDatabase.instance.initDatabase(
@@ -33,35 +66,6 @@ void main() {
   tearDown(() async {
     await AppDatabase.instance.close();
   });
-
-  Widget buildTestWidget() {
-    return MaterialApp(
-      theme: AppTheme.darkTheme,
-      home: Scaffold(
-        body: KlantTab(
-          customerRepository: customerRepository,
-          draftRepository: draftRepository,
-        ),
-      ),
-    );
-  }
-
-  Future<void> pumpTab(WidgetTester tester) async {
-    tester.view.physicalSize = const Size(412, 1400);
-    tester.view.devicePixelRatio = 1.0;
-    addTearDown(() => tester.view.resetPhysicalSize());
-
-    await tester.pumpWidget(buildTestWidget());
-    for (int i = 0; i < 20; i++) {
-      await tester.runAsync(() async {
-        await Future<void>.delayed(const Duration(milliseconds: 30));
-      });
-      await tester.pump();
-      if (find.byType(CircularProgressIndicator).evaluate().isEmpty) {
-        break;
-      }
-    }
-  }
 
   group('Slice 2.4 — Tab 4 (Klant & Installatieadres) UI & Persistence', () {
     testWidgets(
@@ -90,12 +94,9 @@ void main() {
       expect(find.text(AppDictionary.lblPhone), findsOneWidget);
       expect(find.text(AppDictionary.lblEmail), findsOneWidget);
 
-      // Verify Afwijkend installatieadres Switch starts OFF (value: false) and disabled (greyed out) with inputs locked
-      expect(find.text(AppDictionary.lblSeparateInstallationAddress),
-          findsOneWidget);
-      final initialSwitch = tester.widget<Switch>(find.byType(Switch));
-      expect(initialSwitch.value, isFalse);
-      expect(initialSwitch.onChanged, isNull);
+      // Verify Effective location preview in view mode with inputs locked
+      expect(find.byType(EffectiveLocationPreview), findsOneWidget);
+      expect(find.text(AppDictionary.lblSameAsCustomerAddress), findsOneWidget);
       final textField = tester.widget<TextField>(
         find.descendant(
           of: find.byKey(const ValueKey('customer_lastName')),
@@ -132,6 +133,7 @@ void main() {
 
       // Trigger debounce and SQLite save
       await tester.pump(const Duration(milliseconds: 550));
+      await pumpAsync(tester);
       late List<Customer> customers;
       late DraftVisit draft;
       await tester.runAsync(() async {
@@ -167,10 +169,10 @@ void main() {
           find.byKey(const ValueKey('customer_lastName')), 'Claes');
       await tester.pump();
 
-      // Toggle separate address Switch to false
-      final toggleSwitch = find.byType(Switch);
-      expect(toggleSwitch, findsOneWidget);
-      await tester.tap(toggleSwitch);
+      // Toggle separate address via "Op een ander adres" option
+      final optAnderAdres = find.text(BasisregistersDictionary.optOpAnderAdres);
+      expect(optAnderAdres, findsOneWidget);
+      await tester.tap(optAnderAdres);
       await tester.pumpAndSettle();
 
       // Verify separate installation fields appear
@@ -183,6 +185,7 @@ void main() {
 
       // Trigger debounce and run async SQLite operations
       await tester.pump(const Duration(milliseconds: 550));
+      await pumpAsync(tester);
       late Customer customer;
       ServiceLocation? location;
       await tester.runAsync(() async {
@@ -198,195 +201,6 @@ void main() {
       expect(location!.street, 'Fabriekslaan');
     });
 
-    testWidgets('Customer search modal filters customers and selects into form',
-        (tester) async {
-      // Seed SQLite with test customers via runAsync
-      final now = DateTime.now();
-      await tester.runAsync(() async {
-        await customerRepository.saveCustomer(Customer(
-          lastName: 'Aitest BV',
-          companyName: 'Aitest BV',
-          street: 'Industrieweg',
-          houseNumber: '5',
-          postalCode: '9000',
-          city: 'Gent',
-          phone: '+32 9 123 45 67',
-          createdAt: now,
-          updatedAt: now,
-        ));
-        await customerRepository.saveCustomer(Customer(
-          lastName: 'Bakker',
-          firstName: 'Tom',
-          street: 'Dorpstraat',
-          houseNumber: '1',
-          postalCode: '8000',
-          city: 'Brugge',
-          createdAt: now,
-          updatedAt: now,
-        ));
-      });
-
-      await pumpTab(tester);
-
-      // Tap 'Zoeken' button
-      final chooseBtn = find.text(AppDictionary.btnSearch);
-      expect(chooseBtn, findsOneWidget);
-      await tester.tap(chooseBtn);
-      await tester.pump();
-      for (int i = 0; i < 5; i++) {
-        await tester.runAsync(() async {
-          await Future<void>.delayed(const Duration(milliseconds: 50));
-        });
-        await tester.pump();
-      }
-      await tester.pumpAndSettle();
-
-      // Modal bottom sheet should be open
-      expect(find.text('Kies bestaande klant'), findsWidgets);
-
-      // Both customers should be visible
-      expect(find.text('Aitest BV'), findsOneWidget);
-      expect(find.text('Tom Bakker'), findsOneWidget);
-
-      // Tap on 'Aitest BV'
-      await tester.tap(find.text('Aitest BV'));
-      await tester.pumpAndSettle();
-      for (int i = 0; i < 5; i++) {
-        await tester.runAsync(() async {
-          await Future<void>.delayed(const Duration(milliseconds: 50));
-        });
-        await tester.pump();
-      }
-
-      // Modal dismissed and form populated
-      expect(find.text('Aitest BV'), findsWidgets);
-      expect(find.text('Industrieweg'), findsOneWidget);
-      expect(find.text('5'), findsOneWidget);
-      final cityField = tester.widget<TextField>(find.descendant(
-        of: find.byKey(const ValueKey('customer_city')),
-        matching: find.byType(TextField),
-      ));
-      expect(cityField.controller?.text, equals('Gent'));
-      expect(find.text('9 123 45 67'), findsOneWidget);
-
-      // Verify draft visit linked to this customer
-      late DraftVisit draft;
-      await tester.runAsync(() async {
-        await Future<void>.delayed(const Duration(milliseconds: 100));
-        draft = await draftRepository.getOrCreateActiveDraft();
-      });
-      expect(draft.customerId, isNotNull);
-    });
-
-    testWidgets(
-        'onFormKeyReady exposes formKey and validate() checks required fields and highlights red',
-        (tester) async {
-      GlobalKey<FormState>? formKey;
-      await tester.pumpWidget(
-        MaterialApp(
-          theme: AppTheme.darkTheme,
-          home: Scaffold(
-            body: KlantTab(
-              customerRepository: customerRepository,
-              draftRepository: draftRepository,
-              onFormKeyReady: (k) => formKey = k,
-            ),
-          ),
-        ),
-      );
-      await tester.runAsync(() async {
-        await Future<void>.delayed(const Duration(milliseconds: 100));
-      });
-      await tester.pump();
-
-      expect(formKey, isNotNull);
-      // Empty fields -> validate() fails
-      expect(formKey!.currentState!.validate(), isFalse);
-      await tester.pumpAndSettle();
-
-      // Verify required fields highlight red border and NO text underneath
-      final firstNameField = tester.widget<TextField>(find.descendant(
-        of: find.byKey(const ValueKey('customer_firstName')),
-        matching: find.byType(TextField),
-      ));
-      expect(
-        (firstNameField.decoration!.enabledBorder as OutlineInputBorder)
-            .borderSide
-            .color,
-        AppColors.errorRed,
-      );
-      expect(find.text('Voornaam is verplicht'), findsNothing);
-
-      final streetField = tester.widget<TextField>(find.descendant(
-        of: find.byKey(const ValueKey('customer_street')),
-        matching: find.byType(TextField),
-      ));
-      expect(
-        (streetField.decoration!.enabledBorder as OutlineInputBorder)
-            .borderSide
-            .color,
-        AppColors.errorRed,
-      );
-
-      // Bedrijfsnaam remains optional (not red)
-      final companyField = tester.widget<TextField>(find.descendant(
-        of: find.byKey(const ValueKey('customer_company')),
-        matching: find.byType(TextField),
-      ));
-      expect(
-        (companyField.decoration!.enabledBorder as OutlineInputBorder)
-            .borderSide
-            .color,
-        isNot(AppColors.errorRed),
-      );
-    });
-
-    testWidgets(
-        'Rebuilding invalid fields or secondary tap does not trigger setState during build',
-        (tester) async {
-      GlobalKey<FormState>? formKey;
-      await tester.pumpWidget(MaterialApp(
-        theme: AppTheme.darkTheme,
-        home: Scaffold(
-          body: KlantTab(
-            customerRepository: customerRepository,
-            draftRepository: draftRepository,
-            onFormKeyReady: (k) => formKey = k,
-          ),
-        ),
-      ));
-      await tester.runAsync(() async {
-        await Future<void>.delayed(const Duration(milliseconds: 100));
-      });
-      await tester.pump();
-
-      // Trigger validation error
-      expect(formKey!.currentState!.validate(), isFalse);
-      await tester.pump();
-
-      // Simulate secondary tap / right click on invalid field
-      await tester.tap(
-        find.byKey(const ValueKey('customer_firstName')),
-        buttons: kSecondaryMouseButton,
-        warnIfMissed: false,
-      );
-      await tester.pump();
-
-      // Re-pump widget tree to trigger didUpdateWidget across the form
-      await tester.pumpWidget(MaterialApp(
-        theme: AppTheme.darkTheme,
-        home: Scaffold(
-          body: KlantTab(
-            customerRepository: customerRepository,
-            draftRepository: draftRepository,
-            onFormKeyReady: (k) => formKey = k,
-          ),
-        ),
-      ));
-      await tester.pump();
-
-      // No exception thrown
-      expect(tester.takeException(), isNull);
-    });
+    _customerSelectionTests();
   });
 }

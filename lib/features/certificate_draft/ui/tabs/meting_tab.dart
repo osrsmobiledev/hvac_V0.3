@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:hvac_app/app/theme/app_theme.dart';
+import '../draft_save_scope.dart';
 import 'package:hvac_app/core/services/app_warmup_service.dart';
 import 'package:hvac_app/core/utils/debouncer.dart';
 import 'package:hvac_app/core/widgets/workflow_tab_container.dart';
@@ -22,7 +22,6 @@ class MetingTab extends StatefulWidget {
   final BoilerDraftNotifier? boilerNotifier;
   final MeasurementAssessmentNotifier? assessmentNotifier;
   final ValueChanged<GlobalKey<FormState>>? onFormKeyReady;
-
   const MetingTab({
     super.key,
     this.visitId = 1,
@@ -30,7 +29,6 @@ class MetingTab extends StatefulWidget {
     this.assessmentNotifier,
     this.onFormKeyReady,
   });
-
   @override
   State<MetingTab> createState() => _MetingTabState();
 }
@@ -40,19 +38,15 @@ class _MetingTabState extends State<MetingTab>
   final MeasurementDraftRepository _repository = MeasurementDraftRepository();
   final MetingFormControllers _controllers = MetingFormControllers();
 
-  /// Single form key covering all three Meting cards (Card 1, 2 and 3).
-  /// Exposed to the coordinator via [widget.onFormKeyReady].
-  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-
+  final _formKey = GlobalKey<FormState>();
   BoilerDraft _boiler = BoilerDraft.initial();
-  OperatingConditionsDraft _operatingConditions = OperatingConditionsDraft.empty();
-  String _activeSlot = 'proef1';
+  OperatingConditionsDraft _operatingConditions =
+      OperatingConditionsDraft.empty();
+  var _activeSlot = 'proef1';
   bool _isLoading = true;
   final _debouncer = Debouncer();
-
   @override
   bool get wantKeepAlive => true;
-
   @override
   void initState() {
     super.initState();
@@ -105,11 +99,18 @@ class _MetingTabState extends State<MetingTab>
 
   void _onBoilerChanged() {
     if (widget.boilerNotifier != null && mounted) {
+      final next = widget.boilerNotifier!.draft;
+      final fuelChanged = next.fuelCategory != _boiler.fuelCategory ||
+          next.fuelSubtype != _boiler.fuelSubtype;
       setState(() {
-        _boiler = widget.boilerNotifier!.draft;
+        _boiler = next;
         _controllers.autoEvaluateAllSlots(_boiler);
+        if (fuelChanged) {
+          _controllers.verbrandingscontroleOverride = null;
+        }
       });
       _syncAssessment();
+      if (fuelChanged && !_isLoading) _queueSave();
     }
   }
 
@@ -143,30 +144,22 @@ class _MetingTabState extends State<MetingTab>
     _controllers.autoEvaluateAllSlots(_boiler);
     _syncAssessment();
     if (mounted) setState(() {});
-    _debouncer.run(_saveToDatabase);
+    _queueSave();
   }
 
-  Future<void> _saveToDatabase() async {
-    if (!mounted) return;
-    try {
-      final updated = _controllers.buildOperatingConditions(
-        base: _operatingConditions,
-        isLiquidFuel: _boiler.fuelCategory == 'vloeibaar',
-      );
-      await _repository.saveOperatingConditions(widget.visitId, updated);
-      if (!mounted) return;
-      _operatingConditions = updated;
-      for (final entry in _controllers.slots.entries) {
-        if (entry.value.hasAnyValues) {
-          await _repository.saveMeasurementSlot(
-            widget.visitId,
-            entry.value.buildDraft(entry.key),
-          );
-        }
-      }
-    } catch (e, stack) {
-      debugPrint('[MetingTab] _saveToDatabase error: $e\n$stack');
-    }
+  void _queueSave() {
+    final visitId = widget.visitId;
+    _operatingConditions = _controllers.buildOperatingConditions(
+      base: _operatingConditions,
+      isLiquidFuel: _boiler.fuelCategory == 'vloeibaar',
+    );
+    final conditions = _operatingConditions;
+    final slots = {
+      for (final entry in _controllers.slots.entries)
+        entry.key:
+            entry.value.hasAnyValues ? entry.value.buildDraft(entry.key) : null,
+    };
+    _debouncer.run(() => _repository.saveMeting(visitId, conditions, slots));
   }
 
   void _trigger(Function fn) => fn(
@@ -176,19 +169,17 @@ class _MetingTabState extends State<MetingTab>
       controllers: _controllers,
       activeSlot: _activeSlot,
       onFormChanged: _onFormChanged);
-
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    DraftSaveScope.of(context)?.register(_debouncer);
     if (_isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
-    final slotCtrl =
-        _controllers.slots[_activeSlot] ?? _controllers.slots['proef1']!;
-    final p1HasData = _controllers.slots['proef1']?.hasAnyValues ?? false;
-    final p2Laag = _controllers.slots['proef2_laaglast']?.hasAnyValues ?? false;
-    final p2Hoog = _controllers.slots['proef2_hooglast']?.hasAnyValues ?? false;
-
+    bool hasData(String slot) =>
+        _controllers.slots[slot]?.hasAnyValues ?? false;
+    final p2Laag = hasData('proef2_laaglast');
+    final p2Hoog = hasData('proef2_hooglast');
     return Form(
       key: _formKey,
       child: WorkflowTabContainer(
@@ -213,12 +204,11 @@ class _MetingTabState extends State<MetingTab>
             },
             onChanged: _onFormChanged,
           ),
-          const SizedBox(height: AppTheme.bentoCardSpacing),
           MeasurementSlotsCard(
             boiler: _boiler,
             activeSlot: _activeSlot,
             onSlotChanged: (s) {
-              _saveToDatabase();
+              _debouncer.flush();
               setState(() => _activeSlot = s);
             },
             slots: _controllers.slots,
@@ -226,14 +216,13 @@ class _MetingTabState extends State<MetingTab>
                 _trigger(MetingSlotActions.copyFromDataTab),
             onScanEurolyzer: () => _trigger(MetingSlotActions.scanEurolyzer),
             onClearSlot: () => _trigger(MetingSlotActions.clearSlot),
-            canClear: slotCtrl.hasAnyValues,
-            proef1HasData: p1HasData,
+            canClear: hasData(_activeSlot),
+            proef1HasData: hasData('proef1'),
             proef2HasData: p2Laag || p2Hoog,
             proef2LaagHasData: p2Laag,
             proef2HoogHasData: p2Hoog,
             onChanged: _onFormChanged,
           ),
-          const SizedBox(height: AppTheme.bentoCardSpacing),
           SafetyChecksCard(
             boiler: _boiler,
             draft: _operatingConditions,

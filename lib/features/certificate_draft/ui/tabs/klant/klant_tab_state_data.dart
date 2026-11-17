@@ -1,8 +1,13 @@
-import '../../../../customers_installations/domain/customer.dart';
-import '../../../../customers_installations/domain/service_location.dart';
+import 'package:hvac_app/features/certificate_draft/data/basisregisters_models.dart';
+import 'package:hvac_app/features/customers_installations/domain/customer.dart';
+import 'package:hvac_app/features/customers_installations/domain/service_location.dart';
+import 'klant_edit_session.dart';
 import 'klant_form_controllers.dart';
+import 'klant_form_snapshot.dart';
 
-/// Mutable state model backing the Klant & Installatieadres tab.
+enum AddressLookupTarget { billing, shared, installation }
+
+/// State for the Klant form and its pre-edit values.
 class KlantTabStateData {
   Customer? activeCustomer;
   ServiceLocation? activeLocation;
@@ -13,22 +18,59 @@ class KlantTabStateData {
   bool isLoading = true;
   int? draftVisitId;
 
-  bool hasCustomer(KlantFormControllers c) =>
+  void populateFromData(
+    Customer? customer,
+    ServiceLocation? location,
+    KlantFormControllers controllers,
+  ) {
+    clear(controllers);
+    activeCustomer = customer;
+    if (customer != null) controllers.populateCustomer(customer);
+    if (location != null) applyLocation(location, controllers);
+    isLoading = false;
+  }
+
+  bool hasCustomer(KlantFormControllers controllers) =>
       activeCustomer != null ||
-      c.lastName.text.trim().isNotEmpty ||
-      c.company.text.trim().isNotEmpty;
+      controllers.lastName.text.trim().isNotEmpty ||
+      controllers.company.text.trim().isNotEmpty;
 
   void applyLocation(
-    ServiceLocation loc,
-    KlantFormControllers c, [
-    String? street,
-    String? nr,
-  ]) {
-    activeLocation = loc;
-    role = loc.role;
-    isSameAsCustomer = !(loc.street != (street ?? c.street.text) ||
-        loc.houseNumber != (nr ?? c.houseNumber.text));
-    c.populateLocation(loc);
+      ServiceLocation location, KlantFormControllers controllers) {
+    activeLocation = location;
+    role = location.role;
+    isSameAsCustomer =
+        _sameAddress(activeCustomer ?? controllers.toCustomer(), location);
+    controllers.populateLocation(location);
+  }
+
+  static bool _sameAddress(Customer? customer, ServiceLocation? location) {
+    if (location == null) return true;
+    String normalized(String? value) => (value ?? '').trim().toLowerCase();
+    return customer != null &&
+        normalized(customer.street).isNotEmpty &&
+        normalized(customer.street) == normalized(location.street) &&
+        normalized(customer.houseNumber) == normalized(location.houseNumber) &&
+        normalized(customer.boxNumber) == normalized(location.boxNumber) &&
+        normalized(customer.postalCode) == normalized(location.postalCode) &&
+        normalized(customer.city) == normalized(location.municipality);
+  }
+
+  void applyLookup(
+    AddressLookupTarget target,
+    AddressMatch match,
+    KlantFormControllers controllers,
+  ) {
+    switch (target) {
+      case AddressLookupTarget.billing:
+        controllers.populateCustomerAddressOnly(match);
+      case AddressLookupTarget.shared:
+      case AddressLookupTarget.installation:
+        controllers.populateFromLookup(
+          match,
+          isSameAsCustomer: target == AddressLookupTarget.shared,
+        );
+    }
   }
 
   void takeSnapshot() {
@@ -40,18 +82,32 @@ class KlantTabStateData {
     );
   }
 
-  void restoreSnapshot(KlantFormControllers c) {
-    activeCustomer = snapshot?.customer;
-    activeLocation = snapshot?.location;
-    role = snapshot?.role ?? 'owner';
-    isSameAsCustomer = snapshot?.isSameAsCustomer ?? true;
-    snapshot?.restoreInto(c);
+  /// Old undo records infer the address mode from their stored addresses.
+  void resumeSession(KlantEditSession session) {
+    snapshot = KlantFormSnapshot(
+      customer: session.initialCustomer,
+      location: session.initialLocation,
+      role: session.initialLocation?.role ?? 'owner',
+      isSameAsCustomer: session.initialSameAsCustomer ??
+          _sameAddress(session.initialCustomer, session.initialLocation),
+    );
+    isSameAsCustomer = session.savedSameAsCustomer ?? isSameAsCustomer;
+    isEditing = true;
   }
 
-  void clear(KlantFormControllers c) {
+  void restoreSnapshot(KlantFormControllers controllers) {
+    final original = snapshot;
+    if (original == null) return;
+    populateFromData(original.customer, original.location, controllers);
+    role = original.role;
+    isSameAsCustomer = original.isSameAsCustomer;
+    snapshot = null;
+  }
+
+  void clear(KlantFormControllers controllers) {
     activeCustomer = null;
     activeLocation = null;
-    c.clearAll();
+    controllers.clearAll();
     role = 'owner';
     isSameAsCustomer = true;
   }

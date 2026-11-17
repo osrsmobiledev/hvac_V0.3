@@ -2,6 +2,9 @@
 // Responsibility: Tab 7 — Eindbeoordeling & Handtekeningen coordinator.
 
 import 'package:flutter/material.dart';
+import '../draft_save_scope.dart';
+import '../../../reporting_delivery/ui/veka_tracker.dart';
+import '../../../reporting_delivery/ui/veka_assessments.dart';
 import 'package:hvac_app/app/localization/eindbeoordeling_dictionary.dart';
 import 'package:hvac_app/core/utils/debouncer.dart';
 import 'package:hvac_app/core/widgets/tactical_feedback.dart';
@@ -138,22 +141,27 @@ class _EindbeoordelingTabState extends State<EindbeoordelingTab>
     if (updated != _draft) _saveDirect(updated);
   }
 
-  Future<void> _saveDirect(EindbeoordelingDraft updated) async {
+  void _saveDirect(EindbeoordelingDraft updated) {
     setState(() => _draft = updated);
-    try {
-      await _repository.updateDraft(
-        visitId: widget.visitId,
-        draft: updated.copyWith(
-          defectsNotes: _defectsController.text,
-          generalRemarks: _remarksController.text,
-        ),
-      );
-    } catch (e, stack) {
-      debugPrint('[EindbeoordelingTab] _saveDirect error: $e\n$stack');
+    _queueSave(immediate: true);
+  }
+
+  void _queueSave({bool immediate = false}) {
+    final visitId = widget.visitId;
+    final draft = _draft.copyWith(
+      defectsNotes: _defectsController.text,
+      generalRemarks: _remarksController.text,
+    );
+    Future<void> save() =>
+        _repository.updateDraft(visitId: visitId, draft: draft);
+    if (immediate) {
+      _debouncer.runNow(save);
+    } else {
+      _debouncer.run(save);
     }
   }
 
-  void _onTextInputsChanged() => _debouncer.run(() => _saveDirect(_draft));
+  void _onTextInputsChanged() => _queueSave();
 
   void _updateConclusion({String? goed, String? veilig, required bool isGoed}) {
     _saveDirect(_draft.withUpdatedConclusions(
@@ -166,14 +174,14 @@ class _EindbeoordelingTabState extends State<EindbeoordelingTab>
   }
 
   Future<void> _onTestPdfPressed() async {
-    _debouncer.flush();
+    await _debouncer.settle(ignoreFailure: true);
     final data = await PdfDataMapper.loadVisitData(widget.visitId);
     if (!mounted) return;
     await PdfPreviewDialog.show(context, data);
   }
 
   Future<void> _onSaveDevicePressed() async {
-    _debouncer.flush();
+    await _debouncer.settle(ignoreFailure: true);
     final data = await PdfDataMapper.loadVisitData(widget.visitId);
     final pdfBytes = await CombustionPdfGenerator.generateCertificate(data);
     final result = await PdfFileSaver.saveToDevice(
@@ -204,6 +212,7 @@ class _EindbeoordelingTabState extends State<EindbeoordelingTab>
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    DraftSaveScope.of(context)?.register(_debouncer);
 
     return Form(
       key: _formKey,
@@ -223,6 +232,13 @@ class _EindbeoordelingTabState extends State<EindbeoordelingTab>
         onTestPdfPressed: _onTestPdfPressed,
         onSaveDevicePressed: _onSaveDevicePressed,
         onCompletePressed: _onCompletePressed,
+        reporting: DraftSaveScope.of(context) == null
+            ? null
+            : VekaTracker(
+                key: ValueKey(widget.visitId),
+                visitId: widget.visitId,
+                conformity: VekaAssessments(
+                    visitId: widget.visitId, boiler: widget.boilerNotifier)),
       ),
     );
   }

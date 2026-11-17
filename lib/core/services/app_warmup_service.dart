@@ -142,7 +142,10 @@ class AppWarmupService {
   }
 
   @visibleForTesting
-  void resetForTesting() {
+  void resetForTesting() => invalidate();
+
+  /// The next visit needs a fresh cache after a certificate is archived.
+  void invalidate() {
     _isWarmedUp = false;
     _cachedResult = null;
   }

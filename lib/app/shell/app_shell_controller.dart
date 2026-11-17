@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../localization/app_dictionary.dart';
+import '../localization/visit_history_dictionary.dart';
 
 /// Available applets and main sections in the HVAC application.
 ///
@@ -12,12 +13,21 @@ enum AppletType {
   measurement,
   technicianSettings,
   importExport,
+  history,
 }
 
 /// Controller managing the persistent AppBar title and active navigation state.
 ///
 /// Changes notified here update the persistent AppBar and Drawer highlight.
 class AppShellController extends ChangeNotifier {
+  int visitGeneration = 0;
+
+  void visitFinalized() {
+    visitGeneration++;
+    _activeApplet = AppletType.history;
+    notifyListeners();
+  }
+
   AppletType _activeApplet = AppletType.home;
 
   /// The currently active applet or view.
@@ -26,6 +36,7 @@ class AppShellController extends ChangeNotifier {
   /// Returns the dynamic Dutch title to display in the persistent AppBar.
   String get appBarTitle {
     return switch (_activeApplet) {
+      AppletType.history => VisitHistoryDictionary.title,
       AppletType.home => AppDictionary.menuStart,
       AppletType.combustion => AppDictionary.menuCombustion,
       AppletType.cleaning => AppDictionary.menuCleaning,

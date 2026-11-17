@@ -67,4 +67,12 @@ abstract final class KlantActionDialogs {
       AppDictionary.toastCustomerSaved,
     );
   }
+
+  /// Displays the red floating error feedback toast when an operation fails.
+  static void showErrorFeedback(BuildContext context, String message) {
+    TacticalFeedback.showError(
+      context,
+      message,
+    );
+  }
 }

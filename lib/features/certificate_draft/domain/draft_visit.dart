@@ -11,6 +11,8 @@ class DraftVisit {
   final String endTime;
   final int? customerId;
   final int? serviceLocationId;
+  final String? snapshotJson;
+  final String? klantUndoJson;
 
   const DraftVisit({
     required this.id,
@@ -21,6 +23,8 @@ class DraftVisit {
     this.endTime = '',
     this.customerId,
     this.serviceLocationId,
+    this.snapshotJson,
+    this.klantUndoJson,
   });
 
   /// Factory constructor to map an SQLite row into a [DraftVisit] entity.
@@ -34,6 +38,8 @@ class DraftVisit {
       endTime: (map['end_time'] as String?) ?? '',
       customerId: map['customer_id'] as int?,
       serviceLocationId: map['service_location_id'] as int?,
+      snapshotJson: map['snapshot_json'] as String?,
+      klantUndoJson: map['klant_undo_json'] as String?,
     );
   }
 
@@ -46,6 +52,8 @@ class DraftVisit {
     String? endTime,
     int? customerId,
     int? serviceLocationId,
+    String? snapshotJson,
+    String? klantUndoJson,
   }) {
     return DraftVisit(
       id: id,
@@ -56,6 +64,8 @@ class DraftVisit {
       endTime: endTime ?? this.endTime,
       customerId: customerId ?? this.customerId,
       serviceLocationId: serviceLocationId ?? this.serviceLocationId,
+      snapshotJson: snapshotJson ?? this.snapshotJson,
+      klantUndoJson: klantUndoJson ?? this.klantUndoJson,
     );
   }
 }

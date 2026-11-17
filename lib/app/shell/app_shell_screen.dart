@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../features/certificate_draft/ui/verbrandingsattest_screen.dart';
+import '../../features/visit_history/ui/visit_history_screen.dart';
 import '../dashboard/dashboard_screen.dart';
 import '../localization/app_dictionary.dart';
 import '../theme/app_colors.dart';
@@ -80,12 +81,18 @@ class _AppShellScreenState extends State<AppShellScreen> {
               children: [
                 DashboardScreen(controller: _controller),
                 _hasOpenedCombustion
-                    ? VerbrandingsattestScreen(controller: _controller)
+                    ? VerbrandingsattestScreen(
+                        key: ValueKey(_controller.visitGeneration),
+                        controller: _controller)
                     : const SizedBox.shrink(),
-                AppletContentPlaceholder(
-                  appBarTitle: _controller.appBarTitle,
-                  onBackToHome: () => _controller.selectApplet(AppletType.home),
-                ),
+                if (_controller.activeApplet == AppletType.history)
+                  const VisitHistoryScreen()
+                else
+                  AppletContentPlaceholder(
+                    appBarTitle: _controller.appBarTitle,
+                    onBackToHome: () =>
+                        _controller.selectApplet(AppletType.home),
+                  ),
               ],
             );
 

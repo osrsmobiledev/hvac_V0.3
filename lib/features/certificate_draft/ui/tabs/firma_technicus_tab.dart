@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../draft_save_scope.dart';
 import 'package:hvac_app/app/theme/app_colors.dart';
 import 'package:hvac_app/app/theme/app_theme.dart';
 import 'package:hvac_app/core/services/app_warmup_service.dart';
@@ -110,36 +111,33 @@ class _FirmaTechnicusTabState extends State<FirmaTechnicusTab>
     }
   }
 
-  void _onProfileChanged() {
-    _debouncer.run(_saveProfile);
-  }
+  void _onProfileChanged() => _queueSave();
 
-  Future<void> _saveProfile() async {
-    try {
-      final profile = FirmaProfileSync.buildProfile(_c);
+  void _queueSave({bool immediate = false}) {
+    final profile = FirmaProfileSync.buildProfile(_c);
+    final id = _visitId;
+    final date = _c.date.text.trim();
+    final start = _c.startTime.text.trim();
+    final end = _c.endTime.text.trim();
+    Future<void> save() async {
       await _profileRepo.saveProfile(profile);
-    } catch (e, stack) {
-      debugPrint('[FirmaTechnicusTab] _saveProfile error: $e\n$stack');
+      if (id != null) {
+        await _draftRepo.updateVisitTimings(
+            visitId: id, visitDate: date, startTime: start, endTime: end);
+      }
     }
-  }
 
-  Future<void> _saveTimings() async {
-    if (_visitId == null) return;
-    try {
-      await _draftRepo.updateVisitTimings(
-        visitId: _visitId!,
-        visitDate: _c.date.text.trim(),
-        startTime: _c.startTime.text.trim(),
-        endTime: _c.endTime.text.trim(),
-      );
-    } catch (e, stack) {
-      debugPrint('[FirmaTechnicusTab] _saveTimings error: $e\n$stack');
+    if (immediate) {
+      _debouncer.runNow(save);
+    } else {
+      _debouncer.run(save);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    DraftSaveScope.of(context)?.register(_debouncer);
     if (_isLoading) {
       return const Center(
           child: CircularProgressIndicator(color: AppColors.amberGold));
@@ -175,7 +173,7 @@ class _FirmaTechnicusTabState extends State<FirmaTechnicusTab>
             startTimeController: _c.startTime,
             endTimeController: _c.endTime,
             onProfileChanged: _onProfileChanged,
-            onTimingsChanged: _saveTimings,
+            onTimingsChanged: () => _queueSave(immediate: true),
           ),
         ],
       ),

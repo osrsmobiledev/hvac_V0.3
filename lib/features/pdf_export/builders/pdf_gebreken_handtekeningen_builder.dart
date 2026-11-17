@@ -189,7 +189,8 @@ abstract final class PdfGebrekenHandtekeningenBuilder {
       );
     }
     return pw.Center(
-      child: pw.Text('(Nog niet ondertekend)', style: PdfComponents.subTitleText),
+      child:
+          pw.Text('(Nog niet ondertekend)', style: PdfComponents.subTitleText),
     );
   }
 

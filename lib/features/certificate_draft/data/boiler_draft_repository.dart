@@ -100,16 +100,31 @@ class BoilerDraftRepository {
     Database? dbOverride,
   }) async {
     final db = dbOverride ?? await _appDatabase.database;
-    if (boiler.id == null) return;
+    if (boiler.id == null) throw StateError('Missing boiler');
 
     final map = boiler.toMap();
     map.remove('id');
+    // Klant owns the address link, which may have changed since this tab loaded.
+    map.remove('service_location_id');
 
-    await db.update(
-      'boilers',
-      map,
-      where: 'id = ?',
-      whereArgs: [boiler.id],
-    );
+    await db.transaction((tx) async {
+      final rows =
+          await tx.query('boilers', where: 'id = ?', whereArgs: [boiler.id]);
+      if (rows.isEmpty) throw StateError('Missing boiler');
+      final previous = rows.single;
+      await tx.update('boilers', map, where: 'id = ?', whereArgs: [boiler.id]);
+      if (['fuel_type', 'fuel_subtype', 'is_central']
+          .any((key) => previous[key] != map[key])) {
+        await tx.update(
+            'maintenance_visits',
+            {
+              'stooktoestel_conform': null,
+              'rookgasafvoerkanaal_conform': null,
+              'stookplaats_conform': null,
+            },
+            where: 'boiler_id = ? AND is_draft = 1',
+            whereArgs: [boiler.id]);
+      }
+    });
   }
 }

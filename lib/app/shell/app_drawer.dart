@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import '../localization/app_dictionary.dart';
+import '../localization/visit_history_dictionary.dart';
 import '../theme/app_colors.dart';
 import 'app_shell_controller.dart';
 import 'drawer_nav_tile.dart';
@@ -117,6 +118,16 @@ class _AppDrawerState extends State<AppDrawer> {
                     isSelected:
                         widget.controller.activeApplet == AppletType.home,
                     onTap: () => _handleSelection(AppletType.home),
+                  ),
+                  DrawerNavigationTile(
+                    key: _itemKeys[AppletType.history],
+                    label: VisitHistoryDictionary.title,
+                    icon: Icons.history_rounded,
+                    accentColor: AppColors.amberGold,
+                    borderColor: AppColors.amberGoldBorder,
+                    isSelected:
+                        widget.controller.activeApplet == AppletType.history,
+                    onTap: () => _handleSelection(AppletType.history),
                   ),
                   const DrawerSectionDivider(),
                   const DrawerSectionHeader(

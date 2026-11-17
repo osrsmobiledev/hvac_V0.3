@@ -1,3 +1,4 @@
+export 'basisregisters_dictionary.dart';
 export 'data_tab_dictionary.dart';
 export 'meting_dictionary.dart';
 
@@ -8,8 +9,6 @@ abstract final class AppDictionary {
   static const String appBrand = 'HVAC';
   static const String appTitle = 'HVAC Field Service';
   static const String dashboardTitle = 'Kies een applet';
-
-  // --- Drawer Menu & Navigation ---
   static const String sectionDashboard = 'DASHBOARD';
   static const String sectionApplets = 'APPLETS';
   static const String sectionManage = 'BEHEER';
@@ -38,8 +37,7 @@ abstract final class AppDictionary {
   static const String btnOk = 'OK';
   static const String btnBackToDashboard = 'Terug naar dashboard';
   static const String placeholderUnderConstruction =
-      'Deze module wordt gebouwd in latere milestones.';
-
+      'Module wordt gebouwd in latere milestones.';
   // --- Telemetry & Data Headers ---
   static const String headerMeetgegevens = 'Meetgegevens';
   static const String headerRookgassen = 'Rookgassen';
@@ -97,55 +95,61 @@ abstract final class AppDictionary {
   static const String headerCustomerDetails = 'Klantgegevens';
   static const String headerApplianceLocation = 'Locatie Toestel';
   static const String searchCustomerHint = 'Zoek klanten';
-  static const String lblSameAsCustomerAddress =
-      'Installatieadres is hetzelfde als klantadres';
+  static const String lblSameAsCustomerAddress = 'Zelfde als klantadres';
   static const String lblSeparateInstallationAddress =
       'Afwijkend installatieadres';
   static const String subSeparateInstallationAddress =
-      'Schakel in als de ketel op een ander adres staat dan het klantadres (bv. syndicus of huurder)';
+      'Ketel staat op ander adres dan klantadres';
   static const String descSameAsCustomerEmpty =
-      'Wordt automatisch overgenomen van de klantgegevens hierboven.';
+      'Overgenomen van klantgegevens hierboven.';
   static const String lblEffectiveLocation = 'Effectieve installatielocatie';
   static const String lblNoAddressFilled = 'Geen adres ingevuld';
   static const String lblSourceCustomerAddress = 'Bron: Klantadres';
-  static const String lblSourceSeparateAddress =
-      'Bron: Afzonderlijk installatieadres';
+  static const String lblSourceSeparateAddress = 'Bron: Afzonderlijk adres';
   static const String lblStreetInstallation = 'Straat (Installatie)';
   static const String lblCompanyOrCustomerOptional =
-      'Bedrijfsnaam / Klant (Optioneel)';
+      'Bedrijf / Klant (Optioneel)';
   static const String hintCompany = 'Bv. VME Apollo';
   static const String lblFirstName = 'Voornaam';
   static const String hintFirstName = 'bv. Jan';
   static const String lblLastName = 'Achternaam';
-  static const String hintLastName = 'bv. Janssens';
+  static const String hintLastName = 'bv. Peeters';
   static const String lblStreet = 'Straat';
+  static const String hintStreet = 'bv. Kerkstraat';
   static const String hintSearchAddress = 'Zoek adres (bv. Veldstraat 14)';
-  static const String lblHouseNumber = 'Nr';
-  static const String hintHouseNumber = '17B';
+  static const String lblHouseNumber = 'Nr.';
+  static const String hintHouseNumber = '10';
   static const String lblBox = 'Bus';
-  static const String hintBox = '0201';
+  static const String hintBox = '2B';
   static const String lblPostalCode = 'Postcode';
   static const String hintPostalCode = '9000';
   static const String lblCity = 'Gemeente';
   static const String hintCity = 'Gent';
-  static const String lblPhone = 'Tel';
-  static const String hintPhone = '470 12 34 56';
-  static const String lblEmail = 'Email';
-  static const String hintEmail = 'klant@mail.be';
-
-  // --- Klant Action Dialogs ---
-  static const String dlgNewCustomerTitle = 'Nieuw';
+  static const String lblPhone = 'Telefoon';
+  static const String hintPhone = '0470 12 34 56';
+  static const String lblEmail = 'E-mail';
+  static const String hintEmail = 'klant@voorbeeld.be';
+  static const String lblRole = 'Rol klant';
+  static const String roleOwner = 'Eigenaar';
+  static const String roleTenant = 'Huurder';
+  static const String valLastNameOrCompanyRequired =
+      'Vul een achternaam of bedrijfsnaam in.';
+  static const String valInvalidEmail = 'Ongeldig e-mailadres';
+  static const String valInvalidPostalCode = 'Postcode moet 4 cijfers zijn';
+  static const String dlgNewCustomerTitle = 'Nieuwe Klant Aanmaken';
   static const String dlgNewCustomerContent =
-      'Wilt u een nieuwe klant aanmaken?';
-  static const String dlgEditCustomerTitle = 'Bewerken';
-  static const String dlgEditCustomerContent =
-      'Wilt u de geselecteerde klant bewerken?';
-  static const String dlgCancelEditTitle = 'Herstellen';
+      'Formulier leegmaken voor nieuwe klant?';
+  static const String dlgNewCustomerConfirm = 'Nieuw Formulier';
+  static const String dlgEditCustomerTitle = 'Klant Bewerken';
+  static const String dlgEditCustomerContent = 'Klantgegevens aanpassen?';
+  static const String dlgEditCustomerConfirm = 'Bewerken';
+  static const String dlgCancelEditTitle = 'Bewerking Annuleren';
   static const String dlgCancelEditContent =
-      'Wilt u de wijzigingen ongedaan maken?';
-  static const String dlgDeleteCustomerTitle = 'Klant Wissen';
+      'Niet-opgeslagen wijzigingen gaan verloren. Doorgaan?';
+  static const String dlgCancelEditConfirm = 'Ja, Annuleren';
+  static const String dlgDeleteCustomerTitle = 'Klant Ontkoppelen';
   static const String dlgDeleteCustomerContent =
-      'Weet u zeker dat u deze klantengegevens volledig wilt wissen van dit attest?';
+      'Klant ontkoppelen van deze werkbon?';
   static const String dlgDeleteConfirm = 'Ja, Wissen';
   static const String dlgYes = 'Ja';
   static const String dlgNo = 'Nee';
@@ -153,7 +157,7 @@ abstract final class AppDictionary {
   static const String dlgSearchCustomerTitle = 'Kies bestaande klant';
   static const String dlgDeleteFromDbTitle = 'Klant Verwijderen';
   static const String dlgDeleteFromDbContent =
-      'Weet u zeker dat u deze klant definitief wilt verwijderen uit de database?';
+      'Klant definitief verwijderen uit de database?';
   static const String dlgDeleteFromDbConfirm = 'Verwijderen';
   static const String toastCustomerSaved = 'Klant Opgeslagen';
   static const String toastCustomerDeleted = 'Klant verwijderd uit database';
@@ -176,7 +180,7 @@ abstract final class AppDictionary {
   static const String optIndividual = 'Individueel';
   static const String optCollective = 'Collectief';
   static const String optUnknown = 'Onbekend';
-  static const String lblOperation = 'Werking ketel';
+  static const String lblOperation = 'Condensatietype';
   static const String optCondensing = 'Condenserend';
   static const String optNonCondensing = 'Niet-condenserend';
   static const String headerFuel = 'Brandstof';
@@ -201,9 +205,10 @@ abstract final class AppDictionary {
   static const String headerBurner = 'Brander';
   static const String subBurner = '(enkel CV)';
   static const String lblSeparateBurner = 'Afzonderlijke brander';
-  static const String subSeparateBurner = 'Schakel in als de brander een apart toestel is (bv. stookolie)';
+  static const String subSeparateBurner = 'Apart toestel (bv. stookolie)';
   static const String lblBurnerIntegratedBadge = 'Geïntegreerde brander';
-  static const String descBurnerIntegrated = 'De brander maakt integraal deel uit van de ketel. Gegevens worden automatisch overgenomen voor het attest en VEKA.';
+  static const String descBurnerIntegrated =
+      'Ketel en brander vormen één geheel.';
   static const String lblBrand = 'Merk';
   static const String lblModel = 'Type / Model';
   static const String lblConstructionYear = 'Bouwjaar';
@@ -212,7 +217,7 @@ abstract final class AppDictionary {
   static const String lblFlowRate = 'Debiet (kW of kg/h of l/h of m³/h)';
   static const String tooltipScanBarcode = 'Scan barcode';
   static const String barcodeScannerPlaceholder =
-      'Barcode scanner wordt later geactiveerd';
+      'Scanner wordt later geactiveerd';
   static const String hintBoilerBrand = 'bv. Vaillant, Viessmann, Remeha';
   static const String hintBoilerModel = 'bv. ecoTEC plus VHR';
   static const String hintBoilerYear = 'bv. 2021';
@@ -223,7 +228,6 @@ abstract final class AppDictionary {
   static const String hintBurnerYear = 'bv. 2019';
   static const String hintBurnerSerial = 'bv. 893475102';
   static const String hintBurnerFlowRate = 'bv. 2.4 kg/h of 28 kW';
-
   // --- Applet Titles & Placeholders ---
   static const String appletTitleVerbrandingsattest = 'Verbrandingsattest';
   static const String appletTitleReinigingsattest = 'Reinigingsattest';
@@ -233,17 +237,14 @@ abstract final class AppDictionary {
   static const String hintScanToestelSerial = 'Scan Toestel Fabricatienummer';
   static const String hintScanBranderSerial = 'Scan Brander Fabricatienummer';
   static const String placeholderQrScannerPending =
-      'Eurolyzer QR Scanner wordt geactiveerd in Slice 3.2';
-
-  // --- NBN CR 1749 & Scanner Modal Strings ---
+      'QR Scanner wordt later actief';
   static const String nbnModalTitlePrefix = 'Aansluiting Type';
   static const String nbnModalClosed = 'Gesloten';
   static const String nbnModalOpen = 'Open';
   static const String hintCustomNbnCode = 'Ander getal (bv. 63 of 83)...';
-  static const String scannerCameraUnavailable =
-      'Camera niet beschikbaar.\nVoer het nummer handmatig in.';
-  static const String scannerInstruction =
-      'Plaats de barcode of QR-code van het toestel in het kader.';
+  static const String scannerCameraUnavailable = 'Camera niet beschikbaar.';
+  static const String scannerInstruction = 'Plaats code in het kader.';
   static const String loadingAppletTitle = 'Werkbon initialiseren...';
-  static const String loadingAppletSubtitle = 'Formulieren en metingen voorbereiden';
+  static const String loadingAppletSubtitle =
+      'Formulieren en metingen voorbereiden';
 }

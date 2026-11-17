@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hvac_app/app/localization/app_dictionary.dart';
 import 'package:hvac_app/app/theme/app_colors.dart';
 import 'klant_form_controllers.dart';
+import 'address_verification_badge.dart';
 
 /// Card showing the effective installation location address and source.
 class EffectiveLocationPreview extends StatelessWidget {
@@ -61,6 +62,11 @@ class EffectiveLocationPreview extends StatelessWidget {
             ? AppDictionary.descSameAsCustomerEmpty
             : AppDictionary.lblNoAddressFilled);
 
+    final isVerified = controllers.isCurrentAddressVerified(
+      isSameAsCustomer: isSameAsCustomer,
+    );
+    final status = controllers.vekaVerificationStatus;
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 12.0),
@@ -107,6 +113,12 @@ class EffectiveLocationPreview extends StatelessWidget {
                     height: 1.35,
                   ),
                 ),
+                if (hasAddress) ...[
+                  const SizedBox(height: 6),
+                  AddressVerificationBadge(
+                    status: isVerified ? status : 'unverified',
+                  ),
+                ],
               ],
             ),
           ),

@@ -1,10 +1,7 @@
 import 'dart:typed_data';
 
-/// Complete, immutable snapshot of all visit, profile, customer, boiler, and
-/// measurement data required to render the Flemish combustion certificate PDF.
-///
-/// Every property provides safe fallback defaults so partial or empty drafts
-/// never throw null exceptions during preview or test rendering.
+/// Immutable snapshot of visit, profile, customer, boiler, and measurement
+/// data required to render the Flemish combustion certificate PDF.
 class PdfVisitData {
   // --- Header / Start ---
   final String activiteitType;
@@ -243,7 +240,9 @@ class PdfVisitData {
     this.volgendeControleDatum = '',
     this.gebrekenOpmerkingen = '',
     this.andereOpmerkingen = '',
-    this.technicusHandtekeningBytes, this.klantHandtekeningBytes,
-    this.klantHandtekeningNaam = '', this.klantHandtekeningUitzondering = '',
+    this.technicusHandtekeningBytes,
+    this.klantHandtekeningBytes,
+    this.klantHandtekeningNaam = '',
+    this.klantHandtekeningUitzondering = '',
   });
 }

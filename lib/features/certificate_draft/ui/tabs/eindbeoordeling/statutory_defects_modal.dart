@@ -61,11 +61,14 @@ class _StatutoryDefectsModalState extends State<StatutoryDefectsModal> {
 
   void _togglePreset(String id) {
     HapticFeedback.selectionClick();
-    setState(() => _selectedIds.contains(id) ? _selectedIds.remove(id) : _selectedIds.add(id));
+    setState(() => _selectedIds.contains(id)
+        ? _selectedIds.remove(id)
+        : _selectedIds.add(id));
   }
 
   void _handleApply(List<StatutoryDefectPreset> allMatching) {
-    final selected = allMatching.where((p) => _selectedIds.contains(p.id)).toList();
+    final selected =
+        allMatching.where((p) => _selectedIds.contains(p.id)).toList();
     widget.onApply(selected);
     Navigator.of(context).pop();
   }
@@ -73,7 +76,8 @@ class _StatutoryDefectsModalState extends State<StatutoryDefectsModal> {
   bool _isAlreadyAdded(StatutoryDefectPreset preset) {
     final d = widget.existingDefects.toLowerCase();
     final r = widget.existingRemarks.toLowerCase();
-    return d.contains(preset.defectText.toLowerCase()) || r.contains(preset.measureText.toLowerCase());
+    return d.contains(preset.defectText.toLowerCase()) ||
+        r.contains(preset.measureText.toLowerCase());
   }
 
   int _calculateProjectedLen(
@@ -90,10 +94,16 @@ class _StatutoryDefectsModalState extends State<StatutoryDefectsModal> {
     return b.length;
   }
 
-  bool _wouldExceedLimit(StatutoryDefectPreset preset, List<StatutoryDefectPreset> allMatching) {
-    final list = [...allMatching.where((p) => _selectedIds.contains(p.id)), preset];
-    final d = _calculateProjectedLen(widget.existingDefects, list, (p) => p.defectText);
-    final r = _calculateProjectedLen(widget.existingRemarks, list, (p) => p.measureText);
+  bool _wouldExceedLimit(
+      StatutoryDefectPreset preset, List<StatutoryDefectPreset> allMatching) {
+    final list = [
+      ...allMatching.where((p) => _selectedIds.contains(p.id)),
+      preset
+    ];
+    final d = _calculateProjectedLen(
+        widget.existingDefects, list, (p) => p.defectText);
+    final r = _calculateProjectedLen(
+        widget.existingRemarks, list, (p) => p.measureText);
     return d > widget.maxChars || r > widget.maxChars;
   }
 

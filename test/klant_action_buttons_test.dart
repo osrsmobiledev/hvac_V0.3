@@ -43,21 +43,22 @@ void main() {
     );
   }
 
+  Future<void> pumpAsync(WidgetTester tester) async {
+    for (int i = 0; i < 15; i++) {
+      await tester.runAsync(() async {
+        await Future<void>.delayed(const Duration(milliseconds: 30));
+      });
+      await tester.pump();
+    }
+  }
+
   Future<void> pumpTab(WidgetTester tester) async {
     tester.view.physicalSize = const Size(412, 1400);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(() => tester.view.resetPhysicalSize());
 
     await tester.pumpWidget(buildTestWidget());
-    for (int i = 0; i < 20; i++) {
-      await tester.runAsync(() async {
-        await Future<void>.delayed(const Duration(milliseconds: 30));
-      });
-      await tester.pump();
-      if (find.byType(CircularProgressIndicator).evaluate().isEmpty) {
-        break;
-      }
-    }
+    await pumpAsync(tester);
   }
 
   group('KlantActionButtons & Warping State Machine', () {
@@ -93,6 +94,7 @@ void main() {
 
       // Confirm 'Ja'
       await tester.tap(find.text(AppDictionary.dlgYes));
+      await pumpAsync(tester);
       await tester.pumpAndSettle();
 
       // Verify buttons warped
@@ -123,6 +125,7 @@ void main() {
 
       // Confirm 'Ja'
       await tester.tap(find.text(AppDictionary.dlgYes));
+      await pumpAsync(tester);
       await tester.pumpAndSettle();
 
       // Verify buttons warped back

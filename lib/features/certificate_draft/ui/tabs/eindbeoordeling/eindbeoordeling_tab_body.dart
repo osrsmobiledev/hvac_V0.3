@@ -43,7 +43,10 @@ class EindbeoordelingTabBody extends StatelessWidget {
     required this.onTestPdfPressed,
     required this.onSaveDevicePressed,
     required this.onCompletePressed,
+    this.reporting,
   });
+
+  final Widget? reporting;
 
   @override
   Widget build(BuildContext context) {
@@ -96,6 +99,10 @@ class EindbeoordelingTabBody extends StatelessWidget {
           label: EindbeoordelingDictionary.btnVoltooien,
           onPressed: onCompletePressed,
         ),
+        if (reporting != null) ...[
+          const SizedBox(height: AppTheme.bentoCardSpacing),
+          reporting!,
+        ],
         const SizedBox(height: 32),
       ],
     );

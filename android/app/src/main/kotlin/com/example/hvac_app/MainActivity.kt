@@ -1,6 +1,8 @@
 package com.example.hvac_app
 
 import android.content.ContentValues
+import android.content.Intent
+import android.net.Uri
 import android.media.MediaScannerConnection
 import android.os.Build
 import android.os.Environment
@@ -16,6 +18,37 @@ class MainActivity : FlutterActivity() {
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.example.hvac_app/reminders")
+            .setMethodCallHandler { call, result ->
+                val message = call.arguments as? String
+                if (call.method != "share" || message.isNullOrBlank()) {
+                    result.notImplemented()
+                } else {
+                    try {
+                        val intent = Intent(Intent.ACTION_SEND).apply {
+                            type = "text/plain"
+                            putExtra(Intent.EXTRA_TEXT, message)
+                        }
+                        startActivity(Intent.createChooser(intent, null))
+                        result.success(null)
+                    } catch (e: Exception) {
+                        result.error("SHARE_FAILED", e.message, null)
+                    }
+                }
+            }
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.example.hvac_app/veka_portal")
+            .setMethodCallHandler { call, result ->
+                if (call.method != "open") {
+                    result.notImplemented()
+                } else {
+                    try {
+                        startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://melding.veka.vlaanderen.be/")))
+                        result.success(null)
+                    } catch (e: Exception) {
+                        result.error("OPEN_FAILED", e.message, null)
+                    }
+                }
+            }
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, channelName).setMethodCallHandler { call, result ->
             when (call.method) {
                 "saveToDownloads" -> {

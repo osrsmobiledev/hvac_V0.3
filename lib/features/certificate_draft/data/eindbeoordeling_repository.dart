@@ -186,19 +186,13 @@ class EindbeoordelingRepository {
     required EindbeoordelingDraft draft,
     Database? dbOverride,
   }) async {
-    try {
-      final db = dbOverride ?? await _appDatabase.database;
-      final map = draft.toMap();
-      map['updated_at'] = DateTime.now().toIso8601String();
-
-      await db.update(
-        'maintenance_visits',
-        map,
-        where: 'id = ?',
-        whereArgs: [visitId],
-      );
-    } catch (e, stack) {
-      debugPrint('[EindbeoordelingRepository] updateDraft error: $e\n$stack');
+    final db = dbOverride ?? await _appDatabase.database;
+    final map = draft.toMap();
+    map['updated_at'] = DateTime.now().toIso8601String();
+    if (await db.update('maintenance_visits', map,
+            where: 'id = ?', whereArgs: [visitId]) !=
+        1) {
+      throw StateError('Missing visit');
     }
   }
 

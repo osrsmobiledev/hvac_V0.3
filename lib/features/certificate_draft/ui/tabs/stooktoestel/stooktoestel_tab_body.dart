@@ -10,10 +10,9 @@ import 'toestel_card.dart';
 /// Centered and constrained to max 600px width for premium tablet presentation.
 class StooktoestelTabBody extends StatelessWidget {
   final StooktoestelFormControllers controllers;
+  final Widget? savedBoilerPicker;
   final bool isCentral;
   final String centraalType;
-  final String heatingType;
-  final String boilerOperation;
   final String fuelCategory;
   final String fuelSubtype;
   final String fuelOtherText;
@@ -25,8 +24,6 @@ class StooktoestelTabBody extends StatelessWidget {
   final bool burnerYearUnknown;
   final ValueChanged<bool> onCentralChanged;
   final ValueChanged<String> onCentraalTypeChanged;
-  final ValueChanged<String> onHeatingTypeChanged;
-  final ValueChanged<String> onBoilerOperationChanged;
   final ValueChanged<String> onFuelCategoryChanged;
   final ValueChanged<String> onFuelSubtypeChanged;
   final ValueChanged<String> onFuelOtherTextChanged;
@@ -45,10 +42,9 @@ class StooktoestelTabBody extends StatelessWidget {
   const StooktoestelTabBody({
     super.key,
     required this.controllers,
+    this.savedBoilerPicker,
     required this.isCentral,
     required this.centraalType,
-    required this.heatingType,
-    required this.boilerOperation,
     required this.fuelCategory,
     required this.fuelSubtype,
     required this.fuelOtherText,
@@ -60,8 +56,6 @@ class StooktoestelTabBody extends StatelessWidget {
     required this.burnerYearUnknown,
     required this.onCentralChanged,
     required this.onCentraalTypeChanged,
-    required this.onHeatingTypeChanged,
-    required this.onBoilerOperationChanged,
     required this.onFuelCategoryChanged,
     required this.onFuelSubtypeChanged,
     required this.onFuelOtherTextChanged,
@@ -83,22 +77,22 @@ class StooktoestelTabBody extends StatelessWidget {
     return WorkflowTabContainer(
       scrollKey: 'stooktoestel_tab_scroll',
       children: [
+        if (savedBoilerPicker != null) ...[
+          savedBoilerPicker!,
+          const SizedBox(height: AppTheme.bentoCardSpacing),
+        ],
         // Card 1: Kenmerken
         KenmerkenCard(
           isCentral: isCentral,
           centraalType: centraalType,
           typeBController: controllers.typeB,
           typeCController: controllers.typeC,
-          heatingType: heatingType,
-          boilerOperation: boilerOperation,
           fuelCategory: fuelCategory,
           fuelSubtype: fuelSubtype,
           fuelOtherText: fuelOtherText,
           burnerTechnology: burnerTechnology,
           onCentralChanged: onCentralChanged,
           onCentraalTypeChanged: onCentraalTypeChanged,
-          onHeatingTypeChanged: onHeatingTypeChanged,
-          onBoilerOperationChanged: onBoilerOperationChanged,
           onFuelCategoryChanged: onFuelCategoryChanged,
           onFuelSubtypeChanged: onFuelSubtypeChanged,
           onFuelOtherTextChanged: onFuelOtherTextChanged,

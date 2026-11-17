@@ -50,9 +50,8 @@ class GebrekenOpmerkingenCard extends StatelessWidget {
     const int maxChars = 200;
     final existingDefects = defectsController.text.trim();
     final newDefects = presets.map((p) => '• ${p.defectText}').join('\n');
-    final combinedDefects = existingDefects.isEmpty
-        ? newDefects
-        : '$existingDefects\n$newDefects';
+    final combinedDefects =
+        existingDefects.isEmpty ? newDefects : '$existingDefects\n$newDefects';
 
     final existingRemarks = remarksController.text.trim();
     final newMeasures = presets.map((p) => '• ${p.measureText}').join('\n');
@@ -60,8 +59,8 @@ class GebrekenOpmerkingenCard extends StatelessWidget {
         ? newMeasures
         : '$existingRemarks\n$newMeasures';
 
-    final bool isTruncated = combinedDefects.length > maxChars ||
-        combinedRemarks.length > maxChars;
+    final bool isTruncated =
+        combinedDefects.length > maxChars || combinedRemarks.length > maxChars;
 
     defectsController.text = combinedDefects.length > maxChars
         ? combinedDefects.substring(0, maxChars)

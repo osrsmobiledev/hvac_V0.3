@@ -204,7 +204,8 @@ class _DetailLine extends StatelessWidget {
   final String text;
   final Color labelColor;
 
-  const _DetailLine({required this.label, required this.text, required this.labelColor});
+  const _DetailLine(
+      {required this.label, required this.text, required this.labelColor});
 
   @override
   Widget build(BuildContext context) {

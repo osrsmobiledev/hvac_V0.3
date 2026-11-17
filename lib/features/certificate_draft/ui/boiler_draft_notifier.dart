@@ -21,6 +21,7 @@ class BoilerDraftNotifier extends ChangeNotifier {
       : _repository = repository ?? BoilerDraftRepository();
 
   BoilerDraft get draft => _draft;
+  Debouncer get draftSaves => _debouncer;
   bool get isLoading => _isLoading;
 
   /// Loads the initial boiler draft from SQLite when entering the certificate.
@@ -52,22 +53,22 @@ class BoilerDraftNotifier extends ChangeNotifier {
     if (_isDisposed) return;
     _draft = updated;
     _isLoading = false;
-    notifyListeners();
 
+    Future<void> save() => _repository.saveBoilerDraft(updated);
     if (immediateSave) {
-      _debouncer.cancel();
-      _saveToDb();
+      _debouncer.runNow(save);
     } else {
-      _debouncer.run(_saveToDb);
+      _debouncer.run(save);
     }
+    notifyListeners();
   }
 
-  Future<void> _saveToDb() async {
-    try {
-      await _repository.saveBoilerDraft(_draft);
-    } catch (e, stack) {
-      debugPrint('[BoilerDraftNotifier] _saveToDb error: $e\n$stack');
-    }
+  /// The picker committed this copy to SQLite before publishing it to the tabs.
+  void useSavedCopy(BoilerDraft boiler) {
+    if (_isDisposed) return;
+    _draft = boiler;
+    _isLoading = false;
+    notifyListeners();
   }
 
   /// Flushes any pending debounced save to SQLite immediately.

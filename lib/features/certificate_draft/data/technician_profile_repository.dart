@@ -44,12 +44,13 @@ class TechnicianProfileRepository {
 
     if (rows.isNotEmpty) {
       final existingId = rows.first['id'] as int;
-      await db.update(
+      final count = await db.update(
         'technician_profile',
         data,
         where: 'id = ?',
         whereArgs: [existingId],
       );
+      if (count != 1) throw StateError('Missing technician profile');
     } else {
       data['created_at'] = DateTime.now().toIso8601String();
       await db.insert('technician_profile', data);

@@ -38,42 +38,93 @@
 - [x] **Slice 4.3 — Local PDF Preview, Storage & Actions:** Add interactive in-app `PdfPreviewDialog` launched directly from Tab 7 via `[ 📄 Test-PDF Genereren ]` button (bypassing pre-flight gates for instant testing on empty or full drafts), with full-page zoom, direct Android printing, and PDF file sharing.
 
 ### Milestone 5: Public API Address Lookup & VEKA Tracking
-- [ ] **Slice 5.1 — Basisregisters Vlaanderen Lookup (`Klant` Tab):** Add online address verification with an offline manual fallback.
-- [ ] **Slice 5.2 — Independent VEKA Reporting Tracker:** Add VEKA reporting status tracker (`not_submitted`, `reported_manually_portal`, API payload preview).
-- [ ] **Slice 5.3 — History & Reminders Dashboard:** Add a view (accessible via the Drawer) to browse past certificates per customer/boiler, and trigger upcoming maintenance reminders.
+- [x] **Slice 5.1 — Basisregisters Vlaanderen Lookup (`Klant` Tab):** Add online address verification with an offline manual fallback.
+- [x] **Slice 5.2 — Independent VEKA Reporting Tracker:** Add VEKA reporting status tracker (`not_submitted`, `reported_manually_portal`, API payload preview).
+- [x] **Slice 5.3 — History & Reminders Dashboard:** Browse past certificates by customer or boiler and share upcoming maintenance reminders from **Historiek**.
+- [x] **Slice 5.4 — Reuse a saved boiler:** When creating a new visit, offer the saved boilers for the selected installation address, including its bus number. Let the technician explicitly select a boiler or add a new one. Copy the selected boiler details into the new visit without changing archived certificates or VEKA evidence.
+- [x] **Slice 5.5 — Mock VEKA API submission, recovery and receipts:** Save the exact outgoing JSON and a unique request reference before sending. With a fake transport, verify receipts, rejections, access recovery and uncertain outcomes. Put unfinished reports in Historiek with an actionable next step. Keep archived certificates immutable when correcting a date-only rejection. Owner Android acceptance confirmed.
 
 ---
 
 ## 2. Current Handoff (Active State for AI Agent)
 
-- **Current Status:** Milestone 4 (PDF Generation, In-App Interactive Preview, Direct Android Downloads Export & Verified Single-Page Flemish A4 Geometry) hardened, polished, owner-verified, and checkpointed to GitHub.
-- **Milestone 4 PDF Engine & Polish Delivered:**
-  - **Architecture & Clean Code (`lib/features/pdf_export/`):**
-    - 2-Layer modular architecture: UI (`PdfPreviewDialog`, `PdfPageCard`) + Data/Builders (`CombustionPdfGenerator`, `PdfDataMapper`, `PdfVisitLoader`, section builders, theme tokens, lego widgets).
-    - Every Dart file in `lib/` strictly $\le 250$ lines of code.
-    - Zero Dart analyzer issues (`flutter analyze` passes with 0 warnings/errors).
-    - Full test suite passes 100% green.
-  - **Single-Page Flemish A4 Precision Geometry ($\le 825.89\text{ pt}$):**
-    - Margins: top 8.0pt, left 24.9pt, right 17.3pt, bottom 8.0pt (A4 595.28 x 841.89 pt).
-    - Total content height: 823.95 pt, leaving a guaranteed +1.94 pt safety headroom before the 8.0 pt bottom margin, strictly fitting on **1 single A4 page with zero vertical overflow**.
-    - Full-width boxes locked to `552.9pt`, half-width boxes locked to `275.75pt`. Strict 0.2pt borders, Libron typography tiers.
-  - **Mathematically Bounded Two-Zone Defect & Signature Box (Table 4):**
-    - Eliminated elastic `pw.Spacer()` to prevent text wrapping from ever displacing signatures.
-    - **Zone 1 (Defects & Remarks):** Bounded at 46.5 pt with 5.2 pt font, comfortably holding 2 full lines of defects (even 6 items / 200 chars) + 2 lines of remarks with 8.5 pt headroom.
-    - **Zone 2 (Signatures):** Fixed at 38.0 pt with 30.0 pt signature containers and 27.0 pt signature images, permanently anchored at their exact coordinates.
-  - **Interactive Mobile Pinch-to-Zoom (`PdfPreviewDialog`):**
-    - Switched from default list view to `PdfPreview.builder` with Flutter's native `InteractiveViewer`.
-    - 240 DPI raster rendering for razor-sharp magnification.
-    - Multi-touch pinch-to-zoom (1.0× to 5.0×), 1-finger fluid pan, double-tap 2.5× toggle, and top-bar zoom controls (`+`, `-`, `Fit`).
-  - **Dual Flue-Gas Analyzer Tool Inputs:**
-    - Type/merk and serienummer stacked full-width in Tab 3 (`Firma - Technicus`). Backed by schema v9 SQLite migration in `technician_profile`. Mapped dynamically to the PDF measurement table header (`Meettoestel: <brand> (SN: <serial>)`).
-  - **Statutory Clean Blanking:**
-    - Brander details (5 lines) left completely blank on the PDF when burner is integrated per official Flemish template.
-    - Installation address left completely blank when identical to customer address via 5-field normalization.
-  - **Lifecycle Debouncer Safety:**
-    - Eliminated redundant unawaited `_saveToDatabase()` in `meting_tab.dart` `dispose()`, preventing closed-database errors.
-  - **Checklist Expansion:**
-    - `IMPLEMENTATION_CHECKLIST.md` updated with Mistakes #21-#25 and Checklist Items #22-#25.
-- **Active State:** Milestone 4 complete, hardened, and verified. Ready for Milestone 5.
-- **Next Step:** Proceed to Milestone 5: Slice 5.1 — Basisregisters Vlaanderen Lookup (`Klant` Tab).
-- **Blockers / Open Questions:** None. Ready to build Slice 5.1.
+**Milestone 5 complete (Slice 5.5 accepted on Android).** All 5 slices of Milestone 5 are implemented, verified by automated tests (321 tests passing, 0 analyzer lints, all files $\le 250$ lines), and confirmed working on Android by the owner. The app supports full Basisregisters Vlaanderen address lookups, local independent VEKA portal tracking, completed certificate history & inspection reminders, boiler reuse at verified addresses, and mock VEKA API reporting with recovery & receipt tracking.
+
+### Slice 5.5 implementation checklist
+
+- [x] Save the exact outgoing JSON, report snapshot, contract version and request reference before the mock transport runs.
+- [x] Keep each dispatch and its response. An uncertain result blocks automatic resending and the portal until an explicit check resolves it.
+- [x] Make unfinished reports visible in Historiek with actions for starting, resuming, checking, correcting, or following up a portal report.
+- [x] Allow an archived API correction only when the rejection identifies `datumActiviteit`. Require a different valid date, save a new attempt, and preserve the original signed certificate and rejected attempt.
+- [x] Keep the existing response classification, including access refusal as a recoverable technical state and a possible duplicate response as uncertain.
+- [x] Final static analysis reports no issues; all **321** Flutter tests pass; no Dart file in `lib/` or `test/` exceeds 250 lines.
+- [x] Complete the owner’s Android acceptance checks below. Owner confirmed: looks good on Android.
+
+### Owner check on Android
+
+Use the connected Android phone and a different synthetic visit for each scenario. Run `flutter run --dart-define=VEKA_MOCK_PORTAL=true`. Each visit needs a supported central natural-gas or oil appliance, a linked installation, and complete reporting fields. In **Eindbeoordeling → Bekijk testmelding**, check the address, bus, serial number and activity before choosing a simulated result.
+
+1. **Access refusal and recovery.** Select **Technische fout**. Save the certificate and open **Historiek**; the top follow-up card should show **Melding hervatten**. Open it, retry after recovery, and choose **Aanvaard met ontvangstbewijs**. In **Bekijk testpogingen**, confirm both dispatches use the same reference and the receipt appears.
+2. **Uncertain outcome.** On a fresh visit, choose **Onzeker na time-out**, save the certificate and open its Historiek action. Confirm that it offers **Uitkomst controleren**, with no blind retry or portal action. Use **Bevestig gevonden testbewijs**; the attempt should resolve with a receipt and no second dispatch. The explicit absence branch can be checked on another fresh visit and must reuse the original reference.
+3. **Archived date correction.** On a fresh visit, choose **Afgewezen met veldfouten**, then save the certificate. In Historiek, open **Gegevens verbeteren**, choose a different valid date and submit. Confirm the previous rejection and the new attempt both remain visible, the new attempt has a receipt, and the saved certificate is unchanged. Confirm that choosing the rejected date again does not submit.
+4. **Successful receipt.** Open an accepted test report from Historiek and compare its receipt, address and bus with the reviewed request. Restart the app and confirm the report and receipt remain available.
+
+### Scope and external dependency
+
+The automated tests confirm that a possible duplicate response is treated as uncertain and cannot trigger a blind resend. The mock does not establish whether VEKA treats `externeReferte` as an idempotency key and cannot detect an equivalent submission from another device. Verify that behavior against VEKA’s secured test environment before live use. Live verification still requires an approved contract, secured connection and reconciliation against a matching test registration.
+
+**Slice 5.4 — Reuse a saved boiler.** The owner confirmed on Android that the saved appliance details could be retrieved. Tab 5 offers appliances from completed certificates at the installation address saved in Tab 4, including its exact bus number. Choosing an appliance copies its boiler and burner details into the current draft. The previous certificate and VEKA evidence remain linked to the earlier visit.
+
+Static analysis, the 289-test Flutter suite, the four focused saved-boiler tests, and the Android debug build with `VEKA_MOCK_PORTAL=true` passed.
+
+1. Run `flutter run --dart-define=VEKA_MOCK_PORTAL=true` on Android. Use a completed test certificate in **Historiek** with a known installation address, bus and boiler serial number.
+2. Start a new visit. In **Klant**, save the same installation address and bus. Before adding measurements or reporting evidence, open **Stooktoestel** → **Opgeslagen toestel kiezen**. Select the matching boiler, then tap **Toestel overnemen**. Check the model and serial number in the form.
+3. Restart the app and reopen the draft. Check that the copied fields persist. In **Historiek**, open the original certificate and its saved VEKA record to confirm that their address and details still match the earlier visit.
+4. Start another draft at the same street and house number with a different bus. Open the picker and check that the first bus's boiler is absent. If there are no saved boilers, tap **Nieuw toestel invoeren** to use the manual form.
+
+**Slice 5.3 — History & Reminders Dashboard.** Owner accepted after testing **Historiek** and the upcoming maintenance list on Android and reviewing the Tab 7 VEKA card refinements. **Voltooien** saves a frozen certificate in SQLite. Reminders use the saved next-maintenance date and can be shared via Android's share sheet. The full Flutter suite passed 285 tests after the field move. The later divider spacing change passed the formatter check.
+
+1. Run `flutter run --dart-define=VEKA_MOCK_PORTAL=true`. Open a valid test visit, set a next-maintenance date within 30 days, tap **Voltooien** and confirm **Attest bewaren**.
+2. In **Historiek**, search for the customer or boiler serial number and open the certificate. Check the address and boiler details. Open the **VEKA-melding bekijken** action beside the certificate and verify the original saved reporting version.
+3. Restart the app and open **Historiek** from the drawer. Check that the certificate is still there and that **Herinnering delen** opens Android's share sheet with the saved address and date.
+4. Open **Verbrandingsattest** and verify a new visit opens with the company profile retained and the previous visit's customer, boiler and measurements cleared.
+
+**Slice 5.2 — Independent VEKA Reporting Tracker.** Accepted on Android. The owner reopened the mock app and confirmed that **Manueel gemeld** and the original installation address persisted. The local preview and portal tracker passed 280 Flutter tests and static analysis before the field-specific validation follow-up, which passed its six focused tests. The mock uses a separate SQLite database and simulates opening the portal.
+
+The checkout contains accepted Slices 5.2–5.4 alongside Slice 5.1, pending Slice 5.5, and pre-existing edits. Commit and push are pending while the accepted changes are separated from the other edits.
+
+1. Complete a synthetic central natural-gas or heating-oil visit, including **Type verwarming**, **Condensatietype** and the three conformity choices in the **VEKA-melding** card on **Eindbeoordeling**. In **Eindbeoordeling**, preview the report, then choose **Open VEKA-portaal** and **Bewaar versie en open portaal**. Check that the status is **Nog niet bevestigd**.
+2. Save a different installation address and force-close and reopen the mock app. Check that the current preview shows the new address and **Heropen VEKA-portaal** shows the original saved address.
+3. Confirm the original version with your test name and reopen the app. Check **Manueel gemeld**, the original address and the recorded confirmation.
+4. Generate the **Test-PDF** offline and check that the report remains **Manueel gemeld**.
+
+
+**Slice 5.1 — Basisregisters Vlaanderen on the Klant tab.** The address lookup and draft safety changes are implemented. The owner confirmed the main lookup flow and retested apartment selection and manual bus edits on Android.
+
+### Current behavior
+
+- The technician chooses where the appliance is installed before entering an address. The lookup icon in each visible `Straat` field opens a prefilled dialog for that address.
+- Multiple matches require an explicit choice. **Zoeken zonder busnummer** retries the current query without a bus filter while preserving the typed bus. The selected result fills the official address text.
+- A separate billing lookup fills customer address text only. An installation lookup resolves building and unit IDs for the selected address after confirmation. Verification appears on the effective installation preview. Ambiguous units remain unconfirmed and manual entry works offline.
+- The Klant edit queue keeps autosave, final save, and cancellation ordered. **Nieuw** preserves the original customer. **Opslaan** commits the final values and clears undo together. Reopening a pending edit restores its save and cancel actions. **Annuleren** restores the original links and preserves the draft boiler.
+
+### Verification
+
+- `dart format`, `flutter analyze --no-pub`, and the 250-line limit for `lib/` and `test/` passed.
+- `flutter test --no-pub` passed all **274** tests. Coverage includes explicit apartment selection, retry without a bus number, separate billing routing, cancellation during verification, SQLite rollback, and reopening an autosaved edit.
+- The owner confirmed that selecting bus `0001` and then another bus updates the full address under **Locatie toestel**. Manually editing the bus immediately switches the preview to **Handmatig ingevoerd**. This retest checked the on-screen address and status. The raw registry IDs were not independently compared.
+
+### Address lookup follow-up
+
+- Results now appear inside the search dialog, with street, number and bus on the first line and postcode and municipality below. Applying a match still requires explicit confirmation.
+- The search now sends the municipality when entered. Enrichment checks that the unit response matches the requested ID. An inconsistent unit response cannot produce a green badge. The badge now reads **Gekoppeld aan Basisregisters**.
+- For an independent registry check, use a public address with two registered buses and compare the stored address, building and unit IDs with the official records.
+
+### Owner check on Android
+
+1. Run `flutter run` and open **Klant** in edit mode. In shared mode, confirm that a lookup beside **Straat** fills the customer fields and updates the installation preview.
+2. Try an apartment address. With multiple matches, check that each result shows the full bus and municipality and **Adres overnemen** waits for a selection. Retry with **Zoeken zonder busnummer** and choose the official bus from the results.
+3. Switch to **Op een ander adres**. Look up the installation first, then look up the billing address. Confirm that the installation address and status stay the same.
+4. Turn off the connection and enter an address manually. Leave and reopen the draft to confirm that the address is retained.
+
+The owner authorized Slice 5.2 after the Android retest. Slice 5.1 changes remain in the working tree alongside pre-existing edits and have yet to be committed and pushed.

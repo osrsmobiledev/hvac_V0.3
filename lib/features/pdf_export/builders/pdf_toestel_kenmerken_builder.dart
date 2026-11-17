@@ -193,8 +193,7 @@ abstract final class PdfToestelKenmerkenBuilder {
         bRaw.toUpperCase().startsWith('B') ? bRaw.substring(1).trim() : bRaw;
     final hasBSub = bSub.isNotEmpty && data.centraalType == 'B';
     return PdfComponents.buildInlineInputCheckbox(
-      prefix:
-          hasBSub ? 'aangesloten als type B' : 'aangesloten als type B ',
+      prefix: hasBSub ? 'aangesloten als type B' : 'aangesloten als type B ',
       emptyPlaceholder: '.........',
       suffix: ' (open)',
       isChecked: data.centraalType == 'B',
@@ -209,8 +208,7 @@ abstract final class PdfToestelKenmerkenBuilder {
         cRaw.toUpperCase().startsWith('C') ? cRaw.substring(1).trim() : cRaw;
     final hasCSub = cSub.isNotEmpty && data.centraalType == 'C';
     return PdfComponents.buildInlineInputCheckbox(
-      prefix:
-          hasCSub ? 'aangesloten als type C' : 'aangesloten als type C ',
+      prefix: hasCSub ? 'aangesloten als type C' : 'aangesloten als type C ',
       emptyPlaceholder: '.........',
       suffix: ' (gesloten)',
       isChecked: data.centraalType == 'C',

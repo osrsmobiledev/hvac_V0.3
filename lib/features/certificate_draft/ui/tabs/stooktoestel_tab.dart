@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../draft_save_scope.dart';
 import 'package:hvac_app/app/localization/app_dictionary.dart';
 import 'package:hvac_app/core/services/app_warmup_service.dart';
 import 'package:hvac_app/core/utils/debouncer.dart';
@@ -9,16 +10,19 @@ import '../boiler_draft_notifier.dart';
 import 'stooktoestel/fuel_category_memory.dart';
 import 'stooktoestel/stooktoestel_form_controllers.dart';
 import 'stooktoestel/stooktoestel_tab_body.dart';
+import 'stooktoestel/saved_boiler_picker.dart';
 
 /// Tab 5 (Stooktoestel) for Verbrandingsattest Vlaanderen.
 class StooktoestelTab extends StatefulWidget {
   final BoilerDraftRepository? repository;
+  final int? visitId;
   final BoilerDraftNotifier? boilerNotifier;
   final ValueChanged<GlobalKey<FormState>>? onFormKeyReady;
 
   const StooktoestelTab({
     super.key,
     this.repository,
+    this.visitId,
     this.boilerNotifier,
     this.onFormKeyReady,
   });
@@ -40,7 +44,7 @@ class _StooktoestelTabState extends State<StooktoestelTab>
   // Regulatory state
   bool _isCentral = false, _serialUnknown = false, _yearUnknown = false;
   bool _burnerSerialUnknown = false, _burnerYearUnknown = false;
-  String _centraalType = '', _heatingType = '', _boilerOperation = '';
+  String _centraalType = '';
   String _fuelCategory = '', _fuelSubtype = '', _fuelOtherText = '';
   String _burnerTechnology = '', _burnerType = 'geintegreerd';
 
@@ -93,8 +97,6 @@ class _StooktoestelTabState extends State<StooktoestelTab>
       _draft = d;
       _isCentral = d.isCentral;
       _centraalType = d.centraalType;
-      _heatingType = d.heatingType;
-      _boilerOperation = d.boilerOperation;
       _fuelCategory = d.fuelCategory;
       _fuelSubtype = d.fuelSubtype;
       _fuelOtherText = d.fuelOtherText;
@@ -126,8 +128,6 @@ class _StooktoestelTabState extends State<StooktoestelTab>
       current: _draft,
       isCentral: _isCentral,
       centraalType: _centraalType,
-      heatingType: _heatingType,
-      boilerOperation: _boilerOperation,
       fuelCategory: _fuelCategory,
       fuelSubtype: _fuelSubtype,
       fuelOtherText: _fuelOtherText,
@@ -142,19 +142,14 @@ class _StooktoestelTabState extends State<StooktoestelTab>
       return;
     }
     if (immediate) {
-      _debouncer.cancel();
-      _saveDraftDirect(updated);
+      _debouncer.runNow(() => _saveDraftDirect(updated));
     } else {
       _debouncer.run(() => _saveDraftDirect(updated));
     }
   }
 
   Future<void> _saveDraftDirect(BoilerDraft draft) async {
-    try {
-      await _repository.saveBoilerDraft(draft);
-    } catch (e, stack) {
-      debugPrint('[StooktoestelTab] _saveDraftDirect error: $e\n$stack');
-    }
+    await _repository.saveBoilerDraft(draft);
   }
 
   void _update(VoidCallback fn) {
@@ -199,14 +194,19 @@ class _StooktoestelTabState extends State<StooktoestelTab>
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    DraftSaveScope.of(context)?.register(_debouncer);
     return Form(
       key: _formKey,
       child: StooktoestelTabBody(
+        savedBoilerPicker:
+            widget.visitId == null || widget.boilerNotifier == null
+                ? null
+                : SavedBoilerPicker(
+                    visitId: widget.visitId!,
+                    onCopied: widget.boilerNotifier!.useSavedCopy),
         controllers: _controllers,
         isCentral: _isCentral,
         centraalType: _centraalType,
-        heatingType: _heatingType,
-        boilerOperation: _boilerOperation,
         fuelCategory: _fuelCategory,
         fuelSubtype: _fuelSubtype,
         fuelOtherText: _fuelOtherText,
@@ -222,9 +222,6 @@ class _StooktoestelTabState extends State<StooktoestelTab>
           _centraalType = (_centraalType == val && _isCentral) ? '' : val;
           _isCentral = _centraalType.isNotEmpty;
         }),
-        onHeatingTypeChanged: (val) => _update(() => _heatingType = val),
-        onBoilerOperationChanged: (val) =>
-            _update(() => _boilerOperation = val),
         onFuelCategoryChanged: _onFuelCat,
         onFuelSubtypeChanged: _onFuelSubtype,
         onFuelOtherTextChanged: _onFuelOtherText,

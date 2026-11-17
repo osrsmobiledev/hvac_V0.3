@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:path/path.dart' as p;
 import 'package:sqflite/sqflite.dart';
 import 'database_schema.dart';
+import 'veka_attempt_schema.dart';
 
 /// Central database service managing the SQLite connection for offline draft safety.
 ///
@@ -165,6 +166,13 @@ class AppDatabase {
             debugPrint('[AppDatabase] v9 migration query warning: $e\n$stack');
           }
         }
+        if (oldVersion < 10) {
+          // A failed migration must leave the version eligible for retry.
+          await db.execute(
+            'ALTER TABLE maintenance_visits ADD COLUMN klant_undo_json TEXT;',
+          );
+        }
+        if (oldVersion < 11) await createVekaAttemptTables(db);
       },
     );
   }
@@ -172,7 +180,10 @@ class AppDatabase {
   /// Resolves the default persistent file path for the SQLite database.
   Future<String> _getDefaultPath() async {
     final String databasesPath = await getDatabasesPath();
-    return p.join(databasesPath, DatabaseSchema.databaseName);
+    // Keep simulated portal confirmations out of the technician's database.
+    const mockPortal = bool.fromEnvironment('VEKA_MOCK_PORTAL');
+    return p.join(databasesPath,
+        mockPortal ? 'hvac_veka_mock.db' : DatabaseSchema.databaseName);
   }
 
   /// Closes the database connection safely.

@@ -86,9 +86,11 @@ class _PdfPreviewDialogState extends State<PdfPreviewDialog> {
         ? '${EindbeoordelingDictionary.toastPdfSaved}${result.filePath}'
         : '${EindbeoordelingDictionary.toastPdfSaveFailed}${result.errorMessage}';
     if (result.isSuccess) {
-      TacticalFeedback.showSuccess(context, msg, duration: const Duration(seconds: 4));
+      TacticalFeedback.showSuccess(context, msg,
+          duration: const Duration(seconds: 4));
     } else {
-      TacticalFeedback.showError(context, msg, duration: const Duration(seconds: 4));
+      TacticalFeedback.showError(context, msg,
+          duration: const Duration(seconds: 4));
     }
   }
 

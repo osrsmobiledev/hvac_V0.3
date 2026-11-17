@@ -145,12 +145,16 @@ class CustomerRepository {
     }
   }
 
-  /// Atomically saves [customer], their [location], and links them to draft [visitId].
+  /// Saves both records, links the draft, and updates undo in one transaction.
+  ///
+  /// An omitted [buildUndoJson] leaves undo intact. A callback returning null
+  /// clears it as part of the same commit as the final form values.
   Future<({Customer customer, ServiceLocation location})>
       saveCustomerWithLocation({
     required Customer customer,
     required ServiceLocation location,
     required int visitId,
+    String? Function(int customerId, int locationId)? buildUndoJson,
   }) async {
     final db = await _db;
     final now = DateTime.now();
@@ -172,13 +176,13 @@ class CustomerRepository {
         customerId = customer.id!;
         final custMap = customer.toMap();
         custMap['updated_at'] = now.toIso8601String();
-        await txn.update(
-          'customers',
-          custMap,
+        savedCustomer = Customer.fromMap(await _updateVisitRecord(
+          txn,
+          table: 'customers',
+          values: custMap,
           where: 'id = ?',
           whereArgs: [customerId],
-        );
-        savedCustomer = customer.copyWith(updatedAt: now);
+        ));
       }
 
       int locationId;
@@ -197,27 +201,49 @@ class CustomerRepository {
       } else {
         locationId = location.id!;
         locMap['updated_at'] = now.toIso8601String();
-        await txn.update(
-          'service_locations',
-          locMap,
-          where: 'id = ?',
-          whereArgs: [locationId],
-        );
-        savedLocation = location.copyWith(updatedAt: now);
+        savedLocation = ServiceLocation.fromMap(await _updateVisitRecord(
+          txn,
+          table: 'service_locations',
+          values: locMap,
+          where: 'id = ? AND customer_id = ?',
+          whereArgs: [locationId, customerId],
+        ));
       }
 
-      await txn.update(
+      final visitUpdates = <String, dynamic>{
+        'customer_id': customerId,
+        'service_location_id': locationId,
+        'updated_at': now.toIso8601String(),
+      };
+      if (buildUndoJson != null) {
+        visitUpdates['klant_undo_json'] = buildUndoJson(customerId, locationId);
+      }
+
+      final linked = await txn.update(
         'maintenance_visits',
-        {
-          'customer_id': customerId,
-          'service_location_id': locationId,
-          'updated_at': now.toIso8601String(),
-        },
-        where: 'id = ?',
+        visitUpdates,
+        where: 'id = ? AND is_draft = 1',
         whereArgs: [visitId],
       );
+      if (linked != 1) throw StateError('Draft $visitId no longer exists');
 
       return (customer: savedCustomer, location: savedLocation);
     });
+  }
+
+  /// An edit keeps the creation timestamp and can only update an existing row.
+  Future<Map<String, Object?>> _updateVisitRecord(
+    Transaction txn, {
+    required String table,
+    required Map<String, dynamic> values,
+    required String where,
+    required List<int> whereArgs,
+  }) async {
+    values.remove('created_at');
+    final changed =
+        await txn.update(table, values, where: where, whereArgs: whereArgs);
+    if (changed != 1) throw StateError('Missing or mismatched $table row');
+    final rows = await txn.query(table, where: where, whereArgs: whereArgs);
+    return rows.single;
   }
 }

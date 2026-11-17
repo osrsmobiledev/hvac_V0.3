@@ -149,8 +149,7 @@ abstract final class PdfDataMapper {
       branderType: isSepBurner ? str(boiler, 'burner_model') : '',
       branderBouwjaar:
           isSepBurner ? numStr(boiler, 'burner_construction_year') : '',
-      branderFabNummer:
-          isSepBurner ? str(boiler, 'burner_serial_number') : '',
+      branderFabNummer: isSepBurner ? str(boiler, 'burner_serial_number') : '',
       branderDebiet: isSepBurner ? str(boiler, 'burner_flow_rate') : '',
       meetToestelNaam: str(profile, 'analyzer_brand_model'),
       meetToestelSerienummer: str(profile, 'analyzer_serial_number'),

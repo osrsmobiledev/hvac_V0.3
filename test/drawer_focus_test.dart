@@ -142,7 +142,7 @@ void main() {
       expect(focusNode.hasFocus, isTrue);
 
       // Tap outside on a heading / label / empty space
-      await tester.tap(find.text(AppDictionary.lblHeatingType));
+      await tester.tap(find.text(AppDictionary.headerFuel));
       await tester.pump();
 
       // Verify input focus was cleanly dismissed via onTapOutside

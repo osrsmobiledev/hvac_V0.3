@@ -94,9 +94,8 @@ abstract final class MetingSlotActions {
     }
 
     try {
+      if (!context.mounted) return;
       slotCtrl.populate(tab1Draft.copyWith(slot: activeSlot));
-      await repository.saveMeasurementSlot(
-          visitId, slotCtrl.buildDraft(activeSlot));
       onFormChanged();
       if (!context.mounted) return;
       TacticalFeedback.showSuccess(
@@ -129,10 +128,9 @@ abstract final class MetingSlotActions {
       slotTitle: title,
     );
 
-    if (scannedDraft != null) {
+    if (scannedDraft != null && context.mounted) {
       try {
         slotCtrl.populate(scannedDraft);
-        await repository.saveMeasurementSlot(visitId, scannedDraft);
         onFormChanged();
         if (!context.mounted) return;
         TacticalFeedback.showSuccess(
@@ -170,11 +168,11 @@ abstract final class MetingSlotActions {
       isDestructive: true,
     );
 
-    if (shouldClear != true) return;
+    if (shouldClear != true || !context.mounted) return;
 
     try {
       slotCtrl.clear();
-      await repository.clearMeasurementSlot(visitId, activeSlot);
+
       onFormChanged();
       if (!context.mounted) return;
       TacticalFeedback.showInfo(

@@ -1,5 +1,7 @@
 import 'package:sqflite/sqflite.dart';
 
+import 'veka_attempt_schema.dart';
+
 /// Database schema definitions for HVAC Field Service (hvac_V0.3).
 ///
 /// Contains table creation DDL statements for the 6 core relational entities:
@@ -10,7 +12,7 @@ import 'package:sqflite/sqflite.dart';
 /// 5. maintenance_visits (Attest draft, measurements, assessments, PDF & VEKA state)
 /// 6. measurement_captures (Flue gas data captured manually or via Eurolyzer QR)
 abstract final class DatabaseSchema {
-  static const int version = 9;
+  static const int version = 11;
   static const String databaseName = 'hvac_service.db';
 
   /// Executes all CREATE TABLE and CREATE INDEX statements on database initialization.
@@ -166,6 +168,7 @@ abstract final class DatabaseSchema {
         customer_signature_name TEXT,
         customer_signature_exception TEXT,
         snapshot_json TEXT,
+        klant_undo_json TEXT,
         pdf_status TEXT NOT NULL DEFAULT 'draft',
         pdf_path TEXT,
         email_customer_status TEXT NOT NULL DEFAULT 'not_queued',
@@ -226,5 +229,6 @@ abstract final class DatabaseSchema {
         'CREATE INDEX idx_meas_vis ON measurement_captures (visit_id);');
     await db.execute(
         'CREATE UNIQUE INDEX IF NOT EXISTS idx_meas_vis_slot ON measurement_captures (visit_id, slot);');
+    await createVekaAttemptTables(db);
   }
 }

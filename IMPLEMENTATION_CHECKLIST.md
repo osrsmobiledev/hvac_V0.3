@@ -33,10 +33,12 @@
 | **23** | **Redundant unawaited async DB call in widget `dispose()`** (`meting_tab.dart`) | `_debouncer.dispose()` already flushes pending saves. Calling `_saveToDatabase()` a second time in `dispose()` without await caused SQLite transactions to execute after widget disposal and database closure, throwing `Bad state: This database has already been closed`. | Removed redundant `_saveToDatabase()` in `dispose()`, letting `_debouncer.dispose()` handle the single synchronous flush. |
 | **24** | **Burner type database enum leaking into PDF type line when integrated** | Official Flemish statutory template requires all 5 burner lines to remain completely blank when the boiler has an integrated burner. Mapping `burner_type` ('geintegreerd') into the `Type:` line violated the official government layout. | Added `final isSepBurner = str(boiler, 'burner_type') == 'afzonderlijk';` in `PdfDataMapper`. All 5 burner fields map to `''` when integrated. |
 | **25** | **Redundant installation address printed when identical to customer address** | Under Flemish regulations, when installation address is identical to the customer address, the right-side installation box must be left blank. | Implemented `_hasSeparateInstallationAddress` in `PdfKlantBuilder` with 5-field normalization (`street`, `house_number`, `box_number`, `postal_code`, `city`). If identical, right-side address lines remain clean and blank. |
+| **26** | **Unclosed `HttpClient` & dynamic dropdown state mismatch** (`basisregisters_service.dart` / `address_lookup_dialog.dart`) | Omitting `try ... finally { client.close(); }` on HTTP calls leaks socket descriptors on network errors/timeouts. Re-querying without keying `DropdownButtonFormField` causes Flutter to retain old unmapped selections and throw a duplicate/missing value exception. | Wrapped `HttpClient` in `try ... finally { client.close(); }`, implemented `operator ==` and `hashCode` on `AddressMatch`, and added `key: ValueKey(_matches)` with `initialValue: _selected` to reset state seamlessly on each search. |
+| **27** | **Stale address verification & incomplete Basisregisters API hierarchy traversal** (`klant_form_controllers.dart`, `klant_tab_state_data.dart`, `basisregisters_service.dart`, `address_lookup_dialog.dart`) | Changing verified house numbers or toggling installation address retained old VEKA IDs; comparing only street & nr collapsed distinct apartment bus numbers; querying `/v2/adressen/{id}` failed to retrieve building/unit IDs because the API returns a link to `/v2/gebouweenheden?adresobjectid=`; blank postcode caused HTTP 400; socket timeout didn't guard stalled streams. | Implemented `isCurrentAddressVerified({required bool isSameAsCustomer})` to invalidate IDs on any field edit or address toggle; enforced 5-field address comparison in `applyLocation`; traversed `/v2/gebouweenheden?adresobjectid=` -> `/v2/gebouweenheden/{id}` for all candidates; added controller query listeners to clear stale results; enforced required postcode; guarded full request and stream lifecycle with `timeout()`. |
 
 ---
 
-## 2. 25-Point Post-Implementation Checklist
+## 2. 26-Point Post-Implementation Checklist
 
 Run through these exact 20 verification checks before marking any tab, applet, or slice complete:
 
@@ -158,19 +160,50 @@ Run through these exact 20 verification checks before marking any tab, applet, o
 - [ ] In widget `dispose()`, call `_debouncer.dispose()`, which automatically flushes any pending debounced callback.
 - [ ] **Never** fire a second, unawaited `_saveToDatabase()` call in `dispose()`. Doing so triggers asynchronous SQLite transactions after the widget unmounts and the test database closes, resulting in `Bad state: This database has already been closed`.
 
+### [ ] 26. Network Resource Safety & Dropdown Keying (`HttpClient` in `finally` & Keyed `DropdownButtonFormField`)
+- [ ] Always close `HttpClient` instances inside an explicit `finally` block to prevent lingering socket descriptors or background timers on connection drops, timeouts, or HTTP failures.
+- [ ] In dropdown menus populated by asynchronous API queries, key the `DropdownButtonFormField` with `key: ValueKey(_matches)` and implement value-based `operator ==` / `hashCode` on the DTO model to prevent Flutter dropdown value inconsistency exceptions.
+
+### [ ] 27. Address Verification Invalidation & OSLO v2 Hierarchy Traversal
+- [ ] Any manual alteration to verified address fields (street, house number, box number, zip, city) or toggling `isSameAsCustomer` must immediately invalidate registry verification status (`verificationStatus = 'unverified'`, `adresId = null`, etc.) to prevent stale registry IDs from sticking to modified locations.
+- [ ] Compare all 5 address fields (`street`, `houseNumber`, `boxNumber`, `postalCode`, `city`) to determine if an installation location matches the customer residence; never compare only street and number, which falsely collapses distinct apartment units.
+- [ ] Basisregisters API integration must follow the official v2 link hierarchy: `/v2/adresmatch` -> `/v2/gebouweenheden?adresobjectid={id}` -> `/v2/gebouweenheden/{id}` to reliably fetch `gebouweenheidId` and `gebouwId` for any candidate selected by the technician.
+- [ ] Enforce required `postcode` on lookup dialog queries to prevent HTTP 400 Bad Request, clear stale search results when query fields change, and attach `.timeout()` to the full `HttpClient` request and response stream lifecycle.
+
 ---
 
-## 3. Verification & Handoff Protocol
+## 3. Mandatory 3-Gate Pre-Handoff Quality Gate
 
-Before handing off any slice or marking it complete:
+Every AI agent must strictly run and pass all three gates **before declaring any slice complete or asking the owner to test**. Never hand off based solely on a compilation pass.
+
+### Gate 1: Static Hygiene & File Health
 1. **Static Analysis:**
-   ```powershell
-   & "C:\Users\Admin\Documents\Flutter-SDK\flutter\bin\flutter.bat" analyze --no-pub
-   ```
-   *(Must exit with 0 errors, 0 warnings).*
-2. **Test Suite:**
-   ```powershell
-   & "C:\Users\Admin\Documents\Flutter-SDK\flutter\bin\flutter.bat" test --no-pub
-   ```
-   *(All tests must pass).*
-3. **Strict Stop-and-Wait Policy:** Wait for the owner's verification and explicit go-ahead before touching the next slice.
+   - Execute `analyze_files` (or `flutter analyze`). Must exit with **0 errors, 0 warnings, 0 infos**.
+2. **Strict File-Length Verification ($\le 250$ Lines):**
+   - Run the PowerShell check:
+     ```powershell
+     Get-ChildItem -Path "lib" -Recurse -Filter "*.dart" | ForEach-Object { $c = (Get-Content $_.FullName).Count; if ($c -gt 240) { Write-Host "$c lines: $($_.FullName)" } }
+     ```
+   - Zero files in `lib/` or `test/` may exceed 250 lines. Extract modular widgets or models before handoff.
+
+### Gate 2: Lifecycle & Resource Hygiene (Zero Leak Gate)
+1. **Controller & Listener Disposal:**
+   - Every `TextEditingController`, `FocusNode`, `AnimationController`, or `ScrollController` allocated in `initState()` must be disposed in `dispose()`.
+2. **Network & Stream Safety:**
+   - Every `HttpClient`, socket, or stream subscription must be guarded with `try ... finally { client.close(); }` or `cancel()`. Never allow unclosed network resources on exceptions or timeouts.
+3. **Mounted Async Guards:**
+   - Every `setState()` following an `await` must be guarded by `if (!mounted) return;`.
+4. **Dynamic Collection & Dropdown Keying:**
+   - Dropdowns populated by dynamic or async results must be keyed (`key: ValueKey(...)`) and the item model must implement `operator ==` and `hashCode` to prevent Flutter dropdown mismatch crashes.
+
+### Gate 3: End-to-End Domain & Database Trace
+1. **Full Domain Coverage (The 90/10 Rule):**
+   - Verify that the feature works for both the primary real-world scenario (e.g. boiler at customer residence in 90% of visits) AND the secondary scenario (separate installation address in 10% of visits). Never build only for the sub-widget's happy path.
+2. **End-to-End Database Roundtrip:**
+   - Trace values: `UI Input -> Controller -> Domain Entity -> Repository -> SQLite Table -> Reopen Draft -> UI Restoration`.
+   - Ensure no fields are dropped, zeroed, or defaulted to `null` unintentionally.
+3. **Automated Tests:**
+   - Run focused unit and widget tests for the changed logic.
+4. **Stop-and-Wait Owner Verification:**
+   - Provide 3–4 concrete, human-testable steps on device/emulator.
+   - Stop and wait for the owner's explicit confirmation before touching the next slice.

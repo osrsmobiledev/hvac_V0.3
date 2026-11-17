@@ -131,7 +131,8 @@ void main() {
       // Verify modal is open with subtitle badge
       expect(find.text(EindbeoordelingDictionary.modalTitleSnelselectie),
           findsOneWidget);
-      expect(find.textContaining('Aardgas • Type C (Gesloten)'), findsOneWidget);
+      expect(
+          find.textContaining('Aardgas • Type C (Gesloten)'), findsOneWidget);
 
       // Tap the top preset (Expansievat defect)
       final presetTitleFinder = find.text('Expansievat defect');
@@ -201,10 +202,10 @@ void main() {
     testWidgets(
         'Preset already present in text box appears disabled with Reeds toegevoegd badge',
         (tester) async {
-      final defectsCtrl = TextEditingController(
-          text: '• Expansievat membraan gescheurd');
-      final remarksCtrl = TextEditingController(
-          text: '• Expansievat vervangen');
+      final defectsCtrl =
+          TextEditingController(text: '• Expansievat membraan gescheurd');
+      final remarksCtrl =
+          TextEditingController(text: '• Expansievat vervangen');
 
       await tester.pumpWidget(
         MaterialApp(
