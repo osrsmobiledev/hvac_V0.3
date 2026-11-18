@@ -90,6 +90,127 @@ abstract final class EmailDeliveryDictionary {
       'Kan e-mailinstellingen niet laden. Controleer de lokale databaseverbinding.';
   static const String btnRetryInit = 'Opnieuw proberen';
 
+  // ── Recipient confirmation dialog (Slice 6.2) ────────────────────────────
+
+  /// Title shown above the recipient list in the confirmation dialog.
+  static const String recipientDialogTitle = 'Ontvangers bevestigen';
+
+  /// Intro text explaining that the certificate will be prepared in the outbox queue.
+  static const String recipientDialogIntro =
+      'Het verbrandingsattest wordt klaargezet in de e-mailwachtrij als PDF-bijlage.';
+
+  /// Label prefix for the customer recipient row.
+  static const String recipientCustomerLabel = 'Klant';
+
+  /// Label prefix for the technician copy row.
+  static const String recipientTechnicianLabel = 'Kopie technicus';
+
+  /// Shown when the customer has no email address in the snapshot.
+  static const String recipientNoCustomerEmail =
+      'Geen e-mailadres beschikbaar voor klant.';
+
+  /// Shown when neither customer nor technician email is available.
+  static const String recipientNoneAvailable =
+      'Geen e-mailadres beschikbaar om naar te verzenden.';
+
+  /// Confirm button in the recipient dialog.
+  static const String recipientDialogConfirm = 'In wachtrij plaatsen';
+
+  /// Cancel button in the recipient dialog.
+  static const String recipientDialogCancel = 'Overslaan';
+
+  /// Toast shown after jobs are successfully queued.
+  static const String recipientJobsQueued =
+      'E-mailtaak klaargezet in de wachtrij.';
+
+  /// Toast shown when jobs were already queued previously (idempotent duplicate).
+  static const String recipientJobsAlreadyQueued =
+      'E-mailtaak stond reeds in de wachtrij.';
+
+  /// Toast shown when the technician cancels the recipient dialog.
+  static const String recipientDialogSkipped =
+      'Attest opgeslagen. E-mail overgeslagen.';
+
+  /// Toast shown after PDF archive succeeds.
+  static const String archiveSuccess = 'PDF-archief aangemaakt.';
+
+  /// Toast shown when PDF archive fails (but visit is preserved).
+  static const String archiveFailure =
+      'PDF-archivering mislukt — attest bewaard, e-mail geblokkeerd.';
+
+  /// Toast shown when outbox queue insertion fails while visit & PDF are preserved.
+  static const String outboxQueueFailed =
+      'Toevoegen aan e-mailwachtrij mislukt.';
+
+  /// Title for dialog when outbox queue insertion fails.
+  static const String outboxRetryDialogTitle = 'E-mailwachtrij mislukt';
+
+  /// Message explaining visit & PDF are safe, offering to retry outbox queueing.
+  static const String outboxRetryDialogMessage =
+      'Het attest en de PDF zijn veilig bewaard, maar het toevoegen aan de '
+      'e-mailwachtrij is mislukt. Wilt u het opnieuw proberen?';
+
+  /// Action button to retry outbox queueing.
+  static const String outboxRetryAction = 'Opnieuw proberen';
+
+  /// Action button to skip outbox queueing.
+  static const String outboxRetryCancel = 'Overslaan';
+
+  /// Toast shown when outbox queueing is skipped after a failure.
+  static const String outboxQueueSkippedAfterFailure =
+      'Attest bewaard. E-mailwachtrij overgeslagen.';
+
+  // ── PDF database registration retry (Slice 6.2) ─────────────────────────
+  static const String pdfRegistrationRetryTitle =
+      'Database-registratie mislukt';
+  static const String pdfRegistrationRetryMessage =
+      'De PDF is aangemaakt, maar de registratie in de database is mislukt. '
+      'Bij overslaan wordt het niet-geregistreerde PDF-bestand verwijderd en '
+      'heeft het voltooide bezoek geen gearchiveerd PDF-attest.';
+  static const String pdfRegistrationRetryAction = 'Opnieuw proberen';
+  static const String pdfRegistrationRetryCancel = 'Verwijderen en overslaan';
+
+  // Second confirmation dialog before destructive deletion
+  static const String pdfRegistrationDeleteConfirmTitle =
+      'Niet-geregistreerde PDF verwijderen?';
+  static const String pdfRegistrationDeleteConfirmMessage =
+      'Weet u zeker dat u wilt overslaan? Het gegenereerde PDF-bestand wordt '
+      'definitief verwijderd en het voltooide bezoek heeft dan geen gearchiveerd PDF-attest.';
+  static const String pdfRegistrationDeleteConfirmAction =
+      'Definitief verwijderen';
+  static const String pdfRegistrationDeleteConfirmCancel = 'Terug';
+  static const String pdfRegistrationFailed =
+      'PDF-archivering mislukt: registratie in database niet voltooid.';
+  static const String pdfDeleteFailedError =
+      'Niet-geregistreerde PDF kon niet worden verwijderd van het toestel.';
+  static const String pdfFileNotFoundError =
+      'Gearchiveerd PDF-bestand niet gevonden op het toestel.';
+
+  /// Email subject line for a certificate.
+  ///
+  /// [attestNumber] is substituted at runtime. Set [isCopy] to true for the technician copy.
+  static String emailSubject(String attestNumber, {bool isCopy = false}) {
+    final clean = attestNumber.trim();
+    final base =
+        clean.isNotEmpty ? 'Verbrandingsattest $clean' : 'Verbrandingsattest';
+    return isCopy ? '$base (kopie)' : base;
+  }
+
+  /// Email body for the customer recipient.
+  static String emailBodyCustomer(String attestNumber) {
+    final clean = attestNumber.trim();
+    final nrSuffix = clean.isNotEmpty ? ' (nr. $clean)' : '';
+    return 'Geachte,\n\n'
+        'In bijlage vindt u het verbrandingsattest van uw stooktoestel$nrSuffix.\n\n'
+        'Met vriendelijke groeten';
+  }
+
+  /// Email body for the technician copy.
+  static const String emailBodyTechnician =
+      'Kopie verbrandingsattest — intern exemplaar.';
+
+  // ─────────────────────────────────────────────────────────────────────────
+
   /// Maps typed [SmtpConnectionResult] to a user-facing Flemish feedback string.
   static String messageForConnectionResult(SmtpConnectionResult result) {
     switch (result) {

@@ -5,12 +5,17 @@ import 'app/shell/app_shell_screen.dart';
 import 'app/splash/app_splash_screen.dart';
 import 'app/theme/app_theme.dart';
 import 'core/database/app_database.dart';
+import 'features/email_delivery/data/pdf_archive_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Initialize SQLite database on startup for offline draft safety
   await AppDatabase.instance.database;
+
+  // Clean up any orphaned PDF staging .tmp files from interrupted runs
+  // before the UI becomes interactive.
+  await PdfArchiveService.cleanupStagingFiles();
 
   // Enforce portrait orientation app-wide across all devices (phones & tablets)
   await SystemChrome.setPreferredOrientations([

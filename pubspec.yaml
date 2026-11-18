@@ -19,6 +19,7 @@ dependencies:
   path_provider: ^2.1.2
   mailer: ^7.2.0
   flutter_secure_storage: ^9.2.2
+  synchronized: ^3.3.0
 
 dev_dependencies:
   flutter_test:

@@ -10,6 +10,7 @@ Do not introduce heavy enterprise frameworks (`Freezed`, `Dartz`, `GetIt`, `buil
 | **PDF Generation** | `pdf` + `printing` + `path_provider` | Matches the owner's working `references/legacy/code/pdf/` builders and supports cross-platform file storage/sharing. |
 | **Camera Scanning** | `mobile_scanner` | Handles both 2D QR codes (Eurolyzer flue-gas readings) and 1D/2D barcodes (boiler/burner serial numbers). |
 | **HTTP / API** | `http` or `dio` | For public Basisregisters Vlaanderen address lookups and VEKA API reporting. |
+| **Concurrency Lock** | `synchronized: ^3.3.0` | Serializes concurrent PDF archive operations in `PdfArchiveService` so simultaneous finalization events never produce overlapping staging files. Added in Slice 6.2. |
 
 ## 2. Folder Structure (2-Layer Feature Organization)
 Keep the codebase flat and approachable. Create folders only when a slice needs them:

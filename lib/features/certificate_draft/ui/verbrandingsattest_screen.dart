@@ -48,6 +48,7 @@ class _VerbrandingsattestScreenState extends State<VerbrandingsattestScreen>
       AppWarmupService.instance.cachedResult?.activeDraft?.id ?? 1;
   bool _isAppletLoading = true;
   static const _tabTitles = AppDictionary.combustionTabs;
+
   @override
   void initState() {
     super.initState();
@@ -94,7 +95,7 @@ class _VerbrandingsattestScreenState extends State<VerbrandingsattestScreen>
       _tab4FormKey,
       _tab5FormKey,
       _tab6FormKey,
-      _tab7FormKey
+      _tab7FormKey,
     ];
     for (var index = 0; index < keys.length; index++) {
       final key = keys[index];
@@ -111,10 +112,18 @@ class _VerbrandingsattestScreenState extends State<VerbrandingsattestScreen>
     try {
       if (!await VisitFinalization.confirm(context) || !mounted) return;
       setState(() => _isAppletLoading = true);
+
+      // Freeze snapshot and finalize visit in SQLite
       final followUp = await VisitFinalization.save(
           DraftSaveScope(saves: _draftSaves, child: const SizedBox()),
           _activeVisitId);
       if (!mounted) return;
+
+      // Safe PDF archiving + recipient confirmation + queue email jobs
+      await VisitFinalization.archiveAndPromptRecipients(
+          context, _activeVisitId);
+      if (!mounted) return;
+
       if (followUp) {
         TacticalFeedback.showSuccess(
             context, VisitHistoryDictionary.reportPending);
@@ -135,6 +144,7 @@ class _VerbrandingsattestScreenState extends State<VerbrandingsattestScreen>
   @override
   Widget build(BuildContext context) =>
       DraftSaveScope(saves: _draftSaves, child: _screen);
+
   Widget get _screen => Stack(
         fit: StackFit.expand,
         children: [
