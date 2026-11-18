@@ -230,9 +230,8 @@ class _VekaTrackerState extends State<VekaTracker> {
                       _runPortal(() => _portal.saved(context, confirm: true))),
               review: _busy
                   ? null
-                  : () => _run(() => _runSimulation(
-                      () => _simulationActions.review(context, attempt,
-                          archived: widget.archived))),
+                  : () => _run(() => _runSimulation(() => _simulationActions
+                      .review(context, attempt, archived: widget.archived))),
               history: _busy
                   ? null
                   : () => _run(() => _runSimulation(

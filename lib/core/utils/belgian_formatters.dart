@@ -1,5 +1,7 @@
 import 'package:flutter/services.dart';
 
+import 'email_validator.dart';
+
 /// Formatter for Belgian phone numbers: auto-strips leading zero,
 /// limits to 9 digits, and formats as '4XX XX XX XX' or 'XX XX XX XX'.
 class BelgianPhoneInputFormatter extends TextInputFormatter {
@@ -233,16 +235,12 @@ abstract final class BelgianFormatters {
     return null;
   }
 
-  /// Validator for email addresses — optional by default, required when [required] is true.
-  ///
-  /// Uses a minimal RFC-compliant regex: requires at least one non-whitespace
-  /// char before '@', a domain part, and a TLD separated by '.'.
+  /// Validator for email addresses using shared [EmailAddressValidator].
   /// Returns null if valid, or a Dutch error message if invalid.
   static String? validateEmail(String? value, {bool required = false}) {
     final text = value?.trim() ?? '';
     if (text.isEmpty) return required ? 'E-mailadres is verplicht' : null;
-    final emailRegex = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
-    if (!emailRegex.hasMatch(text)) {
+    if (!EmailAddressValidator.isValid(text)) {
       return 'Vul een geldig e-mailadres in (bv. info@firma.be)';
     }
     return null;

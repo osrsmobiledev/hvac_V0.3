@@ -1,5 +1,6 @@
 import 'package:sqflite/sqflite.dart';
 
+import 'email_delivery_schema.dart';
 import 'veka_attempt_schema.dart';
 
 /// Database schema definitions for HVAC Field Service (hvac_V0.3).
@@ -12,7 +13,7 @@ import 'veka_attempt_schema.dart';
 /// 5. maintenance_visits (Attest draft, measurements, assessments, PDF & VEKA state)
 /// 6. measurement_captures (Flue gas data captured manually or via Eurolyzer QR)
 abstract final class DatabaseSchema {
-  static const int version = 11;
+  static const int version = 12;
   static const String databaseName = 'hvac_service.db';
 
   /// Executes all CREATE TABLE and CREATE INDEX statements on database initialization.
@@ -36,6 +37,14 @@ abstract final class DatabaseSchema {
         tv_number TEXT,
         analyzer_brand_model TEXT,
         analyzer_serial_number TEXT,
+        smtp_host TEXT,
+        smtp_port INTEGER,
+        smtp_username TEXT,
+        smtp_use_ssl INTEGER NOT NULL DEFAULT 1,
+        smtp_provider TEXT NOT NULL DEFAULT 'gmail',
+        email_auto_send INTEGER NOT NULL DEFAULT 1,
+        email_copy_technician INTEGER NOT NULL DEFAULT 1,
+        smtp_state TEXT NOT NULL DEFAULT 'unconfigured',
         created_at TEXT NOT NULL,
         updated_at TEXT NOT NULL
       );
@@ -230,5 +239,6 @@ abstract final class DatabaseSchema {
     await db.execute(
         'CREATE UNIQUE INDEX IF NOT EXISTS idx_meas_vis_slot ON measurement_captures (visit_id, slot);');
     await createVekaAttemptTables(db);
+    await EmailDeliverySchema.createTablesAndIndexes(db);
   }
 }

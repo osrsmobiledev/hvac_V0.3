@@ -35,6 +35,10 @@
 | **25** | **Redundant installation address printed when identical to customer address** | Under Flemish regulations, when installation address is identical to the customer address, the right-side installation box must be left blank. | Implemented `_hasSeparateInstallationAddress` in `PdfKlantBuilder` with 5-field normalization (`street`, `house_number`, `box_number`, `postal_code`, `city`). If identical, right-side address lines remain clean and blank. |
 | **26** | **Unclosed `HttpClient` & dynamic dropdown state mismatch** (`basisregisters_service.dart` / `address_lookup_dialog.dart`) | Omitting `try ... finally { client.close(); }` on HTTP calls leaks socket descriptors on network errors/timeouts. Re-querying without keying `DropdownButtonFormField` causes Flutter to retain old unmapped selections and throw a duplicate/missing value exception. | Wrapped `HttpClient` in `try ... finally { client.close(); }`, implemented `operator ==` and `hashCode` on `AddressMatch`, and added `key: ValueKey(_matches)` with `initialValue: _selected` to reset state seamlessly on each search. |
 | **27** | **Stale address verification & incomplete Basisregisters API hierarchy traversal** (`klant_form_controllers.dart`, `klant_tab_state_data.dart`, `basisregisters_service.dart`, `address_lookup_dialog.dart`) | Changing verified house numbers or toggling installation address retained old VEKA IDs; comparing only street & nr collapsed distinct apartment bus numbers; querying `/v2/adressen/{id}` failed to retrieve building/unit IDs because the API returns a link to `/v2/gebouweenheden?adresobjectid=`; blank postcode caused HTTP 400; socket timeout didn't guard stalled streams. | Implemented `isCurrentAddressVerified({required bool isSameAsCustomer})` to invalidate IDs on any field edit or address toggle; enforced 5-field address comparison in `applyLocation`; traversed `/v2/gebouweenheden?adresobjectid=` -> `/v2/gebouweenheden/{id}` for all candidates; added controller query listeners to clear stale results; enforced required postcode; guarded full request and stream lifecycle with `timeout()`. |
+| **28** | **Prematurely treating ordinary offline states as uncertain in outbox dispatch** | Relying solely on `send()` for connection status caused ordinary offline basement visits to throw `SocketException` during send, marking jobs as `uncertain_timeout` and demanding manual technician confirmation of duplicate risk. | Implemented preflight connection check via `mailer.checkCredentials()` before claiming jobs. If offline (`SocketException` / timeout), the outbox run aborts immediately, keeping jobs `queued` with `attempt_count = 0`. |
+| **29** | **Overloading existing classes past Single Responsibility & 250-line limit ("Fake Code Reuse")** | Cramming private document staging, versioning, size checks, and cleanup into `PdfFileSaver` (174 lines) bloated a public export class and risked breaching the 250-line rule. | Separated public exports (`PdfFileSaver`) from private internal archiving (`PdfArchiveService`), staging in `certificates/staging/` beside destination with length verification and startup orphan cleanup. |
+| **30** | **Assuming cross-store atomicity between SQLite and OS KeyStore** | Treating SQLite and Android KeyStore as a single atomic transaction led to impossible rollback claims if SQLite failed after KeyStore was written. | Implemented staged credential protocol (`smtp_password_staged` $\to$ `smtp_password`) with `smtp_state` tracking in SQLite and deterministic startup recovery. |
+| **31** | **Rhetorical or legalistic claims in technical specifications** | Terms like "juridisch bewijs" or "100% duplicate-proof" make unverifiable guarantees on protocols (like SMTP) that lack end-to-end delivery confirmation. | Use neutral, precise technical terminology: "bevroren certificaat-snapshot", "definitieve bezoekrecord", "best-effort botsingsreductie". |
 
 ---
 
@@ -64,9 +68,9 @@ Run through these exact 20 verification checks before marking any tab, applet, o
 - [ ] Cancel/flush all active `Timer?` or `Debouncer` instances in `dispose()`.
 - [ ] Dispose all `TextEditingController` and `ScrollController` instances in `dispose()`.
 
-### [ ] 5. Centralized Dutch UI Strings (`AppDictionary`)
+### [ ] 5. Centralized Dutch UI Strings (`AppDictionary` & Feature Dictionaries)
 - [ ] All user-visible labels, headers, hints, placeholders, buttons, and dialogs are in Dutch (Flemish).
-- [ ] All UI strings are defined in `lib/app/localization/app_dictionary.dart` or `lib/app/localization/meting_dictionary.dart`.
+- [ ] All UI strings are defined in `lib/app/localization/app_dictionary.dart` or feature-scoped dictionaries under `lib/app/localization/` (e.g. `meting_dictionary.dart`, `visit_history_dictionary.dart`, `email_delivery_dictionary.dart`).
 - [ ] Zero hardcoded string literals anywhere inside widget trees (e.g., `'Opslaan'`, `'Annuleren'`, tab names, hints).
 - [ ] English is strictly reserved for Dart code symbols, variable names, functions, and `///` comments.
 
@@ -106,7 +110,7 @@ Run through these exact 20 verification checks before marking any tab, applet, o
 - [ ] Never build inline `Container → BoxDecoration → Icon` buttons with ad-hoc borders and paddings.
 
 ### [ ] 14. Zero Hardcoded Strings in Modals & Dialogs
-- [ ] Modal slot titles, scanner error messages, and dialog bodies must reference dictionary constants (`MetingDictionary` / `AppDictionary`).
+- [ ] Modal slot titles, scanner error messages, and dialog bodies must reference dictionary constants in `app_dictionary.dart` or feature-scoped dictionaries under `lib/app/localization/` (`MetingDictionary`, `EmailDeliveryDictionary`, `VisitHistoryDictionary`).
 - [ ] Never pass raw Dutch or English prose as strings to modal helper functions.
 
 ### [ ] 15. Standard Workflow Tab Container (Responsive 600px)
@@ -169,6 +173,39 @@ Run through these exact 20 verification checks before marking any tab, applet, o
 - [ ] Compare all 5 address fields (`street`, `houseNumber`, `boxNumber`, `postalCode`, `city`) to determine if an installation location matches the customer residence; never compare only street and number, which falsely collapses distinct apartment units.
 - [ ] Basisregisters API integration must follow the official v2 link hierarchy: `/v2/adresmatch` -> `/v2/gebouweenheden?adresobjectid={id}` -> `/v2/gebouweenheden/{id}` to reliably fetch `gebouweenheidId` and `gebouwId` for any candidate selected by the technician.
 - [ ] Enforce required `postcode` on lookup dialog queries to prevent HTTP 400 Bad Request, clear stale search results when query fields change, and attach `.timeout()` to the full `HttpClient` request and response stream lifecycle.
+
+### [ ] 28. SMTP Preflight & Offline Safety (`mailer.checkCredentials`)
+- [ ] In `EmailDeliveryCoordinator.processOutbox()`, execute `mailer.checkCredentials(smtpServer, timeout: 4s)` before claiming jobs from SQLite.
+- [ ] Explicitly recognize that `mailer.checkCredentials()` is an upfront preflight check (validating network and credentials), not a guarantee that a subsequent `send()` will succeed.
+- [ ] If preflight fails due to offline/timeout (`SocketException`), abort the outbox run immediately. Jobs must remain in `queued` with `attempt_count = 0` for automatic retry on app resume.
+- [ ] Only errors occurring *during or after* active transmission (`send()`) may transition to `uncertain_timeout`.
+
+### [ ] 29. Dedicated Archiving & Staging Beside Destination (`certificates/staging/`)
+- [ ] Stage temporary PDF writes in `certificates/staging/` on the same filesystem as `certificates/` to ensure fast, reliable rename without cross-volume copy races.
+- [ ] Verify written file length against memory bytes before renaming to a unique timestamped filename.
+- [ ] Run startup cleanup to safely delete orphaned `.tmp` staging files from previous crashed sessions.
+- [ ] Keep public OS export (`PdfFileSaver`) strictly separate from private internal application data archiving (`PdfArchiveService`).
+
+### [ ] 30. Staged Credential Protocol Across SQLite & KeyStore
+- [ ] Do not assume atomic transactions across SQLite and Android KeyStore.
+- [ ] Use a staged credential protocol (`smtp_password_staged` -> `smtp_password`) tracked via `smtp_state` in SQLite (`'unconfigured'`, `'staging'`, `'configured'`, `'needs_attention'`).
+- [ ] Require both valid provider settings (host, port > 0, username) and an available active KeyStore password for `smtp_state == 'configured'`.
+- [ ] Implement deterministic startup recovery in `EmailSettingsRepository.recoverCredentialsState()`. If SQLite is in `'staging'` but `smtp_password_staged` is missing, transition to `'needs_attention'` (never assume an old active password matches new settings). Block automatic email sending if `smtp_state != 'configured'`.
+
+### [ ] 31. Neutral State-Machine Semantics over Rhetorical Claims
+- [ ] State machines and technical documentation must use neutral, verifiable terminology ("bevroren certificaat-snapshot", "best-effort botsingsreductie") rather than unprovable superlatives or legalistic claims ("juridisch bewijs", "100% duplicate-proof").
+
+### [ ] 32. Email Settings Domain Boundary & Platform Safety
+- [ ] Outbound SMTP configuration belongs in **Instellingen** (`AppletType.technicianSettings`). Tab 3 (*Firma - Technicus*) is reserved strictly for company details and accreditation numbers printed on the certificate.
+- [ ] `smtp_state = 'configured'` strictly signifies local completeness (valid provider fields + stored credential in KeyStore), allowing saving before testing. It does not imply connection or sender verification. `mailer.checkCredentials()` tests connectivity/authentication only; provider sender rejection is a delivery outcome that never blocks certificate saving or PDF generation.
+- [ ] Separate SMTP authentication username (`smtp_username`) from visible message sender (`Message.from`). A custom login may be an account ID; never assume a login username is automatically a valid sender address.
+- [ ] Visible sender address policy must require an explicitly valid email address (from `smtp_username` if it is an email, or falling back to the format-validated `technician_profile.email` if permitted by the provider). Never construct synthetic email addresses from usernames and hosts (`smtp_username@<smtp_host>`).
+- [ ] `technician_profile.email` is format-validated upon entry, not verified via external handshake. An invalid or rejected sender address must block email delivery only; certificate saving and PDF archiving remain 100% independent (Golden Rule #5).
+- [ ] Platform and SMTP services must return strongly typed outcomes; map typed outcomes to localized Flemish text in the UI layer (`AppDictionary` / `EmailDeliveryDictionary`).
+- [ ] Constructor injection using the project's existing `ChangeNotifier` and Flutter `ListenableBuilder` approach: `TechnicianSettingsApplet` composes the notifier at the applet boundary and passes it via constructor to `TechnicianSettingsScreen(notifier: notifier)` and `EmailSettingsCard(notifier: notifier)`. Do not add an external state package (Provider/Riverpod), service locator (GetIt), or new architecture layer.
+- [ ] App lifecycle triggers (`AppLifecycleState.resumed`) belong strictly at the UI boundary (`AppShellScreen`), never inside data coordinators.
+- [ ] `flutter_secure_storage` guidance documents `path="FlutterSecureStorage"` (without extension) for SharedPreferences exclusions. Current codebase contains `FlutterSecureStorage.xml`. The exclusion remains unverified until confirmed via an end-to-end device backup/restore test.
+- [ ] In outbox recovery (Slice 6.3 with v13 schema migration), manual resolution of an `uncertain_timeout` must set `status = 'resolved_manually'`, populating `resolved_at` with an ISO-8601 timestamp and `resolution_notes` with technician confirmation, while preserving prior `last_error` and `failure_reason` intact; never silently rewrite status to `'sent'`.
 
 ---
 

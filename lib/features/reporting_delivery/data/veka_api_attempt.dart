@@ -68,7 +68,8 @@ class VekaApiAttempt {
   bool get allowsManual =>
       status == VekaApiStatus.rejected || status == VekaApiStatus.technical;
   bool get allowsNewAttempt => status == VekaApiStatus.rejected;
-  bool get canCorrectActivityDate => allowsNewAttempt &&
+  bool get canCorrectActivityDate =>
+      allowsNewAttempt &&
       fieldErrors.isNotEmpty &&
       fieldErrors.every((error) =>
           error.field?.split(RegExp(r'[./]')).last == 'datumActiviteit');

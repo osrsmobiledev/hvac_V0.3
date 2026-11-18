@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../features/certificate_draft/ui/verbrandingsattest_screen.dart';
+import '../../features/technician_settings/technician_settings_applet.dart';
 import '../../features/visit_history/ui/visit_history_screen.dart';
 import '../dashboard/dashboard_screen.dart';
 import '../localization/app_dictionary.dart';
@@ -87,6 +88,9 @@ class _AppShellScreenState extends State<AppShellScreen> {
                     : const SizedBox.shrink(),
                 if (_controller.activeApplet == AppletType.history)
                   const VisitHistoryScreen()
+                else if (_controller.activeApplet ==
+                    AppletType.technicianSettings)
+                  const TechnicianSettingsApplet()
                 else
                   AppletContentPlaceholder(
                     appBarTitle: _controller.appBarTitle,

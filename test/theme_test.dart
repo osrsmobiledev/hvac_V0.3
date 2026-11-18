@@ -3,9 +3,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hvac_app/app/dashboard/applet_bento_tile.dart';
 import 'package:hvac_app/app/localization/app_dictionary.dart';
 import 'package:hvac_app/app/shell/app_drawer.dart';
-import 'package:hvac_app/app/shell/applet_content_placeholder.dart';
 import 'package:hvac_app/app/theme/app_colors.dart';
 import 'package:hvac_app/app/theme/app_theme.dart';
+import 'package:hvac_app/features/technician_settings/technician_settings_applet.dart';
 import 'package:hvac_app/main.dart';
 
 void main() {
@@ -115,7 +115,7 @@ void main() {
       expect(find.text('BEHEER'), findsOneWidget);
 
       // Verify Beheer items
-      expect(find.text('Instellingen Technicus'), findsOneWidget);
+      expect(find.text('Instellingen'), findsOneWidget);
       expect(find.text('Import / Export'), findsOneWidget);
 
       // Close drawer via hamburger icon
@@ -145,7 +145,7 @@ void main() {
     });
 
     testWidgets(
-        'Drawer supports Beheer placeholder navigation and allows global navigation',
+        'Drawer supports Beheer navigation and opens TechnicianSettingsScreen',
         (WidgetTester tester) async {
       tester.view.physicalSize = const Size(412, 892);
       tester.view.devicePixelRatio = 1.0;
@@ -160,11 +160,11 @@ void main() {
       await tester.tap(menuButton);
       await tester.pumpAndSettle();
 
-      // Tap 'Instellingen Technicus' in the Beheer section
+      // Tap 'Instellingen' in the Beheer section
       await tester.tap(find.text(AppDictionary.menuTechSettings));
       await tester.pumpAndSettle();
 
-      // Verify that the AppBar title reflects 'Instellingen Technicus'
+      // Verify that the AppBar title reflects 'Instellingen'
       expect(
         find.descendant(
           of: find.byType(AppBar),
@@ -173,25 +173,8 @@ void main() {
         findsOneWidget,
       );
 
-      // Verify that the placeholder under construction message and back button are shown
-      expect(
-        find.descendant(
-          of: find.byType(AppletContentPlaceholder),
-          matching: find.text(AppDictionary.menuTechSettings),
-        ),
-        findsOneWidget,
-      );
-      expect(
-        find.text(AppDictionary.placeholderUnderConstruction),
-        findsOneWidget,
-      );
-
-      // Tap 'Terug naar dashboard' button
-      await tester.tap(find.text(AppDictionary.btnBackToDashboard));
-      await tester.pumpAndSettle();
-
-      // Verify back on home dashboard
-      expect(find.text(AppDictionary.dashboardTitle), findsOneWidget);
+      // Verify that TechnicianSettingsApplet is displayed
+      expect(find.byType(TechnicianSettingsApplet), findsOneWidget);
     });
 
     testWidgets(

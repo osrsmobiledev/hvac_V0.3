@@ -97,9 +97,9 @@ class VekaReport {
   static bool supportsBoiler(Map<String, Object?> boiler,
           {required bool central}) =>
       central &&
-        (boiler['fuel_type'] == 'vloeibaar' ||
-            (boiler['fuel_type'] == 'gas' &&
-                boiler['fuel_subtype'] == 'aardgas'));
+      (boiler['fuel_type'] == 'vloeibaar' ||
+          (boiler['fuel_type'] == 'gas' &&
+              boiler['fuel_subtype'] == 'aardgas'));
 
   /// Reports which company and technician inputs need attention.
   List<String> technicianIssues(DateTime today) {

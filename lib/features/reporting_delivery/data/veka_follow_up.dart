@@ -20,7 +20,8 @@ enum VekaFollowUp {
       ORDER BY id DESC LIMIT 1
     )''';
 
-  static Future<Map<String, Object?>?> forVisit(DatabaseExecutor db, int id) async {
+  static Future<Map<String, Object?>?> forVisit(
+      DatabaseExecutor db, int id) async {
     final rows = await db.rawQuery(
         'SELECT $columns $join WHERE mv.id = ? AND mv.is_draft = 0', [id]);
     return rows.firstOrNull;

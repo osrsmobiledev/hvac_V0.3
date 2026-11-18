@@ -21,7 +21,7 @@ abstract final class AppDictionary {
   static const String menuInspection = 'Keuringsrapport Vlaanderen';
   static const String menuInspectionMultiLine = 'Keuringsrapport\nVlaanderen';
   static const String menuMeasurement = 'Meetrapport';
-  static const String menuTechSettings = 'Instellingen Technicus';
+  static const String menuTechSettings = 'Instellingen';
   static const String menuImportExport = 'Import / Export';
   static const String tooltipOpenMenu = 'Menu openen';
   static const String tooltipCloseMenu = 'Menu sluiten';

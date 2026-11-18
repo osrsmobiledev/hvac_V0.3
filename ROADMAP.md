@@ -44,9 +44,86 @@
 - [x] **Slice 5.4 — Reuse a saved boiler:** When creating a new visit, offer the saved boilers for the selected installation address, including its bus number. Let the technician explicitly select a boiler or add a new one. Copy the selected boiler details into the new visit without changing archived certificates or VEKA evidence.
 - [x] **Slice 5.5 — Mock VEKA API submission, recovery and receipts:** Save the exact outgoing JSON and a unique request reference before sending. With a fake transport, verify receipts, rejections, access recovery and uncertain outcomes. Put unfinished reports in Historiek with an actionable next step. Keep archived certificates immutable when correcting a date-only rejection. Owner Android acceptance confirmed.
 
+### Milestone 6: Email Delivery & PDF Archiving
+*Goal: Deliver the signed PDF certificate to the customer and technician via standard SMTP (Gmail App-password / Custom SMTP) with an offline-first SQLite queue and native Android share fallback. See [MASTER_EMAIL_DELIVERY_WORKFLOW.md](doc/MASTER_EMAIL_DELIVERY_WORKFLOW.md).*
+
+- [x] **Slice 6.1 — Email Configuration & Connection Test:** Configure outbound SMTP settings (Gmail App-password or Custom SMTP with SSL/TLS vs STARTTLS) with auto-send and technician-copy options. Store passwords via a recoverable staged credential protocol (`smtp_password_staged` -> `smtp_password` in `flutter_secure_storage: ^9.2.2` with `smtp_state` in SQLite v12), verify credentials cleanly via `package:mailer ^7.2.0` (`checkCredentials`) with instant tactical feedback, and provide a single-account disconnect action (**E-mailinstellingen wissen**) with confirmation dialog and crash-safe clearing protocol (`clearing` -> `unconfigured`). Target destination is **Instellingen** (`AppletType.technicianSettings`), top-aligned using `WorkflowTabContainer` to match the Verbrandingsattest Bento layout. Status: Completed & verified (37 focused email tests + 6 theme/navigation tests passing, 358 full suite tests passing, 0 analyzer lints, all files <= 250 lines). Tested on Android by owner.
+- [ ] **Slice 6.2 — PDF Archiving & Outbox Creation:** On visit finalization (`Voltooien`), freeze the certificate snapshot in SQLite, stage and verify the PDF in `certificates/staging/` via dedicated `PdfArchiveService` under isolate-level `Lock()`, publish to unique filename in `certificates/`, prompt recipient confirmation (customer + technician copy), and queue frozen jobs in `email_delivery_jobs`.
+- [ ] **Slice 6.3 — Offline Outbox, History Tracker & Native Share:** Dispatch queued emails triggered from root UI shell on app resume, verify connection via `mailer.checkCredentials()` (preflight failure leaves jobs `queued` with `attempt_count = 0`), claim jobs atomair, classify recipient rejections via structured SMTP response inspection, handle `uncertain_timeout` with duplicate-risk confirmation on retry, support in-place address corrections, execute database schema migration to v13 (adding `resolved_at` and `resolution_notes` to `email_delivery_jobs`), and offer zero-config native share sheet fallback via `Printing.sharePdf`.
+
 ---
 
 ## 2. Current Handoff (Active State for AI Agent)
+
+**Active Milestone: Milestone 6 (Email Delivery & PDF Archiving). Current status: Slice 6.1 completed, verified, and accepted on Android. Next slice: Slice 6.2 (PDF Archiving & Outbox Creation) — awaiting owner authorization. Do not start Slice 6.2 until explicitly requested.**
+
+### Slice 6.1 Implementation Summary & Verification
+Slice 6.1 is **fully implemented and verified**. All required architectural, UI, and testing items have passed the Mandatory 3-Gate Pre-Handoff Quality Gate:
+
+1. **UI Relocation to `Instellingen`:**
+   - Outbound SMTP setup is hosted in `TechnicianSettingsScreen` under `AppletType.technicianSettings` ("Instellingen" in the drawer and persistent AppBar).
+   - Layout is top-aligned using `WorkflowTabContainer`, ensuring the Bento card starts consistently below the AppBar (12px top inset matching Verbrandingsattest tabs), keyboard dismisses smoothly on drag/tap, and content is constrained to max 600px width on tablet.
+   - Tab 3 (*Firma - Technicus*) has been completely cleaned of email settings, keeping it strictly reserved for certificate-printed statutory company and technician details.
+
+2. **Strongly Typed Service Outcomes & Centralized Localization:**
+   - `EmailSenderService.testConnection()` returns strongly typed domain outcomes (`enum SmtpConnectionResult`).
+   - All user-facing tactical feedback messages are localized in Flemish and mapped via `EmailDeliveryDictionary`.
+
+3. **Constructor-Injected ViewModel Architecture (`ChangeNotifier` + `ListenableBuilder`):**
+   - `TechnicianSettingsApplet` at the applet boundary acts as the composition point, calling `createTechnicianSettingsNotifier()`, managing explicit notifier lifecycle and disposal (including cancellation if navigating away while initialization is pending), and passing the injected notifier into the pure screen view `TechnicianSettingsScreen(notifier: notifier)` and `EmailSettingsCard(notifier: notifier)`.
+   - `TechnicianSettingsScreen` and `EmailSettingsCard` are clean widgets with zero repository/database/service construction. Zero third-party state packages or service locators were introduced.
+
+4. **Sender Identity Separation & Validation Policy:**
+   - `EmailSenderService.resolveSenderEmail` separates SMTP authentication credentials from the visible `Message.from` address.
+   - Syntax validation is handled by the shared, pure-Dart `EmailAddressValidator` without UI dependencies, shared with `BelgianFormatters.validateEmail`.
+   - Gmail uses the format-validated `smtp_username` directly. Custom SMTP uses format-validated `smtp_username`, falling back to format-validated `technician_profile.email` if permitted, and returning `null` if neither is valid. No synthetic fallback addresses (`username@host`) are created.
+
+5. **Single-Account Disconnect & Crash-Safe Clear Protocol:**
+   - Discreet action **E-mailinstellingen wissen** in `EmailSettingsCard` backed by `showEmailClearConfirmationDialog`. Explains that the SMTP connection is removed from this device and automatic sending is disabled, while company/technician profile, customers, boilers, visits, PDFs, and queued jobs are preserved.
+   - Crash-safe clearing protocol across SQLite and secure storage: sets `smtp_state = 'clearing'` in SQLite with reset SMTP fields (`auto_send = 0`, `copy_technician` preserved, statutory email preserved), idempotently deletes active and staged secrets in KeyStore, then finalizes `smtp_state = 'unconfigured'`.
+   - Startup recovery handles interrupted clear (`clearing` $\to$ delete secrets, finalize `unconfigured`), detects configured profiles with missing active secrets (`configured` with missing password $\to$ `needs_attention`), and discards orphaned staged keys on startup even if no profile row exists yet.
+
+6. **Clean Test Runner Termination & Full Suite Verification:**
+   - Fixed `FakeAsync` isolate pause in widget tests using `await tester.runAsync(...)` for SQLite FFI interactions.
+   - All staged-credential recovery cases (interrupted clear, missing staged key $\to$ `needs_attention`, missing active key $\to$ `needs_attention`, orphaned staged key with or without profile row $\to$ discard staged without altering active credentials) are implemented and unit tested.
+   - All 37 focused email tests (`email_sender_policy_test.dart`, `email_settings_repository_test.dart`, `email_settings_clear_test.dart`, `email_settings_ui_test.dart`, `email_settings_clear_ui_test.dart`, `email_settings_retry_ui_test.dart`) plus all 6 theme and drawer navigation tests (`theme_test.dart`) pass synchronously with exit code 0 (43 focused tests total).
+   - The full test suite of **358 tests** passes with exit code 0 (`flutter test --no-pub`).
+   - Static analysis (`flutter analyze --no-pub`) reports **0 issues**.
+   - Every Dart file in `lib/` and `test/` strictly respects the **$\le 250$ line limit**.
+
+### Owner Check on Android
+
+Test Slice 6.1 on an Android phone or tablet:
+
+1. **Verify UI Separation in Tab 3:**
+   - Open **Verbrandingsattest** from the drawer or dashboard and navigate to Tab 3 (**Firma - Technicus**).
+   - Verify that Tab 3 contains only statutory company and technician profile fields. Confirm that no email configuration card appears here.
+
+2. **Open Instellingen & Verify Top-Aligned Layout:**
+   - Open the drawer and tap **Instellingen** in the *Beheer* section.
+   - Verify that the persistent AppBar displays **Instellingen**.
+   - Verify that the **E-mailconfiguratie (SMTP)** Bento card starts consistently below the AppBar (12px top inset), matches the Verbrandingsattest dark surface and styling, and is constrained to max 600px width on tablet.
+   - Tap outside an input field and confirm the soft keyboard dismisses smoothly. Confirm content remains fluidly scrollable.
+
+3. **Verify Preset Toggles & Visibility:**
+   - Tap **Gmail (App-wachtwoord)**: confirm host defaults to `smtp.gmail.com`, port to `465`, and the 16-digit Google App-password tip is displayed.
+   - Tap the eye icon on the password field: confirm password toggle works between obscured and plain text.
+   - Tap **Aangepaste SMTP**: confirm custom host and port inputs appear, along with the **SSL/TLS (465)** vs **STARTTLS (587)** toggle.
+
+4. **Test Connection & Save State:**
+   - Enter invalid/empty credentials and tap **Verbinding testen**: confirm a localized tactical warning appears ("Configuratiefout...").
+   - Enter your real SMTP credentials (or Google App-password) and tap **Verbinding testen**: confirm green tactical success feedback ("Verbinding en inloggegevens geslaagd").
+   - Tap **Instellingen opslaan**: confirm success notification. Force-close and restart the app, then reopen **Instellingen** and verify that your username, provider, and settings persist from SQLite, while the password field displays the saved placeholder dots (`••••••••••••••••`).
+
+5. **Test Disconnect / Clear Action (E-mailinstellingen wissen):**
+   - Tap **E-mailinstellingen wissen**: confirm a dialog opens explaining that the SMTP connection is removed from this device and automatic sending is disabled, while company/technician profile, customers, boilers, visits, PDFs, and queued jobs are preserved.
+   - Tap **Annuleren**: confirm settings and the "Automatisch verzenden" switch remain unchanged.
+   - Tap **E-mailinstellingen wissen** and tap **Wissen**: confirm green success notification ("E-mailinstellingen en inloggegevens gewist"). Confirm the username is cleared, password placeholder dots disappear, status resets to unconfigured, and the "Automatisch verzenden" switch is turned off.
+   - Open Tab 3 or completed visits to confirm company profile and past certificates remain 100% intact.
+
+---
+
+### Historical Milestone 5 Handoff Notes
 
 **Milestone 5 complete (Slice 5.5 accepted on Android).** All 5 slices of Milestone 5 are implemented, verified by automated tests (321 tests passing, 0 analyzer lints, all files $\le 250$ lines), and confirmed working on Android by the owner. The app supports full Basisregisters Vlaanderen address lookups, local independent VEKA portal tracking, completed certificate history & inspection reminders, boiler reuse at verified addresses, and mock VEKA API reporting with recovery & receipt tracking.
 

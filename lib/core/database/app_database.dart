@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:path/path.dart' as p;
 import 'package:sqflite/sqflite.dart';
 import 'database_schema.dart';
+import 'email_delivery_schema.dart';
 import 'veka_attempt_schema.dart';
 
 /// Central database service managing the SQLite connection for offline draft safety.
@@ -173,6 +174,34 @@ class AppDatabase {
           );
         }
         if (oldVersion < 11) await createVekaAttemptTables(db);
+        if (oldVersion < 12) {
+          final tables = await db.rawQuery(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name='technician_profile';",
+          );
+          if (tables.isNotEmpty) {
+            final cols =
+                await db.rawQuery('PRAGMA table_info(technician_profile);');
+            final names = cols.map((r) => r['name'] as String).toSet();
+            final newCols = {
+              'smtp_host': 'TEXT',
+              'smtp_port': 'INTEGER',
+              'smtp_username': 'TEXT',
+              'smtp_use_ssl': 'INTEGER NOT NULL DEFAULT 1',
+              'smtp_provider': "TEXT NOT NULL DEFAULT 'gmail'",
+              'email_auto_send': 'INTEGER NOT NULL DEFAULT 1',
+              'email_copy_technician': 'INTEGER NOT NULL DEFAULT 1',
+              'smtp_state': "TEXT NOT NULL DEFAULT 'unconfigured'",
+            };
+            for (final entry in newCols.entries) {
+              if (!names.contains(entry.key)) {
+                await db.execute(
+                  'ALTER TABLE technician_profile ADD COLUMN ${entry.key} ${entry.value};',
+                );
+              }
+            }
+          }
+          await EmailDeliverySchema.createTablesAndIndexes(db);
+        }
       },
     );
   }

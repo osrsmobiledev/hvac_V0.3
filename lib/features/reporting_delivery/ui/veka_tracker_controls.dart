@@ -54,7 +54,8 @@ class VekaTrackerControls extends StatelessWidget {
       children: [
         if (attempt != null && record.report == null)
           VekaApiAttemptSummary(attempt: attempt),
-        if (archivedRejection && !attempt!.canCorrectActivityDate &&
+        if (archivedRejection &&
+            !attempt!.canCorrectActivityDate &&
             record.report == null)
           const Text(VekaApiDictionary.unsupportedArchivedCorrection),
         if (apiCanStart)

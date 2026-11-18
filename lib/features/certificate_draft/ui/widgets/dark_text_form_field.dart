@@ -22,6 +22,7 @@ class DarkTextFormField extends StatefulWidget {
   final Widget? prefixIcon;
   final Widget? suffixIcon;
   final bool readOnly;
+  final bool obscureText;
   final List<TextInputFormatter>? inputFormatters;
   final FormFieldValidator<String>? validator;
   final AutovalidateMode autovalidateMode;
@@ -42,6 +43,7 @@ class DarkTextFormField extends StatefulWidget {
     this.prefixIcon,
     this.suffixIcon,
     this.readOnly = false,
+    this.obscureText = false,
     this.inputFormatters,
     this.validator,
     this.autovalidateMode = AutovalidateMode.onUserInteraction,
@@ -130,6 +132,7 @@ class _DarkTextFormFieldState extends State<DarkTextFormField> {
               controller: widget.controller,
               focusNode: widget.focusNode,
               readOnly: widget.readOnly,
+              obscureText: widget.obscureText,
               keyboardType: widget.keyboardType,
               textInputAction: widget.textInputAction,
               textCapitalization: widget.textCapitalization,
