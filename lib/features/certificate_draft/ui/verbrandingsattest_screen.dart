@@ -101,8 +101,12 @@ class _VerbrandingsattestScreenState extends State<VerbrandingsattestScreen>
       final key = keys[index];
       if (key?.currentState?.validate() ?? false) continue;
       _tabController.animateTo(index + 1);
-      TacticalFeedback.showError(
-          context, VisitHistoryDictionary.checkTab(_tabTitles[index + 1]));
+      final tabTitle = _tabTitles[index + 1];
+      final detail = FormScrollHelper.findFirstError(key?.currentContext);
+      final msg = detail != null
+          ? '$tabTitle: $detail'
+          : VisitHistoryDictionary.checkTab(tabTitle);
+      TacticalFeedback.showError(context, msg);
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) FormScrollHelper.scrollToFirstInvalid(key?.currentContext);
       });
@@ -110,25 +114,14 @@ class _VerbrandingsattestScreenState extends State<VerbrandingsattestScreen>
     }
     _finalizing = true;
     try {
-      if (!await VisitFinalization.confirm(context) || !mounted) return;
-      setState(() => _isAppletLoading = true);
-
-      // Freeze snapshot and finalize visit in SQLite
-      final followUp = await VisitFinalization.save(
-          DraftSaveScope(saves: _draftSaves, child: const SizedBox()),
-          _activeVisitId);
-      if (!mounted) return;
-
-      // Safe PDF archiving + recipient confirmation + queue email jobs
-      await VisitFinalization.archiveAndPromptRecipients(
-          context, _activeVisitId);
-      if (!mounted) return;
-
-      if (followUp) {
-        TacticalFeedback.showSuccess(
-            context, VisitHistoryDictionary.reportPending);
+      final isFinalized = await VisitFinalization.executeWorkflow(
+        context,
+        visitId: _activeVisitId,
+        saveScope: DraftSaveScope(saves: _draftSaves, child: const SizedBox()),
+      );
+      if (isFinalized && mounted) {
+        widget.controller.visitFinalized();
       }
-      widget.controller.visitFinalized();
     } on VisitFinalizationException catch (error) {
       if (mounted) TacticalFeedback.showError(context, error.message);
     } finally {
@@ -171,6 +164,7 @@ class _VerbrandingsattestScreenState extends State<VerbrandingsattestScreen>
                         RepaintBoundary(
                           child: FirmaTechnicusTab(
                             visitId: _activeVisitId,
+                            boilerNotifier: _boilerNotifier,
                             onFormKeyReady: (key) => _tab3FormKey = key,
                           ),
                         ),

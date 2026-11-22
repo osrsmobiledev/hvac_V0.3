@@ -1,6 +1,8 @@
 // File: lib/features/certificate_draft/ui/tabs/eindbeoordeling/gebreken_opmerkingen_card.dart
 // Responsibility: Multiline entry for defects, remarks, presets selector, and reactive clear buttons.
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hvac_app/app/localization/app_dictionary.dart';
@@ -32,7 +34,7 @@ class GebrekenOpmerkingenCard extends StatelessWidget {
   final String boilerType;
 
   void _openSnelselectie(BuildContext context) {
-    HapticFeedback.selectionClick();
+    unawaited(HapticFeedback.selectionClick());
     StatutoryDefectsModal.show(
       context: context,
       fuelType: fuelType,
@@ -91,7 +93,7 @@ class GebrekenOpmerkingenCard extends StatelessWidget {
     required String message,
     required String feedback,
   }) async {
-    HapticFeedback.selectionClick();
+    unawaited(HapticFeedback.selectionClick());
     final confirmed = await TacticalConfirmDialog.show(
       context: context,
       title: title,

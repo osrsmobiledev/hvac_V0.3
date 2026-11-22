@@ -62,4 +62,49 @@ void main() {
     // Scroll offset has moved down to bring the first invalid field into view
     expect(scrollController.offset, greaterThan(200.0));
   });
+
+  testWidgets(
+      'FormScrollHelper.findFirstError returns the message of the first invalid field',
+      (tester) async {
+    final formKey = GlobalKey<FormState>();
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: Form(
+            key: formKey,
+            child: Column(
+              children: [
+                TextFormField(
+                  initialValue: 'Valid Content',
+                  validator: (v) => v!.isEmpty ? 'Error' : null,
+                ),
+                TextFormField(
+                  initialValue: '',
+                  validator: (v) => v!.isEmpty ? 'First Required' : null,
+                ),
+                TextFormField(
+                  initialValue: '',
+                  validator: (v) => v!.isEmpty ? 'Second Required' : null,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+
+    // Before validation -> no error
+    expect(FormScrollHelper.findFirstError(formKey.currentContext), isNull);
+
+    // Validate form
+    expect(formKey.currentState!.validate(), isFalse);
+    await tester.pumpAndSettle();
+
+    // After validation -> finds the first error message
+    expect(
+      FormScrollHelper.findFirstError(formKey.currentContext),
+      'First Required',
+    );
+  });
 }

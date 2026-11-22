@@ -7,7 +7,6 @@ import 'package:hvac_app/core/database/app_database.dart';
 import 'package:hvac_app/features/certificate_draft/data/draft_repository.dart';
 import 'package:hvac_app/features/certificate_draft/data/technician_profile_repository.dart';
 import 'package:hvac_app/features/certificate_draft/domain/technician_profile.dart';
-import 'package:hvac_app/features/certificate_draft/ui/tabs/firma_technicus/technician_section.dart';
 import 'package:hvac_app/features/certificate_draft/ui/tabs/firma_technicus_tab.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 

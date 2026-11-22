@@ -78,13 +78,21 @@ void _inputTests() {
     (form.key as GlobalKey<FormState>).currentState!.validate();
     await tester.pumpAndSettle();
 
-    final tvFinder = find.descendant(
-      of: find.byType(TechnicianSection),
-      matching: find.widgetWithText(TextField, 'TV01234'),
+    final gvContainer = find.ancestor(
+      of: find.text(AppDictionary.lblGV),
+      matching: find.byType(Expanded),
     );
     final gvFinder = find.descendant(
-      of: find.byType(TechnicianSection),
-      matching: find.widgetWithText(TextField, 'GV01234'),
+      of: gvContainer,
+      matching: find.byType(TextField),
+    );
+    final tvContainer = find.ancestor(
+      of: find.text(AppDictionary.lblTV),
+      matching: find.byType(Expanded),
+    );
+    final tvFinder = find.descendant(
+      of: tvContainer,
+      matching: find.byType(TextField),
     );
     expect(
       (tester.widget<TextField>(tvFinder).decoration!.enabledBorder
@@ -102,8 +110,8 @@ void _inputTests() {
     );
     expect(find.text('GV-nummer vereist'), findsNothing);
 
-    // Typing into GV immediately clears both errors
-    await tester.enterText(gvFinder, 'GV98765');
+    // Typing 5 digits into GV immediately clears both errors
+    await tester.enterText(gvFinder, '98765');
     await tester.pumpAndSettle();
 
     expect(
@@ -114,17 +122,28 @@ void _inputTests() {
       isNot(AppColors.errorRed),
     );
     expect(
-      (tester
-              .widget<TextField>(find.widgetWithText(TextField, 'GV98765'))
-              .decoration!
-              .enabledBorder as OutlineInputBorder)
+      (tester.widget<TextField>(gvFinder).decoration!.enabledBorder
+              as OutlineInputBorder)
           .borderSide
           .color,
       isNot(AppColors.errorRed),
     );
 
+    // Entering only 4 digits triggers invalid length error
+    await tester.enterText(gvFinder, '0000');
+    await tester.pumpAndSettle();
+    (form.key as GlobalKey<FormState>).currentState!.validate();
+    await tester.pumpAndSettle();
+    expect(
+      (tester.widget<TextField>(gvFinder).decoration!.enabledBorder
+              as OutlineInputBorder)
+          .borderSide
+          .color,
+      AppColors.errorRed,
+    );
+
     // Clearing GV brings both errors back
-    await tester.enterText(find.widgetWithText(TextField, 'GV98765'), '');
+    await tester.enterText(gvFinder, '');
     await tester.pumpAndSettle();
 
     expect(

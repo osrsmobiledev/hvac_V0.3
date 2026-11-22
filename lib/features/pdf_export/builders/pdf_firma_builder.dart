@@ -10,16 +10,16 @@ abstract final class PdfFirmaBuilder {
     const double technicusLabelWidth = 95.0;
     const double technicusSublabelWidth = 91.5;
 
-    final bool hasGv = data.technicusGv.trim().isNotEmpty;
-    final bool hasTv = data.technicusTv.trim().isNotEmpty;
+    final String gvFormatted = _formatErkenningsnummer(data.technicusGv, 'GV');
+    final String tvFormatted = _formatErkenningsnummer(data.technicusTv, 'TV');
 
     String erkenningsnummerText;
-    if (hasGv && hasTv) {
-      erkenningsnummerText = 'GV ${data.technicusGv} / TV ${data.technicusTv}';
-    } else if (hasGv) {
-      erkenningsnummerText = 'GV ${data.technicusGv}';
-    } else if (hasTv) {
-      erkenningsnummerText = 'TV ${data.technicusTv}';
+    if (gvFormatted.isNotEmpty && tvFormatted.isNotEmpty) {
+      erkenningsnummerText = '$gvFormatted / $tvFormatted';
+    } else if (gvFormatted.isNotEmpty) {
+      erkenningsnummerText = gvFormatted;
+    } else if (tvFormatted.isNotEmpty) {
+      erkenningsnummerText = tvFormatted;
     } else {
       erkenningsnummerText = 'GV____________________ / TV____________________';
     }
@@ -221,5 +221,15 @@ abstract final class PdfFirmaBuilder {
     } catch (_) {
       return trimmed;
     }
+  }
+
+  static String _formatErkenningsnummer(String raw, String prefix) {
+    final trimmed = raw.trim();
+    if (trimmed.isEmpty) return '';
+    final digits = trimmed.replaceAll(RegExp(r'\D'), '');
+    if (digits.isNotEmpty) return '$prefix $digits';
+    final stripped =
+        trimmed.replaceFirst(RegExp('^$prefix\\s*', caseSensitive: false), '');
+    return '$prefix $stripped';
   }
 }

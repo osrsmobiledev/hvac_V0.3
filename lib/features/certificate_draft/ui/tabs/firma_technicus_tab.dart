@@ -9,6 +9,7 @@ import '../../data/draft_repository.dart';
 import '../../data/technician_profile_repository.dart';
 import '../../domain/draft_visit.dart';
 import '../../domain/technician_profile.dart';
+import '../boiler_draft_notifier.dart';
 import 'firma_technicus/company_section.dart';
 import 'firma_technicus/firma_profile_sync.dart';
 import 'firma_technicus/technician_section.dart';
@@ -19,6 +20,7 @@ class FirmaTechnicusTab extends StatefulWidget {
   final int? visitId;
   final TechnicianProfileRepository? profileRepository;
   final DraftRepository? draftRepository;
+  final BoilerDraftNotifier? boilerNotifier;
 
   /// Called once after first build with this tab's form key; used by parent to validate on "Voltooien".
   final ValueChanged<GlobalKey<FormState>>? onFormKeyReady;
@@ -27,6 +29,7 @@ class FirmaTechnicusTab extends StatefulWidget {
     this.visitId,
     this.profileRepository,
     this.draftRepository,
+    this.boilerNotifier,
     this.onFormKeyReady,
   });
 
@@ -162,19 +165,38 @@ class _FirmaTechnicusTabState extends State<FirmaTechnicusTab>
             onSubmitted: _debouncer.flush,
           ),
           const SizedBox(height: AppTheme.bentoCardSpacing),
-          TechnicianSection(
-            firstNameController: _c.firstName,
-            lastNameController: _c.lastName,
-            gvController: _c.gv,
-            tvController: _c.tv,
-            analyzerBrandController: _c.analyzerBrand,
-            analyzerSerialController: _c.analyzerSerial,
-            dateController: _c.date,
-            startTimeController: _c.startTime,
-            endTimeController: _c.endTime,
-            onProfileChanged: _onProfileChanged,
-            onTimingsChanged: () => _queueSave(immediate: true),
-          ),
+          if (widget.boilerNotifier != null)
+            ListenableBuilder(
+              listenable: widget.boilerNotifier!,
+              builder: (context, _) => TechnicianSection(
+                firstNameController: _c.firstName,
+                lastNameController: _c.lastName,
+                gvController: _c.gv,
+                tvController: _c.tv,
+                analyzerBrandController: _c.analyzerBrand,
+                analyzerSerialController: _c.analyzerSerial,
+                dateController: _c.date,
+                startTimeController: _c.startTime,
+                endTimeController: _c.endTime,
+                onProfileChanged: _onProfileChanged,
+                onTimingsChanged: () => _queueSave(immediate: true),
+                fuelType: widget.boilerNotifier?.draft.fuelCategory,
+              ),
+            )
+          else
+            TechnicianSection(
+              firstNameController: _c.firstName,
+              lastNameController: _c.lastName,
+              gvController: _c.gv,
+              tvController: _c.tv,
+              analyzerBrandController: _c.analyzerBrand,
+              analyzerSerialController: _c.analyzerSerial,
+              dateController: _c.date,
+              startTimeController: _c.startTime,
+              endTimeController: _c.endTime,
+              onProfileChanged: _onProfileChanged,
+              onTimingsChanged: () => _queueSave(immediate: true),
+            ),
         ],
       ),
     );

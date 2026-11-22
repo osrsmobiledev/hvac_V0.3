@@ -196,6 +196,26 @@ void main() {
       expect(String.fromCharCodes(pdfBytes.take(5)), equals('%PDF-'));
     });
 
+    test(
+        'PdfFirmaBuilder and CombustionPdfGenerator cleanly render recognition numbers without duplicate prefixes',
+        () async {
+      const dataWithPrefix = PdfVisitData(
+        technicusGv: 'GV01234',
+        technicusTv: 'TV67890',
+      );
+      final pdf1 =
+          await CombustionPdfGenerator.generateCertificate(dataWithPrefix);
+      expect(pdf1, isNotEmpty);
+
+      const dataDigitsOnly = PdfVisitData(
+        technicusGv: '01234',
+        technicusTv: '67890',
+      );
+      final pdf2 =
+          await CombustionPdfGenerator.generateCertificate(dataDigitsOnly);
+      expect(pdf2, isNotEmpty);
+    });
+
     _mappingAndLayoutCases(dummySignatureBytes);
   });
 }

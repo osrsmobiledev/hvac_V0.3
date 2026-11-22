@@ -17,6 +17,13 @@ Do NOT read every Markdown file in the workspace on every turn. Load context sel
 
 ## 3. Flutter & Dart Coding Standards (Official Flutter Architecture)
 Follow the official Flutter Architecture Guide (UI Layer + Data Layer):
+- **Official Flutter Skills (Mandatory Direct Reference):**
+  Consult the installed official skills before writing new components, layouts, or tests:
+  - Architecture & MVVM: [`flutter-apply-architecture-best-practices`](file:///C:/Users/Admin/.gemini/config/plugins/flutter/skills/flutter-apply-architecture-best-practices/SKILL.md)
+  - Adaptive Layout (Phone/Tablet): [`flutter-build-responsive-layout`](file:///C:/Users/Admin/.gemini/config/plugins/flutter/skills/flutter-build-responsive-layout/SKILL.md)
+  - Widget Tests (`WidgetTester`): [`flutter-add-widget-test`](file:///C:/Users/Admin/.gemini/config/plugins/flutter/skills/flutter-add-widget-test/SKILL.md)
+  - Unit Tests (`package:test`): [`dart-add-unit-test`](file:///C:/Users/Admin/.gemini/config/plugins/flutter/skills/dart-add-unit-test/SKILL.md)
+  - Layout & Overflow Fixes: [`flutter-fix-layout-issues`](file:///C:/Users/Admin/.gemini/config/plugins/flutter/skills/flutter-fix-layout-issues/SKILL.md)
 - **Language Rule (Dutch UI / English Code):** All user-facing app text, labels, buttons, validation messages, and PDF outputs must be in **Dutch (Flemish)**, centralized in `app_dictionary.dart` or feature-scoped dictionaries under `lib/app/localization/` (e.g. `meting_dictionary.dart`, `visit_history_dictionary.dart`, `email_delivery_dictionary.dart`). All Dart code (class names, variables, functions, file names) and all `///` code comments must be written in **English**.
 - **Do Not Reinvent the Wheel:** Always use standard Flutter Material 3 widgets, built-in SDK capabilities, the locked packages in `ARCHITECTURE.md`, and the existing files in `references/legacy/code/` (for PDF builders, time spinner, theme colors, and dictionary). Never write custom layout engines, custom state frameworks, custom date/time pickers from scratch, or duplicate existing helpers.
 - **2-Layer Feature Structure:** Keep code simple: `UI` (Widgets + ChangeNotifier/Cubit ViewModels) and `Data` (Repositories + local SQLite/API services). Do NOT introduce heavy enterprise boilerplate (`Dartz`, `Freezed`, `GetIt`, `build_runner`, or 3-layer Clean Architecture use-case classes).
@@ -43,7 +50,6 @@ Follow the official Flutter Architecture Guide (UI Layer + Data Layer):
 8. **Recoverable Dual-Store Credential Updates:** When updating state across SQLite and Android KeyStore, use a staged credential protocol (`smtp_password_staged` -> `smtp_password`) with `smtp_state` tracking. Startup recovery must deterministically resolve active credentials, and unresolved states (`needs_attention`) block automated sending.
 
 ## 5. Verification & Handoff
-- Before marking a slice complete, strictly pass the Mandatory 3-Gate Pre-Handoff Quality Gate in `IMPLEMENTATION_CHECKLIST.md` (Gate 1: Static Hygiene & <= 250 Lines, Gate 2: Lifecycle & Zero Leaks, Gate 3: End-to-End Domain & Database Trace). Never hand off based solely on a compilation pass.
-- Run `dart format`, `flutter analyze`, and focused unit/widget tests for the changed logic.
+- Before marking a slice complete, strictly pass the Mandatory 3-Gate Pre-Handoff Quality Gate in `IMPLEMENTATION_CHECKLIST.md` by executing `.\tool\check_gates.ps1` (automates Gate 1 formatting, linter, <= 250 lines check, and full test suite). Never hand off based solely on a compilation pass.
 - Give the owner 3–4 short, concrete steps to test the feature on their Android emulator/device.
 - After the owner confirms the slice works, commit the changes to Git with a clear message (e.g., feat: completed Slice 1.1), push to the repository, and update the Current Handoff section at the bottom of `ROADMAP.md`.

@@ -139,4 +139,46 @@ class VisitHistoryRepository {
     }
     return VisitHistory(entries, unreadable);
   }
+
+  /// Reverts a finalized visit back to an active draft in SQLite.
+  Future<void> revertFinalization(int visitId) async {
+    final db = await _database();
+    await db.update(
+      'maintenance_visits',
+      {
+        'is_draft': 1,
+        'snapshot_json': null,
+        'pdf_status': 'draft',
+        'pdf_path': null,
+        'updated_at': DateTime.now().toIso8601String(),
+      },
+      where: 'id = ?',
+      whereArgs: [visitId],
+    );
+  }
+
+  /// Persists a newly added customer email to the customer record if empty.
+  Future<void> updateCustomerEmailForVisit(int visitId, String email) async {
+    final trimmed = email.trim();
+    if (trimmed.isEmpty) return;
+    try {
+      final db = await _database();
+      final rows = await db.query(
+        'maintenance_visits',
+        columns: ['customer_id'],
+        where: 'id = ?',
+        whereArgs: [visitId],
+        limit: 1,
+      );
+      if (rows.isNotEmpty && rows.first['customer_id'] != null) {
+        final custId = rows.first['customer_id'] as int;
+        await db.update(
+          'customers',
+          {'email': trimmed},
+          where: 'id = ? AND (email IS NULL OR email = "")',
+          whereArgs: [custId],
+        );
+      }
+    } catch (_) {}
+  }
 }

@@ -184,7 +184,7 @@ void main() {
       await tester.pumpAndSettle();
 
       await tester
-          .tap(find.text(EmailDeliveryDictionary.recipientDialogConfirm));
+          .tap(find.text(EmailDeliveryDictionary.finalizeAndEmailAction));
       await tester.pumpAndSettle();
 
       expect(find.text(EmailDeliveryDictionary.outboxRetryDialogTitle),
@@ -220,7 +220,7 @@ void main() {
       await tester.pumpAndSettle();
 
       await tester
-          .tap(find.text(EmailDeliveryDictionary.recipientDialogConfirm));
+          .tap(find.text(EmailDeliveryDictionary.finalizeAndEmailAction));
       await tester.pumpAndSettle();
 
       await tester.tap(find.text(EmailDeliveryDictionary.outboxRetryCancel));

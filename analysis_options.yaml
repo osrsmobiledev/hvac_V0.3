@@ -12,3 +12,6 @@ linter:
     prefer_const_constructors: true
     prefer_const_declarations: true
     avoid_print: true
+    unawaited_futures: true
+    cancel_subscriptions: true
+    close_sinks: true

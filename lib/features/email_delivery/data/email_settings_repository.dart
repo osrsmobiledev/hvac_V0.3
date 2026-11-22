@@ -208,8 +208,14 @@ class EmailSettingsRepository {
   }
 
   /// Retrieves the active password from secure storage.
-  Future<String?> getPassword() async {
-    return _secureStore.getPassword();
+  Future<String?> getPassword() async => _secureStore.getPassword();
+
+  /// Updates technician smtp_state (e.g. 'needs_attention' on auth failure).
+  Future<void> updateSmtpState(String state) async {
+    await _db.update(
+      'technician_profile',
+      {'smtp_state': state, 'updated_at': DateTime.now().toIso8601String()},
+    );
   }
 
   Future<void> _upsertProfile(Map<String, dynamic> smtpFields) async {
@@ -225,15 +231,11 @@ class EmailSettingsRepository {
         ...smtpFields,
       });
     } else {
-      final id = rows.first['id'] as int;
       await _db.update(
         'technician_profile',
-        {
-          ...smtpFields,
-          'updated_at': DateTime.now().toIso8601String(),
-        },
+        {...smtpFields, 'updated_at': DateTime.now().toIso8601String()},
         where: 'id = ?',
-        whereArgs: [id],
+        whereArgs: [rows.first['id'] as int],
       );
     }
   }

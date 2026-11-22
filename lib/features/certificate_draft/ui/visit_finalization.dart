@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../../../app/localization/app_dictionary.dart';
@@ -5,7 +7,7 @@ import '../../../app/localization/email_delivery_dictionary.dart';
 import '../../../app/localization/visit_history_dictionary.dart';
 import '../../../core/services/app_warmup_service.dart';
 import '../../../core/widgets/tactical_feedback.dart';
-import '../../email_delivery/data/email_outbox_repository.dart';
+import '../../email_delivery/data/email_delivery_coordinator.dart';
 import '../../email_delivery/data/pdf_archiving_coordinator.dart';
 import '../../email_delivery/ui/email_recipient_dialog.dart';
 import '../../pdf_export/data/pdf_visit_data.dart';
@@ -13,13 +15,16 @@ import '../../pdf_export/data/pdf_visit_loader.dart';
 import '../../reporting_delivery/data/veka_report_repository.dart';
 import '../../visit_history/data/visit_history_repository.dart';
 import 'draft_save_scope.dart';
+import 'finalization_retry_handlers.dart';
 
 class VisitFinalizationException implements Exception {
   final String message;
   const VisitFinalizationException(this.message);
 }
 
+/// Orchestrates combustion visit finalization, recipient selection, and PDF archiving.
 abstract final class VisitFinalization {
+  /// Confirms finalization intent with the technician.
   static Future<bool> confirm(BuildContext context) async {
     final ok = await showDialog<bool>(
       context: context,
@@ -39,6 +44,7 @@ abstract final class VisitFinalization {
     return ok ?? false;
   }
 
+  /// Finalizes the visit draft in SQLite and invalidates warmup caches.
   static Future<bool> save(DraftSaveScope scope, int visitId) async {
     try {
       await scope.settle();
@@ -54,87 +60,65 @@ abstract final class VisitFinalization {
     }
   }
 
-  /// Archives the PDF from the frozen snapshot, presents recipient choices,
-  /// and atomically queues email delivery jobs.
-  ///
-  /// Outbox queue errors do not invalidate the finalized visit or archived PDF.
-  static Future<void> archiveAndPromptRecipients(
+  /// Unified finalization workflow: prompts for recipients BEFORE database finalization.
+  /// Cancelling leaves the draft 100% active with zero database updates or file changes.
+  static Future<bool> executeWorkflow(
+    BuildContext context, {
+    required int visitId,
+    required DraftSaveScope saveScope,
+    PdfArchivingCoordinator? coordinatorOverride,
+  }) async {
+    await saveScope.settle();
+
+    final visitData = await PdfVisitLoader.loadVisitData(visitId);
+    final coordinator = coordinatorOverride ?? PdfArchivingCoordinator();
+    final smtp = await coordinator.loadSmtpDefaults();
+    if (!context.mounted) return false;
+
+    final dialogResult = await EmailRecipientDialog.show(
+      context,
+      snapshot: visitData,
+      defaultCopyTechnician: smtp.copyTechnician,
+      technicianEmail: smtp.technicianEmail,
+    );
+    if (!context.mounted || dialogResult.isCancel) return false;
+
+    final confirmation = dialogResult.confirmation;
+
+    final followUp = await save(saveScope, visitId);
+    if (!context.mounted) return false;
+
+    final archiveOutcome = await FinalizationRetryHandlers.archivePdfWithRetry(
+        context, coordinator, visitId);
+    if (!context.mounted || !archiveOutcome.archiveSuccess) return true;
+
+    if (dialogResult.isQueue && confirmation != null) {
+      await FinalizationRetryHandlers.queueJobsWithRetry(
+          context, coordinator, visitId, confirmation, archiveOutcome);
+      unawaited(EmailDeliveryCoordinator.instance.processOutbox());
+    } else {
+      TacticalFeedback.showSuccess(
+          context, EmailDeliveryDictionary.recipientDialogSkipped);
+    }
+
+    if (followUp && context.mounted) {
+      TacticalFeedback.showSuccess(
+          context, VisitHistoryDictionary.reportPending);
+    }
+    return true;
+  }
+
+  /// Preserved for backwards compatibility with existing failure unit tests.
+  @visibleForTesting
+  static Future<bool> archiveAndPromptRecipients(
     BuildContext context,
     int visitId, {
     PdfArchivingCoordinator? coordinatorOverride,
   }) async {
     final coordinator = coordinatorOverride ?? PdfArchivingCoordinator();
-    final archiveOutcome = await coordinator.archiveAndUpdateStatus(visitId);
-    if (!context.mounted) return;
-
-    if (!archiveOutcome.archiveSuccess) {
-      if (archiveOutcome.isDatabaseRegistrationFailure &&
-          archiveOutcome.archivePath.isNotEmpty) {
-        var registered = false;
-        while (!registered) {
-          if (!context.mounted) return;
-          final shouldRetryReg = await _showConfirmDialog(
-            context,
-            title: EmailDeliveryDictionary.pdfRegistrationRetryTitle,
-            content: EmailDeliveryDictionary.pdfRegistrationRetryMessage,
-            cancelLabel: EmailDeliveryDictionary.pdfRegistrationRetryCancel,
-            confirmLabel: EmailDeliveryDictionary.pdfRegistrationRetryAction,
-          );
-          if (!context.mounted) return;
-
-          if (shouldRetryReg != true) {
-            final confirmDelete = await _showConfirmDialog(
-              context,
-              title: EmailDeliveryDictionary.pdfRegistrationDeleteConfirmTitle,
-              content:
-                  EmailDeliveryDictionary.pdfRegistrationDeleteConfirmMessage,
-              cancelLabel:
-                  EmailDeliveryDictionary.pdfRegistrationDeleteConfirmCancel,
-              confirmLabel:
-                  EmailDeliveryDictionary.pdfRegistrationDeleteConfirmAction,
-            );
-            if (!context.mounted) return;
-            if (confirmDelete != true) continue;
-
-            final deleted = await coordinator.deleteUnregisteredArchiveFile(
-              archiveOutcome.archivePath,
-            );
-            if (context.mounted) {
-              TacticalFeedback.showError(
-                context,
-                deleted
-                    ? EmailDeliveryDictionary.pdfRegistrationFailed
-                    : EmailDeliveryDictionary.pdfDeleteFailedError,
-              );
-            }
-            return;
-          }
-
-          if (!await coordinator
-              .archiveFileExists(archiveOutcome.archivePath)) {
-            if (context.mounted) {
-              TacticalFeedback.showError(
-                  context, EmailDeliveryDictionary.pdfFileNotFoundError);
-            }
-            continue;
-          }
-
-          registered = await coordinator.registerArchivedPdf(
-            visitId: visitId,
-            archivePath: archiveOutcome.archivePath,
-          );
-          if (!registered && context.mounted) {
-            TacticalFeedback.showError(
-                context, EmailDeliveryDictionary.pdfRegistrationFailed);
-          }
-        }
-        if (!context.mounted) return;
-      } else {
-        TacticalFeedback.showError(
-            context, EmailDeliveryDictionary.archiveFailure);
-        return;
-      }
-    }
+    final archiveOutcome = await FinalizationRetryHandlers.archivePdfWithRetry(
+        context, coordinator, visitId);
+    if (!context.mounted || !archiveOutcome.archiveSuccess) return false;
 
     PdfVisitData? visitData;
     try {
@@ -143,93 +127,45 @@ abstract final class VisitFinalization {
       }
     } catch (_) {}
 
-    final confirmation = await EmailRecipientDialog.show(
+    final dialogResult = await EmailRecipientDialog.show(
       context,
       snapshot: visitData ?? const PdfVisitData(),
       defaultCopyTechnician: archiveOutcome.copyTechnicianDefault,
       technicianEmail: archiveOutcome.technicianEmail,
     );
-    if (!context.mounted) return;
+    if (!context.mounted) return false;
 
-    if (confirmation == null) {
-      TacticalFeedback.showSuccess(
-          context, EmailDeliveryDictionary.recipientDialogSkipped);
-      return;
-    }
-
-    while (context.mounted) {
-      try {
-        final result = await coordinator.createEmailJobs(
-          visitId: visitId,
-          pdfPath: archiveOutcome.archivePath,
-          sendToCustomer: confirmation.sendToCustomer,
-          customerName: confirmation.customerName,
-          customerEmail: confirmation.customerEmail,
-          sendToTechnician: confirmation.sendToTechnician,
-          technicianEmail: confirmation.technicianEmail,
-          attestNumber: PdfArchivingCoordinator.attestNumberFromSnapshot(
-              archiveOutcome.snapshot),
-        );
-        if (!context.mounted) return;
-
-        final msg = switch (result) {
-          EmailQueueResult.queued =>
-            EmailDeliveryDictionary.recipientJobsQueued,
-          EmailQueueResult.alreadyQueued =>
-            EmailDeliveryDictionary.recipientJobsAlreadyQueued,
-          EmailQueueResult.skipped =>
-            EmailDeliveryDictionary.recipientDialogSkipped,
-        };
-        TacticalFeedback.showSuccess(context, msg);
-        return;
-      } catch (e) {
-        debugPrint('[VisitFinalization] Outbox queue error: $e');
-        if (!context.mounted) return;
-
-        final shouldRetry = await _showConfirmDialog(
-          context,
-          title: EmailDeliveryDictionary.outboxRetryDialogTitle,
-          content: EmailDeliveryDictionary.outboxRetryDialogMessage,
-          cancelLabel: EmailDeliveryDictionary.outboxRetryCancel,
-          confirmLabel: EmailDeliveryDictionary.outboxRetryAction,
-        );
-        if (!context.mounted) return;
-
-        if (shouldRetry != true) {
-          TacticalFeedback.showInfo(
-              context, EmailDeliveryDictionary.outboxQueueSkippedAfterFailure);
-          return;
-        }
+    if (dialogResult.isCancel) {
+      await VisitHistoryRepository().revertFinalization(visitId);
+      if (archiveOutcome.archivePath.isNotEmpty) {
+        await coordinator
+            .deleteUnregisteredArchiveFile(archiveOutcome.archivePath);
       }
+      AppWarmupService.instance.invalidate();
+      if (context.mounted) {
+        TacticalFeedback.showInfo(
+            context, EmailDeliveryDictionary.finalizationCancelled);
+      }
+      return false;
     }
-  }
 
-  static Future<bool?> _showConfirmDialog(
-    BuildContext context, {
-    required String title,
-    required String content,
-    required String cancelLabel,
-    required String confirmLabel,
-  }) =>
-      showDialog<bool>(
-        context: context,
-        barrierDismissible: false,
-        builder: (ctx) => PopScope(
-          canPop: false,
-          child: AlertDialog(
-            title: Text(title),
-            content: Text(content),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(ctx, false),
-                child: Text(cancelLabel),
-              ),
-              FilledButton(
-                onPressed: () => Navigator.pop(ctx, true),
-                child: Text(confirmLabel),
-              ),
-            ],
-          ),
-        ),
-      );
+    if (dialogResult.isSkip) {
+      if (context.mounted) {
+        TacticalFeedback.showSuccess(
+            context, EmailDeliveryDictionary.recipientDialogSkipped);
+      }
+      return true;
+    }
+
+    final confirmation = dialogResult.confirmation!;
+    if (confirmation.customerEmail.isNotEmpty) {
+      await VisitHistoryRepository()
+          .updateCustomerEmailForVisit(visitId, confirmation.customerEmail);
+    }
+    if (context.mounted) {
+      await FinalizationRetryHandlers.queueJobsWithRetry(
+          context, coordinator, visitId, confirmation, archiveOutcome);
+    }
+    return true;
+  }
 }

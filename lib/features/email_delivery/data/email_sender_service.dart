@@ -5,6 +5,7 @@ import 'package:mailer/mailer.dart';
 import 'package:mailer/smtp_server.dart';
 
 import '../../../core/utils/email_validator.dart';
+import 'email_send_outcome.dart';
 import 'email_settings_model.dart';
 
 /// Type definition for the credentials check function to facilitate testing.
@@ -13,23 +14,29 @@ typedef CredentialsChecker = Future<void> Function(
   Duration? timeout,
 });
 
-/// Platform service responsible for SMTP preflight testing via `package:mailer ^7.2.0`.
+/// Type definition for the message send function to facilitate testing.
+typedef SendFunction = Future<SendReport> Function(
+  Message message,
+  SmtpServer server, {
+  Duration? timeout,
+});
+
+/// Platform service responsible for SMTP preflight testing and email delivery via `package:mailer ^7.2.0`.
 class EmailSenderService {
   final CredentialsChecker _checker;
+  final SendFunction _sendFunction;
 
-  EmailSenderService({CredentialsChecker? checker})
-      : _checker = checker ?? checkCredentials;
+  EmailSenderService({
+    CredentialsChecker? checker,
+    SendFunction? sendFunction,
+  })  : _checker = checker ?? checkCredentials,
+        _sendFunction = sendFunction ?? send;
 
   /// Validates standard email address syntax format using shared [EmailAddressValidator].
-  static bool isFormatValidEmail(String email) {
-    return EmailAddressValidator.isValid(email);
-  }
+  static bool isFormatValidEmail(String email) =>
+      EmailAddressValidator.isValid(email);
 
-  /// Resolves the message sender email address following the app's policy:
-  /// - Gmail: uses [settings.username] if format-valid email.
-  /// - Custom SMTP: uses [settings.username] if format-valid email;
-  ///   otherwise falls back to format-valid [profileEmail].
-  /// - Returns `null` if no valid sender address exists (no synthetic addresses).
+  /// Resolves the message sender email address following the app's policy.
   static String? resolveSenderEmail({
     required EmailSettings settings,
     required String profileEmail,
@@ -38,16 +45,23 @@ class EmailSenderService {
     if (settings.provider == SmtpProviderType.gmail) {
       return isFormatValidEmail(username) ? username : null;
     }
-
-    if (isFormatValidEmail(username)) {
-      return username;
-    }
-
-    if (isFormatValidEmail(profileEmail)) {
-      return profileEmail.trim();
-    }
-
+    if (isFormatValidEmail(username)) return username;
+    if (isFormatValidEmail(profileEmail)) return profileEmail.trim();
     return null;
+  }
+
+  SmtpServer _buildServer(EmailSettings settings, String password) {
+    if (settings.provider == SmtpProviderType.gmail) {
+      return gmail(settings.username.trim(), password);
+    }
+    return SmtpServer(
+      settings.host.trim(),
+      port: settings.port,
+      ssl: settings.useSsl,
+      allowInsecure: false,
+      username: settings.username.trim(),
+      password: password,
+    );
   }
 
   /// Tests SMTP connection and credentials via [checkCredentials] without sending an email.
@@ -60,40 +74,20 @@ class EmailSenderService {
         : settings.host.trim();
     final port =
         settings.provider == SmtpProviderType.gmail ? 465 : settings.port;
-    final useSsl =
-        settings.provider == SmtpProviderType.gmail ? true : settings.useSsl;
 
+    final invalidGmail = settings.provider == SmtpProviderType.gmail &&
+        !isFormatValidEmail(settings.username.trim());
     if (host.isEmpty ||
         settings.username.trim().isEmpty ||
         password.trim().isEmpty ||
-        port <= 0) {
+        port <= 0 ||
+        invalidGmail) {
       return SmtpConnectionResult.configurationError;
     }
 
-    if (settings.provider == SmtpProviderType.gmail &&
-        !isFormatValidEmail(settings.username.trim())) {
-      return SmtpConnectionResult.configurationError;
-    }
-
-    final SmtpServer server;
-    if (settings.provider == SmtpProviderType.gmail) {
-      server = gmail(settings.username.trim(), password);
-    } else {
-      server = SmtpServer(
-        host,
-        port: port,
-        ssl: useSsl,
-        allowInsecure: false,
-        username: settings.username.trim(),
-        password: password,
-      );
-    }
-
+    final server = _buildServer(settings, password);
     try {
-      await _checker(
-        server,
-        timeout: const Duration(seconds: 4),
-      );
+      await _checker(server, timeout: const Duration(seconds: 4));
       return SmtpConnectionResult.success;
     } on SmtpClientAuthenticationException {
       return SmtpConnectionResult.authenticationFailed;
@@ -103,10 +97,150 @@ class EmailSenderService {
       return SmtpConnectionResult.socketError;
     } on HandshakeException {
       return SmtpConnectionResult.tlsHandshakeError;
-    } on SmtpClientCommunicationException {
-      return SmtpConnectionResult.serverError;
     } catch (_) {
       return SmtpConnectionResult.serverError;
     }
+  }
+
+  /// Delivers a signed certificate PDF email with structured outcome classification.
+  Future<EmailSendOutcome> sendCertificateEmail({
+    required EmailSettings settings,
+    required String password,
+    required String senderEmail,
+    required String senderName,
+    required String recipientEmail,
+    required String subject,
+    required String bodyText,
+    required String pdfPath,
+  }) async {
+    final file = File(pdfPath);
+    if (!await file.exists()) {
+      return const EmailSendOutcome(
+        status: 'failed',
+        failureReason: 'missing_attachment',
+        lastError: 'Gearchiveerd PDF-bestand niet gevonden op het toestel',
+      );
+    }
+
+    final server = _buildServer(settings, password);
+    final message = Message()
+      ..from = Address(senderEmail, senderName)
+      ..recipients.add(recipientEmail.trim())
+      ..subject = subject
+      ..text = bodyText
+      ..attachments.add(FileAttachment(file));
+
+    try {
+      await _sendFunction(
+        message,
+        server,
+        timeout: const Duration(seconds: 30),
+      );
+      return EmailSendOutcome(
+        status: 'sent',
+        sentAt: DateTime.now().toIso8601String(),
+      );
+    } on SmtpMessageValidationException catch (e) {
+      final isRecipientProblem = e.problems.any((p) => p.code == 'TO_ADDRESS');
+      return EmailSendOutcome(
+        status: isRecipientProblem ? 'recipient_rejected' : 'server_rejected',
+        failureReason:
+            isRecipientProblem ? 'recipient_rejected' : 'validation_failed',
+        lastError: e.problems.map((p) => p.msg).join('; '),
+      );
+    } on SmtpClientAuthenticationException catch (e) {
+      return EmailSendOutcome(
+        status: 'server_rejected',
+        failureReason: 'authentication_failed',
+        lastError: e.message,
+        isAuthFailure: true,
+      );
+    } on SmtpNoGreetingException catch (e) {
+      return _outcome('server_rejected', 'no_greeting', e.message);
+    } on SmtpUnsecureException catch (e) {
+      return _outcome('server_rejected', 'unsecure_connection', e.message);
+    } on TimeoutException catch (e) {
+      return _outcome(
+        'uncertain_timeout',
+        'uncertain_timeout',
+        'Timeout tijdens verzending: ${e.message}',
+      );
+    } on SocketException catch (e) {
+      return _outcome(
+        'uncertain_timeout',
+        'uncertain_timeout',
+        'Netwerkverlies tijdens verzending: ${e.message}',
+      );
+    } on SmtpClientCommunicationException catch (e) {
+      return classifyCommunicationException(e);
+    } catch (e) {
+      return _outcome(
+        'uncertain_timeout',
+        'uncertain_timeout',
+        'Onbekende fout tijdens verzending: $e',
+      );
+    }
+  }
+
+  static EmailSendOutcome _outcome(
+    String status,
+    String reason,
+    String err,
+  ) =>
+      EmailSendOutcome(status: status, failureReason: reason, lastError: err);
+
+  /// Classifies communication exceptions emitted by package:mailer ^7.3.0.
+  ///
+  /// Parses the first server reply line to distinguish permanent recipient rejections,
+  /// temporary 4xx server issues, policy/relay rejections (5.7.x), bare 550, and unknown errors.
+  static EmailSendOutcome classifyCommunicationException(
+    SmtpClientCommunicationException e,
+  ) {
+    final msg = e.message;
+    if (msg.contains('After sending RCPT TO:')) {
+      const marker = 'Response from server:';
+      final idx = msg.indexOf(marker);
+      if (idx == -1) {
+        return _outcome('uncertain_timeout', 'uncertain_timeout', msg);
+      }
+      final afterMarker = msg.substring(idx + marker.length).trimLeft();
+      final newlineIdx = afterMarker.indexOf('\n');
+      final firstLine = (newlineIdx == -1
+              ? afterMarker
+              : afterMarker.substring(0, newlineIdx))
+          .trim();
+
+      final match = RegExp(
+        r'^(?:<\s*)?(\d{3})(?:[- ]\s*([245]\.\d{1,3}\.\d{1,3}))?',
+      ).firstMatch(firstLine);
+      if (match == null) {
+        return _outcome('uncertain_timeout', 'uncertain_timeout', msg);
+      }
+
+      final code = match.group(1)!;
+      final enhanced = match.group(2);
+
+      if (code.startsWith('4') ||
+          (enhanced != null && enhanced.startsWith('4.'))) {
+        return _outcome('server_rejected', 'server_rejected', msg);
+      }
+      if (code == '554' || (enhanced != null && enhanced.startsWith('5.7.'))) {
+        return _outcome('server_rejected', 'server_rejected', msg);
+      }
+      if ((enhanced != null && enhanced.startsWith('5.1.')) ||
+          code == '551' ||
+          code == '553') {
+        return _outcome('recipient_rejected', 'recipient_rejected', msg);
+      }
+      if (code.startsWith('5')) {
+        return _outcome('server_rejected', 'server_rejected', msg);
+      }
+      return _outcome('uncertain_timeout', 'uncertain_timeout', msg);
+    }
+    if (msg.contains('After sending MAIL FROM:')) {
+      return _outcome('server_rejected', 'server_rejected', msg);
+    }
+    return _outcome('uncertain_timeout', 'uncertain_timeout',
+        'Communicatiefout tijdens verzending: $msg');
   }
 }

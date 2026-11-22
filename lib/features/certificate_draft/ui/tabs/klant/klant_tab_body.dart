@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hvac_app/core/services/basisregisters_service.dart';
@@ -55,7 +56,7 @@ class KlantTabBody extends StatelessWidget {
             ? AddressLookupTarget.shared
             : AddressLookupTarget.billing
         : AddressLookupTarget.installation;
-    HapticFeedback.selectionClick();
+    unawaited(HapticFeedback.selectionClick());
     final match = await showDialog<AddressMatch>(
       context: context,
       builder: (_) => AddressLookupDialog(

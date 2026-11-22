@@ -1,0 +1,3 @@
+# Configuration for Dart/Flutter test runner.
+# Prevents tests from hanging for 10-15 minutes when an async task or pumpAndSettle stalls.
+timeout: 60s

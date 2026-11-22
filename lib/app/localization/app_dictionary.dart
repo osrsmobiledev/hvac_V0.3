@@ -83,8 +83,8 @@ abstract final class AppDictionary {
   static const String hintCompanyKbo = '0123.456.789';
   static const String hintTechFirstName = 'bv. Jan';
   static const String hintTechLastName = 'bv. Janssens';
-  static const String hintGvNumber = 'GV01234';
-  static const String hintTvNumber = 'TV01234';
+  static const String hintGvNumber = '01234';
+  static const String hintTvNumber = '01234';
   static const String hintAnalyzerBrand = 'bv. Eurolyzer S1, Testo 300';
   static const String hintAnalyzerSerial = 'bv. 06-52-01055';
   static const String hintDateFormat = 'JJJJ-MM-DD';

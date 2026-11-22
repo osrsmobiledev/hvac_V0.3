@@ -1,17 +1,24 @@
 import 'package:flutter/material.dart';
 
 import '../../../app/localization/email_delivery_dictionary.dart';
+import '../../../core/widgets/tactical_dialog_button.dart';
+import '../../../core/widgets/tactical_dialog_window.dart';
 import '../../../features/pdf_export/data/pdf_visit_data.dart';
 import '../data/recipient_confirmation.dart';
+import 'recipient_dialog_content.dart';
 
 export '../data/recipient_confirmation.dart';
 
-/// Shows a Flemish recipient confirmation dialog.
+/// Flemish recipient confirmation dialog presented upon visit finalization.
 ///
-/// The technician sees the customer's email and optionally a technician copy,
-/// pre-populated from the frozen certificate snapshot and SMTP settings.
-/// Returns a [RecipientConfirmation] if the technician confirms, or null if
-/// they cancel (the archived PDF is kept, but no email jobs are created).
+/// Features:
+/// - Shares the exact BO2 Tactical HUD styling as the Basisregisters dialog:
+///   dark charcoal glass surface, glowing laser divider, and tactile buttons.
+/// - Reads customer email and phone directly from Tab 4 snapshot.
+/// - Dynamic action labeling ('Voltooien & E-mailen' vs 'Kopie naar technicus').
+/// - Explicit 3-way actions: 'Annuleren' (abort & keep draft),
+///   'Alleen bewaren' (finalize without emailing), and primary send action.
+/// - Intercepts hardware Back gesture and close button to cancel safely.
 class EmailRecipientDialog extends StatefulWidget {
   final PdfVisitData snapshot;
   final bool defaultCopyTechnician;
@@ -24,15 +31,14 @@ class EmailRecipientDialog extends StatefulWidget {
     required this.technicianEmail,
   });
 
-  /// Shows the dialog and returns the confirmed [RecipientConfirmation],
-  /// or null if the technician taps "Overslaan".
-  static Future<RecipientConfirmation?> show(
+  /// Shows the dialog using [showTacticalDialog] and returns a [RecipientDialogResult].
+  static Future<RecipientDialogResult> show(
     BuildContext context, {
     required PdfVisitData snapshot,
     required bool defaultCopyTechnician,
     required String technicianEmail,
-  }) {
-    return showDialog<RecipientConfirmation>(
+  }) async {
+    final result = await showTacticalDialog<RecipientDialogResult>(
       context: context,
       barrierDismissible: false,
       builder: (_) => EmailRecipientDialog(
@@ -41,6 +47,7 @@ class EmailRecipientDialog extends StatefulWidget {
         technicianEmail: technicianEmail,
       ),
     );
+    return result ?? const RecipientDialogResult.cancel();
   }
 
   @override
@@ -49,187 +56,150 @@ class EmailRecipientDialog extends StatefulWidget {
 
 class _EmailRecipientDialogState extends State<EmailRecipientDialog> {
   late bool _copyTechnician;
+  late bool _sendCustomer;
 
   @override
   void initState() {
     super.initState();
-    // Default technician copy from SMTP settings; only shown when
-    // a technician email address is available.
     _copyTechnician =
         widget.defaultCopyTechnician && widget.technicianEmail.isNotEmpty;
+    _sendCustomer = widget.snapshot.klantEmail.trim().isNotEmpty;
   }
 
   String get _customerEmail => widget.snapshot.klantEmail.trim();
+  bool get _hasCustomerEmail => _customerEmail.isNotEmpty;
+  bool get _hasTechnicianEmail => widget.technicianEmail.isNotEmpty;
+
   String get _customerName {
     final parts = [
       widget.snapshot.klantVoornaam.trim(),
       widget.snapshot.klantAchternaam.trim(),
     ].where((p) => p.isNotEmpty);
-    return parts.isNotEmpty
-        ? parts.join(' ')
-        : widget.snapshot.klantNaam.trim();
+    if (parts.isNotEmpty) return parts.join(' ');
+    if (widget.snapshot.klantNaam.trim().isNotEmpty) {
+      return widget.snapshot.klantNaam.trim();
+    }
+    if (widget.snapshot.klantBedrijf.trim().isNotEmpty) {
+      return widget.snapshot.klantBedrijf.trim();
+    }
+    return '';
   }
 
-  bool get _hasCustomerEmail => _customerEmail.isNotEmpty;
-  bool get _hasTechnicianEmail => widget.technicianEmail.isNotEmpty;
+  bool get _canQueue =>
+      (_sendCustomer && _hasCustomerEmail) ||
+      (_copyTechnician && _hasTechnicianEmail);
+
+  String get _confirmActionLabel {
+    if (_sendCustomer && _hasCustomerEmail) {
+      return EmailDeliveryDictionary.finalizeAndEmailAction;
+    }
+    if (_copyTechnician && _hasTechnicianEmail) {
+      return EmailDeliveryDictionary.finalizeTechnicianCopyOnlyAction;
+    }
+    return EmailDeliveryDictionary.finalizeAndEmailAction;
+  }
 
   void _onConfirm() {
     final result = RecipientConfirmation(
-      sendToCustomer: _hasCustomerEmail,
+      sendToCustomer: _sendCustomer && _hasCustomerEmail,
       customerEmail: _customerEmail,
       customerName: _customerName,
       sendToTechnician: _copyTechnician && _hasTechnicianEmail,
       technicianEmail: widget.technicianEmail,
     );
-    Navigator.of(context).pop(result);
+    Navigator.of(context).pop(RecipientDialogResult.queue(result));
   }
 
-  void _onCancel() => Navigator.of(context).pop(null);
+  void _onSkip() =>
+      Navigator.of(context).pop(const RecipientDialogResult.skip());
 
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text(EmailDeliveryDictionary.recipientDialogTitle),
-      content: _DialogContent(
-        customerName: _customerName,
-        customerEmail: _customerEmail,
-        hasCustomerEmail: _hasCustomerEmail,
-        hasTechnicianEmail: _hasTechnicianEmail,
-        technicianEmail: widget.technicianEmail,
-        copyTechnician: _copyTechnician,
-        onCopyTechnicianChanged: _hasTechnicianEmail
-            ? (val) => setState(() => _copyTechnician = val ?? false)
-            : null,
-      ),
-      actions: [
-        TextButton(
-          onPressed: _onCancel,
-          child: const Text(EmailDeliveryDictionary.recipientDialogCancel),
-        ),
-        FilledButton(
-          onPressed:
-              _hasCustomerEmail || (_copyTechnician && _hasTechnicianEmail)
-                  ? _onConfirm
-                  : null,
-          child: const Text(EmailDeliveryDictionary.recipientDialogConfirm),
-        ),
-      ],
-    );
-  }
-}
+  void _onCancel() =>
+      Navigator.of(context).pop(const RecipientDialogResult.cancel());
 
-/// Pure layout widget; keeps [_EmailRecipientDialogState.build] under 250 lines.
-class _DialogContent extends StatelessWidget {
-  final String customerName;
-  final String customerEmail;
-  final bool hasCustomerEmail;
-  final bool hasTechnicianEmail;
-  final String technicianEmail;
-  final bool copyTechnician;
-  final ValueChanged<bool?>? onCopyTechnicianChanged;
-
-  const _DialogContent({
-    required this.customerName,
-    required this.customerEmail,
-    required this.hasCustomerEmail,
-    required this.hasTechnicianEmail,
-    required this.technicianEmail,
-    required this.copyTechnician,
-    required this.onCopyTechnicianChanged,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          EmailDeliveryDictionary.recipientDialogIntro,
-          style: Theme.of(context).textTheme.bodySmall,
-        ),
-        const SizedBox(height: 16),
-
-        // Customer recipient row
-        _RecipientRow(
-          label: EmailDeliveryDictionary.recipientCustomerLabel,
-          name: customerName,
-          email: hasCustomerEmail
-              ? customerEmail
-              : EmailDeliveryDictionary.recipientNoCustomerEmail,
-          isAvailable: hasCustomerEmail,
-        ),
-
-        // Technician copy checkbox row (only shown if email is available)
-        if (hasTechnicianEmail) ...[
-          const SizedBox(height: 8),
-          CheckboxListTile(
-            dense: true,
-            contentPadding: EdgeInsets.zero,
-            title: const Text(EmailDeliveryDictionary.recipientTechnicianLabel),
-            subtitle: Text(
-              technicianEmail,
-              style: Theme.of(context).textTheme.bodySmall,
+  Widget _buildActions() {
+    if (_canQueue) {
+      return Padding(
+        padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TacticalDialogButton.primary(
+              label: _confirmActionLabel,
+              onPressed: _onConfirm,
             ),
-            value: copyTechnician,
-            onChanged: onCopyTechnicianChanged,
-          ),
-        ],
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(
+                  child: TacticalDialogButton.secondary(
+                    label: EmailDeliveryDictionary.recipientDialogAbort,
+                    onPressed: _onCancel,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: TacticalDialogButton.secondary(
+                    label: EmailDeliveryDictionary.finalizeOnlySaveAction,
+                    onPressed: _onSkip,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      );
+    }
 
-        // Warn if neither recipient is available
-        if (!hasCustomerEmail && !hasTechnicianEmail) ...[
-          const SizedBox(height: 8),
-          Text(
-            EmailDeliveryDictionary.recipientNoneAvailable,
-            style: Theme.of(context)
-                .textTheme
-                .bodySmall
-                ?.copyWith(color: Theme.of(context).colorScheme.error),
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
+      child: Row(
+        children: [
+          Expanded(
+            child: TacticalDialogButton.secondary(
+              label: EmailDeliveryDictionary.recipientDialogAbort,
+              onPressed: _onCancel,
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: TacticalDialogButton.primary(
+              label: EmailDeliveryDictionary.finalizeOnlySaveAction,
+              onPressed: _onSkip,
+            ),
           ),
         ],
-      ],
+      ),
     );
   }
-}
-
-/// Displays a single recipient row with label, name and email.
-class _RecipientRow extends StatelessWidget {
-  final String label;
-  final String name;
-  final String email;
-  final bool isAvailable;
-
-  const _RecipientRow({
-    required this.label,
-    required this.name,
-    required this.email,
-    required this.isAvailable,
-  });
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            style: Theme.of(context)
-                .textTheme
-                .labelMedium
-                ?.copyWith(fontWeight: FontWeight.bold),
-          ),
-          if (name.isNotEmpty)
-            Text(name, style: Theme.of(context).textTheme.bodyMedium),
-          Text(
-            email,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color:
-                      isAvailable ? null : Theme.of(context).colorScheme.error,
-                ),
-          ),
-        ],
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _onCancel();
+      },
+      child: TacticalDialogWindow(
+        title: EmailDeliveryDictionary.recipientDialogTitle,
+        maxWidth: 440,
+        maxHeight: 580,
+        onClose: _onCancel,
+        actions: _buildActions(),
+        child: RecipientDialogContent(
+          customerName: _customerName,
+          customerEmail: _customerEmail,
+          hasInitialCustomerEmail: _hasCustomerEmail,
+          sendCustomer: _sendCustomer,
+          onSendCustomerChanged: _hasCustomerEmail
+              ? (val) => setState(() => _sendCustomer = val ?? false)
+              : null,
+          hasTechnicianEmail: _hasTechnicianEmail,
+          technicianEmail: widget.technicianEmail,
+          copyTechnician: _copyTechnician,
+          onCopyTechnicianChanged: _hasTechnicianEmail
+              ? (val) => setState(() => _copyTechnician = val ?? false)
+              : null,
+        ),
       ),
     );
   }

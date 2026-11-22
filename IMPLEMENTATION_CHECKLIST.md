@@ -39,6 +39,7 @@
 | **29** | **Overloading existing classes past Single Responsibility & 250-line limit ("Fake Code Reuse")** | Cramming private document staging, versioning, size checks, and cleanup into `PdfFileSaver` (174 lines) bloated a public export class and risked breaching the 250-line rule. | Separated public exports (`PdfFileSaver`) from private internal archiving (`PdfArchiveService`), staging in `certificates/staging/` beside destination with length verification and startup orphan cleanup. |
 | **30** | **Assuming cross-store atomicity between SQLite and OS KeyStore** | Treating SQLite and Android KeyStore as a single atomic transaction led to impossible rollback claims if SQLite failed after KeyStore was written. | Implemented staged credential protocol (`smtp_password_staged` $\to$ `smtp_password`) with `smtp_state` tracking in SQLite and deterministic startup recovery. |
 | **31** | **Rhetorical or legalistic claims in technical specifications** | Terms like "juridisch bewijs" or "100% duplicate-proof" make unverifiable guarantees on protocols (like SMTP) that lack end-to-end delivery confirmation. | Use neutral, precise technical terminology: "bevroren certificaat-snapshot", "definitieve bezoekrecord", "best-effort botsingsreductie". |
+| **32** | **Upstream validation divergence & downstream regulatory freezing (Double prefix & incomplete erkenningsnummer)** | Loose `isNotEmpty` form checks allowed incomplete recognition numbers (e.g. `GV0000` with 4 digits) to pass into finalization, permanently locking an invalid record into frozen SQLite history where VEKA flagged it with no way to edit. String builders blindly prepended `'GV '`, causing duplicate `GV GV` on PDFs. | Implemented `TechnicianRecognitionFormatters` enforcing strict 5 digits for active fuel (`\d{5}`), visual prefix rendering with native numeric keypad, idempotent prefix stripping in PDF builder (`GV 12345`), and dynamic `ListenableBuilder` synchronization between fuel choice and technician validation. |
 
 ---
 
@@ -207,6 +208,12 @@ Run through these exact 20 verification checks before marking any tab, applet, o
 - [ ] `flutter_secure_storage` guidance documents `path="FlutterSecureStorage"` (without extension) for SharedPreferences exclusions. Current codebase contains `FlutterSecureStorage.xml`. The exclusion remains unverified until confirmed via an end-to-end device backup/restore test.
 - [ ] In outbox recovery (Slice 6.3 with v13 schema migration), manual resolution of an `uncertain_timeout` must set `status = 'resolved_manually'`, populating `resolved_at` with an ISO-8601 timestamp and `resolution_notes` with technician confirmation, while preserving prior `last_error` and `failure_reason` intact; never silently rewrite status to `'sent'`.
 
+### [ ] 33. Statutory Input Validation & Downstream Normalization Parity
+- [ ] Any input that feeds statutory reporting payloads (VEKA) or official PDF certificates must enforce the exact statutory format upstream (e.g. exactly 5 digits `\d{5}` for GV/TV, 10 digits with Modulo 97 for KBO, 4 digits for postal codes). Never use loose `isNotEmpty` checks for statutory fields.
+- [ ] String and PDF formatters must be idempotent: always sanitize/strip before prepending visual prefixes to guarantee zero double prefixes (`GV GV...` or `TV TV...`).
+- [ ] Pre-flight finalization gates must execute dynamic domain cross-validation (e.g. gas boiler requires GV; oil boiler requires TV) and report the exact failing field to the user.
+- [ ] Negative boundary testing requirement: automated tests must verify that malformed, incomplete, or boundary-failing inputs (e.g. 4-digit numbers) strictly block finalization before records freeze in SQLite history.
+
 ---
 
 ## 3. Mandatory 3-Gate Pre-Handoff Quality Gate
@@ -234,13 +241,16 @@ Every AI agent must strictly run and pass all three gates **before declaring any
    - Dropdowns populated by dynamic or async results must be keyed (`key: ValueKey(...)`) and the item model must implement `operator ==` and `hashCode` to prevent Flutter dropdown mismatch crashes.
 
 ### Gate 3: End-to-End Domain & Database Trace
-1. **Full Domain Coverage (The 90/10 Rule):**
-   - Verify that the feature works for both the primary real-world scenario (e.g. boiler at customer residence in 90% of visits) AND the secondary scenario (separate installation address in 10% of visits). Never build only for the sub-widget's happy path.
+1. **Branch & Boundary Coverage:**
+   - Verify all alternate branches of logic (not just the primary scenario).
+   - Test all 3 input states: **empty**, **invalid**, and **valid**.
+   - Verify that downstream systems (SQLite, PDF, VEKA) match upstream form rules 1:1.
 2. **End-to-End Database Roundtrip:**
    - Trace values: `UI Input -> Controller -> Domain Entity -> Repository -> SQLite Table -> Reopen Draft -> UI Restoration`.
    - Ensure no fields are dropped, zeroed, or defaulted to `null` unintentionally.
 3. **Automated Tests:**
-   - Run focused unit and widget tests for the changed logic.
+   - Run focused unit and widget tests confirming both success and failure cases pass.
+   - Guard against test runner hangs: configure global timeout (`dart_test.yaml: timeout: 60s`), use bounded `pump(Duration)` for debounced forms instead of open-ended `pumpAndSettle()`, and wrap real SQLite I/O in `tester.runAsync()`.
 4. **Stop-and-Wait Owner Verification:**
    - Provide 3–4 concrete, human-testable steps on device/emulator.
    - Stop and wait for the owner's explicit confirmation before touching the next slice.

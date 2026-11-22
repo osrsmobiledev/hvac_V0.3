@@ -59,22 +59,25 @@ flowchart TD
     H --> I["smtp_state = 'configured' in SQLite"]
 ```
 
-### 2.2 Afronding van het Bezoek (Onafhankelijk Opslaan & Outbox)
+### 2.2 Afronding van het Bezoek (Tab 4 als Bron, Eerlijke Knoppen & Geen Pop-up Invoervelden)
+
+Het afrondingsvenster (`EmailRecipientDialog`) is puur een **bevestigingsvenster** en bevat **geen invoervelden**. Het venster is gestandaardiseerd onder de canonieke "BO2 Tactical HUD"-architectuur (`TacticalDialogWindow` en `TacticalDialogButton`), identiek aan de Basisregisters-dialoog:
+- Donkere charcoal glass achtergrond (`AppColors.charcoalGlass`) met afgeronde hoeken (24px) en subtiele rand.
+- Gecentreerde titel met signature gloeiende HUD-laserdivider (`TacticalLaserDivider` in antiek goud).
+- Vaste sluitknop rechtsboven (`onClose: _onCancel`) en Android Back-afhandeling die 100% veilig annuleren zonder database-writes.
+- Tactische pill-knoppen (`TacticalDialogButton.primary` in antiek goud en `TacticalDialogButton.secondary` in donker `#1E1E1E`).
+- Volledig symmetrische kaarten (`CustomerRecipientCard` en `TechnicianRecipientCard`): identieke visuele opbouw met antiek gouden icoon links, 14px vette titel en 13px subtitel in het midden, en amber gouden vinkje rechts. Geen irrelevante telefoonnummers in de e-mailkeuze. Indien e-mail ontbreekt toont de kaart een tactische badge `[ Papier ]` en de toelichting dat het attest bewaard wordt voor fysieke bezorging (afdrukken in de wagen of post).
+
+Tab 4 (`Klant`) is de enige bron van waarheid voor het e-mailadres van de klant. Dit voorkomt dubbele invoer en ondersteunt technici die met een mobiele printer in de auto werken (papier/post).
 
 ```mermaid
 flowchart TD
-    A["Bezoek afronden: Tik 'Voltooien'"] --> B["1. Bevries snapshot & zet is_draft = 0 in SQLite"]
-    B --> C["2. PdfArchiveService: stage in certificates/staging/"]
-    C --> D{"Lengteverificatie exact?"}
-    D -->|Nee| E["pdf_status = 'failed'\nBezoek blijft 100% bewaard\nIn Historiek: 'PDF opnieuw genereren'"]
-    D -->|Ja| F["Rename naar uniek pad in certificates/"]
-    F --> G["3. Toon dialoog 'Ontvangers bevestigen'\n(Klant e-mail uit Tab 4 + Technicus kopie)"]
-    G --> H["Maak jobs aan in email_delivery_jobs (status = 'queued')"]
-    H --> I{"Is SMTP geconfigureerd?"}
-    I -->|smtp_state != 'configured'| J["UI Melding: 'Certificaat bewaard; wacht op e-mailconfiguratie'\nJob blijft 'queued' met attempt_count = 0"]
-    I -->|smtp_state == 'configured'| K{"Is email_auto_send ingeschakeld?"}
-    K -->|Nee| L["UI Melding: 'Certificaat bewaard; handmatige verzending vereist'\nJob blijft 'queued'"]
-    K -->|Ja| M["Start verzending via outbox-coordinator"]
+    A["Tab 7: Tik 'Verbrandingsattest voltooien'"] --> B["Pre-flight validatie Tabs 2-7 OK\n(Settle draft formulierinvoer in SQLite)"]
+    B --> C["Toon bevestigingsdialoog 'Attest voltooien'\n(Leest Klant-e-mail uit Tab 4 + Technicus-kopie uit Instellingen)"]
+    C -->|Tik 'Annuleren' of Android Back| D["0 DATABASE-WRITES!\nis_draft = 1 blijft 100% actief\nGeen PDF aangemaakt, geen lock\nTechnicus kan direct naar Tab 4 om gegevens aan te passen"]
+    C -->|Klant heeft géén e-mail\nTik 'Alleen bewaren'| E["1. is_draft = 0, bevries snapshot\n2. Archiveer PDF in certificates/\nGeen e-mailtaken (papier / printer in de wagen)\nNavigeer naar Historiek"]
+    C -->|Klant géén e-mail, Technicus wel\nTik 'Kopie naar technicus'| F["1. is_draft = 0, bevries snapshot\n2. Archiveer PDF in certificates/\n3. E-mailtaak ALLEEN voor technicus-archiefkopie\n(Klant krijgt papieren exemplaar)\nNavigeer naar Historiek"]
+    C -->|Klant heeft wél e-mail\nTik 'Voltooien & E-mailen'| G["1. is_draft = 0, bevries snapshot\n2. Archiveer PDF in certificates/\n3. E-mailtaken voor klant (+ optioneel technicus)\nNavigeer naar Historiek"]
 ```
 
 ### 2.3 Outbox Preflight & Verzendingsbeslissingen
@@ -90,8 +93,8 @@ flowchart TD
     G --> H["Verzend via mailer.send() met PDF-bijlage"]
     H -->|250 OK| I["status = 'sent', sent_at = DateTime.now()"]
     H -->|In-flight netwerkdrop / timeout| J["status = 'uncertain_timeout'\nAuto-retry geblokkeerd (duplicaatpreventie)"]
-    H -->|RCPT TO expliciet geweigerd| K["status = 'recipient_rejected'\nAdrescorrectie vereist in Historiek"]
-    H -->|Overige SMTP serverweigering| L["status = 'server_rejected'\nHandmatige retry mogelijk in Historiek"]
+    H -->|RCPT TO eenduidig ontvanger-specifiek 5.1.x / 551 / 553| K["status = 'recipient_rejected'\nAdrescorrectie aangeboden in Historiek"]
+    H -->|RCPT TO kale 550 / policy 5.7.x / 4xx / MAIL FROM| L["status = 'server_rejected'\nServerherstelpad (retry/delen) in Historiek"]
 ```
 
 ### 2.4 Monitoring & Herstel in Historiek
@@ -100,6 +103,7 @@ flowchart TD
 flowchart TD
     A["Historiek -> Selecteer Attest"] --> B["E-mail Leveringskaart"]
     B --> C{"Job Status?"}
+    C -->|Geen taken (Alleen bewaren)| D1["Geen e-mailtaken voor dit attest\nActie: 'Alsnog e-mailen' -> Opent dialoog en maakt outbox-job\nActie: 'Attest delen' -> Printing.sharePdf fallback"]
     C -->|sent| D["Groene badge: Verzonden naar geadresseerden"]
     C -->|resolved_manually| E["Blauwe badge: Handmatig opgelost\n(Gestructureerd audit-record in resolved_at & resolution_notes)"]
     C -->|queued (wacht op config)| F["Actie: 'Configureer e-mail' -> Opent Instellingen"]
@@ -261,7 +265,7 @@ abstract final class EmailDeliverySchema {
 | :--- | :--- | :--- |
 | **Slice 6.1 · E-mailconfiguratie & Verbindingstest** | In **Instellingen** (`AppletType.technicianSettings`) configureert de technicus Gmail (App-wachtwoord) of Custom SMTP met opties voor automatisch verzenden en kopie naar technicus. Wachtwoorden worden veilig bewaard via een staged protocol tussen KeyStore en SQLite v12 (`smtp_state`). Een knop test de verbinding via `checkCredentials()` met directe tactische feedback, en een discrete actie **E-mailinstellingen wissen** met bevestigingsdialoog ontkoppelt de account via een crash-veilig wisprotocol (`clearing` -> `unconfigured`). *(Status: Voltooid en aanvaard op Android — UI ondergebracht in Instellingen via TechnicianSettingsApplet compositie, top-uitlijning via WorkflowTabContainer matching Verbrandingsattest styling, getypeerde service-uitkomsten, constructor-geïnjecteerde notifier, ontkoppelactie met bevestigingsdialoog, 358/358 tests slagen, 0 analyzer-meldingen; live Gmail SMTP AUTH en herstartpersistentie geverifieerd en goedgekeurd door eigenaar).* | `TechnicianSettingsApplet`, `EmailSettingsNotifier`, `EmailSettingsRepository` met opstartherstel & wisprotocol, `SecureCredentialStore` (`smtp_password_staged` / `smtp_password`), `EmailSenderService.testConnection` (`package:mailer ^7.2.0`), SQLite migratie v12, Android back-upregels XML en internetpermissie. |
 | **Slice 6.2 · PDF-Archivering & Outbox Creatie** | Bij *Voltooien* bewaart `PdfArchiveService` een privé-kopie via `.tmp` staging in `certificates/staging/`, lengteverificatie en geversioneerde rename (`visit_<id>_<attest>_v<micros>_<seq>.pdf`) naar `certificates/` onder `package:synchronized` `Lock()`. Opstart ruimt verweesde `.tmp`-stagingbestanden op. Indien registratie in SQLite faalt, biedt een niet-wegklikbare dialoog herstel via `registerArchivedPdf` zonder hergeneratie (mits bestand op schijf bestaat), of veilige verwijdering met tweede bevestiging via `PdfArchivingCoordinator` die delegeert naar `PdfArchiveService.deleteUnregisteredArchiveFile` (asynchrone Dart bestands-APIs en padvalidatie binnen `certificates/`; toont `pdfDeleteFailedError` indien verwijdering faalt). Dialoog `EmailRecipientDialog` (**Ontvangers bevestigen**) toont ontvangers; jobs worden atomair en idempotent (`INSERT OR IGNORE`) ingevoegd in `email_delivery_jobs`. Bij wachtrijstoring biedt een expliciete, niet-wegklikbare retry-dialoog (**E-mailwachtrij mislukt**) herstel met identieke parameters of overslaan met neutrale info-feedback, waarbij het afgeronde bezoek en de PDF behouden blijven. *(Status: Voltooid en aanvaard op Android — 28 gerichte tests, 386/386 suite tests slagen, 0 analyzer-meldingen, alle bestanden <= 250 regels; geverifieerd en goedgekeurd door eigenaar).* | `PdfArchiveService.archiveCertificate`, `cleanupStagingFiles`, `deleteUnregisteredArchiveFile`, `package:synchronized` `Lock()`, `EmailRecipientDialog`, `PdfArchivingCoordinator.archiveAndUpdateStatus`, `registerArchivedPdf`, `createEmailJobs`, `EmailOutboxRepository.createJobs`, `VisitFinalization` integratie. |
-| **Slice 6.3 · Voorgrond-Outbox, Historiek & Deel-Fallback** | De app triggert de outbox vanuit `AppShellScreen` bij `AppLifecycleState.resumed`. `EmailDeliveryCoordinator` voert preflight uit via `checkCredentials()` (preflight faalt $\to$ jobs blijven `queued` met `attempt_count = 0`), claimt atomair, bouwt MIME-bijlagen via `FileAttachment` en inspecteert gestructureerde SMTP-responsdetails voor `recipient_rejected`. In *Historiek* toont een kaart de statussen, adrescorrectie, handmatige retry met duplicaatwaarschuwing, `resolved_manually` met gestructureerd audit-record (`resolved_at`, `resolution_notes`), SQLite v13 migratie en `Printing.sharePdf`. | `EmailDeliveryCoordinator`, `EmailOutboxNotifier`, UI resume trigger in `AppShellScreen`, gestructureerde exceptie-inspectie, retry-dialoog, SQLite v13 migratie, `Printing.sharePdf`. |
+| **Slice 6.3 · Voorgrond-Outbox, Historiek & Deel-Fallback** | De afronding op Tab 7 gebruikt één uniforme dialoog (**Attest voltooien**) met directe klant e-mailinvoer, technicus-kopie, "Alleen bewaren", "Voltooien & E-mailen" en 100% veilige "Annuleren" (0 DB writes, concept blijft actief). De app triggert de outbox vanuit `AppShellScreen` bij `AppLifecycleState.resumed` en opstart via `EmailDeliveryCoordinator.instance` onder een binnen het app-isolaat gedeelde lock. `EmailDeliveryCoordinator` voert preflight uit via `checkCredentials()` (preflight faalt $\to$ jobs blijven `queued` met `attempt_count = 0`), claimt atomair onder `Lock()`, bouwt MIME-bijlagen via `FileAttachment` en classificeert SMTP-reacties van de vergrendelde mailer-package (`classifyCommunicationException`: `RCPT TO` eenduidig permanente weigering `5.1.x`/`551`/`553` $\to$ `recipient_rejected`, kale `550`, `4xx` tijdelijke of `5.7.x` beleidsfouten en `MAIL FROM` $\to$ `server_rejected`, onbekende/onvolledige fouten $\to$ `uncertain_timeout`). In *Historiek* toont `EmailDeliveryCard` de statussen, handmatige verzending ("Nu verzenden"), in-place adrescorrectie (strikt voor eenduidig afgewezen adressen; kale 550, 4xx en beleidsfouten volgen serverherstel), handmatige retry met duplicaatwaarschuwing, `resolved_manually` met verplichte toelichting zonder fallback, reële SQLite v13 migratietest via `AppDatabase.onUpgrade`, zero-config asynchroon PDF-delen via `Printing.sharePdf`, en voor attesten zonder e-mailtaken de directe acties "Alsnog e-mailen" en "Attest delen" zodat de bezorgoptie nooit verloren gaat. *(Status: Geïmplementeerd, geauditeerd en geverifieerd — 431/431 suite tests slagen, 0 analyzer-meldingen, alle bestanden <= 250 regels; wacht op acceptatie op Android door eigenaar).* | `EmailDeliveryCoordinator.instance`, `EmailSenderService.classifyCommunicationException`, UI resume/startup trigger in `AppShellScreen`, conditionele outbox updates, `EmailRecoveryDialogs`, `EmailDeliveryCard`, `EmailEmptyOutboxView`, `PdfShareHelper`, `EmailJobTile`, reële SQLite v13 migratie, `Printing.sharePdf`. |
 
 ---
 
@@ -290,11 +294,13 @@ abstract final class EmailDeliverySchema {
 | **Gelijktijdige claims (Concurrency)** | Meerdere triggers (afronding + resume) lopen parallel. | Atomair claimen met `UPDATE ... WHERE id = ? AND status = 'queued'` garandeert dat maximaal één worker een job claimt. Geen dubbele verzending. |
 | **Crash tijdens actieve verzending (`status = 'sending'`)** | App crasht of wordt geforceerd afgesloten terwijl job de status `'sending'` heeft. | Bij volgende opstart detecteert de coordinator gestrande `'sending'` jobs en zet ze naar `'uncertain_timeout'`. Geen automatische hertriggering zonder menselijke controle. |
 | **Onzekere aflevering handmatig opgelost** | Technicus kiest in Historiek "Markeren als handmatig opgelost" bij `uncertain_timeout`. | Job krijgt status `resolved_manually`. `resolved_at` wordt gevuld met ISO-tijdstip, `resolution_notes` met audit-toelichting. De eerdere technische fout in `last_error` en `failure_reason` blijft 100% behouden. Status wordt **nooit** stilzwijgend herschreven naar `sent`. |
-| **Gestructureerde recipient afwijzing** | Mailer ontvangt expliciete `RCPT TO` weigering. | Job gemarkeerd als `recipient_rejected`. Knop "Adres wijzigen" zichtbaar in Historiek. |
-| **Algemene serverfout** | Server weigert met algemene beleidsfout (niet recipient-specifiek). | Job gemarkeerd als `server_rejected`. Geen misleidende "Adres wijzigen" actie. |
+| **Eenduidige recipient afwijzing** | Mailer ontvangt eenduidig ontvanger-specifieke permanente weigering (`5.1.x`, `551`, `553`). | Job gemarkeerd als `recipient_rejected`. Knop "Adres wijzigen" zichtbaar in Historiek. |
+| **Server- of beleidsweigering (incl. kale 550)** | Server weigert met beleidsfout (`5.7.x`, `554`), tijdelijke fout (`4xx`), `MAIL FROM` weigering, of ambigue kale `550`. | Job gemarkeerd als `server_rejected`. Serverherstelpad (handmatige retry of delen via Android) in Historiek; geen misleidende actie "Adres wijzigen". |
 | **Handmatige batchmodus (`email_auto_send == 0`)** | Voltooiing met auto-send uitgeschakeld. | Jobs blijven in `queued`. App-resume start geen verzending. Alleen handmatige knop "Wachtrij verzenden" triggert verwerking. |
 | **Afzenderselectie: Gmail** | `smtp_username` is een formaat-geldig e-mailadres. | `Message.from` gebruikt direct `smtp_username`. |
 | **Afzenderselectie: Custom SMTP met e-mail login** | `smtp_username` is een formaat-geldig e-mailadres. | `Message.from` gebruikt `smtp_username`. |
 | **Afzenderselectie: Custom SMTP met account-ID** | `smtp_username` is alfanumeriek ID (zonder `@`), `technician_profile.email` is formaat-geldig. | `Message.from` gebruikt het profiel-e-mailadres. Provider-acceptatie is een verzenduitkomst (`send()`). |
 | **Afzenderselectie: Geen geldig adres beschikbaar** | `smtp_username` is account-ID en profiel-e-mail is ongeldig of leeg. | Configuratievalidatie faalt (`smtp_state` blijft `'unconfigured'`). Verzending lokaal geblokkeerd; attest bewaren en PDF blijven 100% veilig. |
+| **Afronden: Annuleren zonder database-mutatie** | Tik op "Annuleren" (of Android Back) in de afrondingsdialoog op Tab 7. | 0 database writes! `is_draft` blijft `1`, `pdf_status` blijft `'draft'`. Geen PDF aangemaakt. Technicus kan direct naar Tab 4 om gegevens aan te passen en te herstellen zonder "Opslaan mislukt" lock. |
+| **Afronden: Alleen bewaren en later bezorgen via Historiek** | Kies "Alleen bewaren" bij het afronden op Tab 7. | Bezoek afgerond (`is_draft = 0`), PDF gearchiveerd. Geen e-mailtaken in outbox. In Historiek toont de leveringskaart "Alsnog e-mailen" (om alsnog een e-mailtaak aan te maken) en "Attest delen" (Android share sheet), zodat de bezorgoptie nooit verloren gaat. |
 | **Back-up uitsluiting SharedPreferences** | Cloud-backup herstel op een nieuw toestel. | De uitsluiting richt zich op `FlutterSecureStorage` (zonder extensie). Blijft gemarkeerd als **onbevestigd** totdat een fysieke Android back-up/restore test aantoont dat de SharedPreferences daadwerkelijk uitgesloten zijn. |

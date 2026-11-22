@@ -1,6 +1,8 @@
 // File: lib/features/certificate_draft/ui/tabs/eindbeoordeling/handtekeningen_card.dart
 // Responsibility: Digital signature bento card for technician and customer in BO2 Bento styling.
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hvac_app/app/localization/app_dictionary.dart';
@@ -39,7 +41,7 @@ class HandtekeningenCard extends StatelessWidget {
     required String title,
     required VoidCallback onConfirmed,
   }) async {
-    HapticFeedback.selectionClick();
+    unawaited(HapticFeedback.selectionClick());
     final confirmed = await TacticalConfirmDialog.show(
       context: context,
       title: title,

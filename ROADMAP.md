@@ -49,13 +49,94 @@
 
 - [x] **Slice 6.1 — Email Configuration & Connection Test:** Configure outbound SMTP settings (Gmail App-password or Custom SMTP with SSL/TLS vs STARTTLS) with auto-send and technician-copy options. Store passwords via a recoverable staged credential protocol (`smtp_password_staged` -> `smtp_password` in `flutter_secure_storage: ^9.2.2` with `smtp_state` in SQLite v12), verify credentials cleanly via `package:mailer ^7.2.0` (`checkCredentials`) with instant tactical feedback, and provide a single-account disconnect action (**E-mailinstellingen wissen**) with confirmation dialog and crash-safe clearing protocol (`clearing` -> `unconfigured`). Target destination is **Instellingen** (`AppletType.technicianSettings`), top-aligned using `WorkflowTabContainer` to match the Verbrandingsattest Bento layout. Status: Completed & verified (37 focused email tests + 6 theme/navigation tests passing, 358 full suite tests passing, 0 analyzer lints, all files <= 250 lines). Tested on Android by owner.
 - [x] **Slice 6.2 — PDF Archiving & Outbox Creation:** On visit finalization (`Voltooien`), freeze the certificate snapshot in SQLite, stage and verify the PDF in `certificates/staging/` via dedicated `PdfArchiveService` under isolate-level `Lock()`, publish to unique filename in `certificates/`, prompt recipient confirmation (`EmailRecipientDialog`), and queue frozen jobs in `email_delivery_jobs`. Status: Completed & accepted on Android by owner (28 focused tests passing, 386 full suite tests passing, 0 analyzer lints, all files <= 250 lines).
-- [ ] **Slice 6.3 — Offline Outbox, History Tracker & Native Share:** Dispatch queued emails triggered from root UI shell on app resume, verify connection via `mailer.checkCredentials()` (preflight failure leaves jobs `queued` with `attempt_count = 0`), claim jobs atomair, classify recipient rejections via structured SMTP response inspection, handle `uncertain_timeout` with duplicate-risk confirmation on retry, support in-place address corrections, execute database schema migration to v13 (adding `resolved_at` and `resolution_notes` to `email_delivery_jobs`), and offer zero-config native share sheet fallback via `Printing.sharePdf`.
+- [x] **Slice 6.3 — Offline Outbox, History Tracker & Native Share:** Dispatch queued emails triggered from root UI shell on app resume, verify connection via `mailer.checkCredentials()` (preflight failure leaves jobs `queued` with `attempt_count = 0`), claim jobs atomair under app-scoped lock, classify recipient rejections via isolated `classifyCommunicationException` matching locked `mailer` responses (`RCPT TO` unambiguously recipient-specific `5.1.x`/`551`/`553` on first reply line -> `recipient_rejected`, ambiguous bare `550`, `4xx` temporary or `5.7.x` policy rejections and `MAIL FROM` -> `server_rejected`), handle `uncertain_timeout` with duplicate-risk confirmation on retry, support in-place address corrections restricted to eligible failure statuses, execute real database schema migration to v13 (adding `resolved_at` and `resolution_notes` to `email_delivery_jobs` via `AppDatabase.onUpgrade`), require non-empty resolution notes without fallbacks, and offer zero-config native share sheet fallback via `Printing.sharePdf` with asynchronous file operations. Status: Completed & accepted on Android by owner (35 focused Slice 6.3 tests passing across 9 files, 433 full suite tests passing, 0 analyzer lints, all Dart files <= 250 lines).
 
 ---
 
 ## 2. Current Handoff (Active State for AI Agent)
 
-**Active Milestone: Milestone 6 (Email Delivery & PDF Archiving). Current status: Slice 6.2 completed, verified, accepted on Android by owner. Next slice: Slice 6.3 (Offline Outbox, History Tracker & Native Share) — awaiting owner authorization. Do not start Slice 6.3 until explicitly requested.**
+**Active Milestone: Milestone 6 Complete (Email Delivery & PDF Archiving). All 3 slices (6.1, 6.2, 6.3) fully implemented, verified across the 433-test automated suite, and confirmed working on Android by the owner.**
+
+### Slice 6.3 Implementation Summary & Verification
+Slice 6.3 is **implemented, audited, and verified**. All required architectural, UI, lifecycle, and testing items have passed the Mandatory 3-Gate Pre-Handoff Quality Gate:
+
+1. **Serialized Outbox Processing & Live-Send Protection (`EmailDeliveryCoordinator`):**
+   - App-scoped coordinator instance (`EmailDeliveryCoordinator.instance`) and static `_sharedLock` (`package:synchronized`) shared within the app isolate.
+   - `AppShellScreen` (resume trigger) and `EmailDeliveryCard` (Historiek actions) share the same lock, ensuring outbox processing, recovery, corrections, and retries are strictly serialized.
+   - Live send protection: stale-send recovery cannot overwrite an actively sending job; verified via concurrency test overlapping resume processing with an active send (`email_delivery_concurrency_test.dart`).
+
+2. **Accurate SMTP Rejection Handling Matching Locked Mailer API (`EmailSenderService`):**
+   - Isolated classifier `EmailSenderService.classifyCommunicationException` inspects `SmtpClientCommunicationException` messages emitted by locked `package:mailer ^7.3.0` (with `acceptedRespCodes` default `['2']`).
+   - Unambiguously recipient-specific responses on `RCPT TO` (RFC 3463 `5.1.x` addressing status or RFC 5321 `551`/`553`) classify as `recipient_rejected` (address correction eligible).
+   - Ambiguous bare `550` responses, temporary `4xx` server responses (e.g. `450`, `451`, `452`), and policy/relay rejections (e.g. `550 5.7.1`, `554 5.7.1`) on `RCPT TO` or `MAIL FROM` classify as `server_rejected` so the technician is not told to change a valid address.
+   - Unknown, malformed, or ambiguous communication failures or mid-stream drops classify as `uncertain_timeout` (duplicate prevention).
+   - Verified with unit tests covering bare `550`, recipient-specific `550 5.1.1`, policy `550 5.7.1`, temporary `4xx`, and malformed payloads (`email_rejection_classification_test.dart`).
+
+3. **Conditional Updates & Duplicate Prevention (`EmailOutboxRepository`):**
+   - `updateRecipientEmail()` restricts updates to `status IN ('recipient_rejected', 'failed')` and returns `bool`.
+   - `requeueJob()` restricts updates to `status IN ('uncertain_timeout', 'server_rejected', 'failed')` and returns `bool`.
+   - `EmailDeliveryCoordinator` stops send dispatch if the update was ineligible (e.g. job was already `sent` or `resolved_manually`).
+   - Verified with tests confirming stale retry/correction actions cannot change `sent` or `resolved_manually` jobs or send them again (`email_delivery_concurrency_test.dart`).
+
+4. **Real v12 to v13 Database Migration (`AppDatabase.onUpgrade`):**
+   - Built a genuine v12 database lacking `resolved_at` and `resolution_notes`, populated with customer, technician profile, visit, and email job records.
+   - Reopened through `AppDatabase.instance.initDatabase`, exercising real `onUpgrade` migration adding both columns.
+   - Verified all existing data and queued/sent jobs remain 100% intact, and new columns are fully operational (`database_migration_v13_test.dart`).
+
+5. **Mandatory Manual-Resolution Notes (`EmailRecoveryDialogs` & `EmailOutboxRepository`):**
+   - Removed generic "Handmatig opgelost door technicus" fallback.
+   - Dialog confirm button is disabled (`onPressed: null`) until a non-empty explanation is typed via `ValueListenableBuilder`.
+   - Enforced validation at repository and coordinator boundaries (`throw ArgumentError` if empty).
+   - Verified with widget tests checking disabled state on empty/whitespace and enabled on valid input (`email_recovery_dialogs_test.dart`).
+
+6. **Asynchronous PDF Sharing Off UI Thread (`EmailDeliveryCard`):**
+   - Replaced synchronous `file.existsSync()` and `file.readAsBytesSync()` with `await file.exists()` and `await file.readAsBytes()`.
+   - Wrapped operations with localized error feedback (`EmailDeliveryDictionary.sharePdfError`) if file is missing or reading fails.
+   - Action runs under `_handleAction` to indicate processing and prevent duplicate taps.
+   - Verified with widget tests for successful sharing and missing file error SnackBar (`email_delivery_card_share_test.dart`).
+
+7. **Unified Finalization Flow & Empty Outbox Recovery (Fix 1):**
+   - Replaced double pop-up flow with a single cohesive dialog (`Attest voltooien`) with inline optional customer email input, technician copy toggle, and 3 explicit actions: "Annuleren", "Alleen bewaren", and "Voltooien & E-mailen".
+   - 100% draft-safe cancellation: zero database writes occur while the dialog is open. Cancelling preserves `is_draft = 1` and `pdf_status = 'draft'` without premature locking or failed rollback, ensuring form fields on Tab 4 (`Klant`) remain immediately editable and restorable without errors.
+   - Never lose email ability: visits saved via "Alleen bewaren" show `EmailEmptyOutboxView` in Historiek with "Alsnog e-mailen" (opens recipient dialog to queue outbox jobs) and "Attest delen" (native Android share sheet).
+
+8. **Tactical Pop-Up Standardization & Symmetrical Layout (Fix 2):**
+   - Transformed `EmailRecipientDialog` to faithfully inherit `TacticalDialogWindow` and `TacticalDialogButton`, matching the exact "BO2 Tactical HUD" signature styling of the Basisregisters dialog on Tab Klant:
+     - Dark charcoal glass surface (`AppColors.charcoalGlass`) with 24px border radius.
+     - Glowing HUD laser divider (`TacticalLaserDivider` in `antiqueGold`).
+     - Centered title in bold white text and top-right close icon (`onClose: _onCancel`) for safe, non-destructive dismissal.
+     - Signature 48px tactile capsule buttons: `TacticalDialogButton.primary` (antique gold fill) and `TacticalDialogButton.secondary` (dark `#1E1E1E` outline).
+   - 100% Symmetrical Recipient Cards (`CustomerRecipientCard` & `TechnicianRecipientCard`):
+     - Both cards share identical anatomy: Antique Gold leading icon (`Icons.person_rounded` vs `Icons.badge_outlined`), 14px bold primary title, 13px secondary subtitle, and amber gold checkbox on the **RIGHT**.
+     - Eliminated phone number clutter: removed unrelated phone display from email dispatch dialog, resolving font hierarchy inconsistencies.
+     - When customer email is absent, replaces the checkbox with a neat tactical pill badge `[ 🖨️ Papier ]`, status subtitle *"Geen e-mailadres geregistreerd"*, and physical delivery notice *"Het attest wordt bewaard voor fysieke bezorging (afdrukken in de wagen of per post)."*
+     - Single source of truth: customer email is read directly from Tab 4 snapshot with zero duplicate input fields.
+   - Modularized UI files respecting strict architectural limits: `recipient_dialog_content.dart` (94 lines), `customer_recipient_card.dart` (183 lines), `technician_recipient_card.dart` (80 lines), and `email_recipient_dialog.dart` (206 lines) — all <= 250 lines.
+
+9. **Code Quality, Static Hygiene & Test Suite Verification:**
+   - Static analysis (`flutter analyze --no-pub`): **0 issues found!**
+   - Formatter (`dart format --output=none --set-exit-if-changed lib test`): **0 unformatted files** across all 391 files.
+   - Full test suite: **432 tests passing** with exit code 0 (`flutter test --no-pub`).
+   - Line count audit: Every single Dart file strictly respects the **<= 250 line limit** (zero files over 250 lines).
+
+### Owner Check on Android
+
+Test Slice 6.3 on an Android phone or tablet:
+
+1. **Verify Outbox Status in Historiek:**
+   - Open the app and tap **Historiek** in the navigation drawer.
+   - Find the visit completed in Slice 6.2 (or complete a new visit via **Voltooien**).
+   - Tap the mail icon button (`visit_email_<id>`) on the visit card to open the **E-mailbezorging** card.
+   - Confirm the recipient(s) are listed with their status badge (e.g. **In wachtrij** or **Verzonden**).
+
+2. **Test Manual Send ("Nu verzenden"):**
+   - In the **E-mailbezorging** card, tap **Nu verzenden**.
+   - If SMTP is configured and connected, observe the progress spinner and confirm the status transitions to **Verzonden** with delivery timestamp.
+   - If offline or SMTP is not yet configured, verify the job remains safely **In wachtrij**.
+
+3. **Test Native Share Fallback ("Delen via Android"):**
+   - In the **E-mailbezorging** card, tap **Delen via Android**.
+   - Confirm the native Android share sheet opens showing the certificate PDF, ready to share via WhatsApp, Gmail, Drive, etc.
 
 ### Slice 6.2 Implementation Summary & Verification
 Slice 6.2 is **fully implemented and verified**. All required architectural, UI, and testing items have passed the Mandatory 3-Gate Pre-Handoff Quality Gate:

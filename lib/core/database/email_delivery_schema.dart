@@ -22,6 +22,8 @@ abstract final class EmailDeliverySchema {
         attempt_count INTEGER NOT NULL DEFAULT 0,
         sent_at TEXT,
         last_error TEXT,
+        resolved_at TEXT,
+        resolution_notes TEXT,
         created_at TEXT NOT NULL,
         updated_at TEXT NOT NULL,
         FOREIGN KEY (visit_id) REFERENCES maintenance_visits (id) ON DELETE RESTRICT

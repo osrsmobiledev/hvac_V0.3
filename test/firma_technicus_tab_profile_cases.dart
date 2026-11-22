@@ -111,7 +111,7 @@ void _profileTests() {
     expect(find.text('Bus 4B'), findsOneWidget);
     expect(find.text('Pieter'), findsOneWidget);
     expect(find.text('Claes'), findsOneWidget);
-    expect(find.text('GV99999'), findsOneWidget);
+    expect(find.text('99999'), findsOneWidget);
   });
 
   testWidgets(

@@ -1,48 +1,9 @@
 import 'package:sqflite/sqflite.dart';
 
 import '../../../core/database/app_database.dart';
+import 'email_job_models.dart';
 
-/// Recipient category used in `email_delivery_jobs.recipient_type`.
-enum RecipientType {
-  customer('customer'),
-  technician('technician');
-
-  final String value;
-  const RecipientType(this.value);
-}
-
-/// Result of creating queued email delivery jobs.
-enum EmailQueueResult {
-  /// One or more email jobs were newly inserted into the queue.
-  queued,
-
-  /// Jobs were already in the queue (skipped as idempotent duplicates).
-  alreadyQueued,
-
-  /// No recipients were selected or available; no jobs created.
-  skipped,
-}
-
-/// Data needed to create a queued email delivery job.
-class EmailJobSpec {
-  final int visitId;
-  final RecipientType recipientType;
-  final String recipientName;
-  final String recipientEmail;
-  final String subject;
-  final String bodyText;
-  final String pdfPath;
-
-  const EmailJobSpec({
-    required this.visitId,
-    required this.recipientType,
-    required this.recipientName,
-    required this.recipientEmail,
-    required this.subject,
-    required this.bodyText,
-    required this.pdfPath,
-  });
-}
+export 'email_job_models.dart';
 
 /// Repository that atomically creates queued email delivery jobs.
 ///
@@ -105,6 +66,162 @@ class EmailOutboxRepository {
       where: 'visit_id = ?',
       whereArgs: [visitId],
       orderBy: 'created_at ASC',
+    );
+  }
+
+  /// Returns the archived PDF path for [visitId] from maintenance_visits.
+  Future<String?> getPdfPathForVisit(int visitId) async {
+    final db = await _database();
+    final rows = await db.query(
+      'maintenance_visits',
+      columns: ['pdf_path'],
+      where: 'id = ?',
+      whereArgs: [visitId],
+      limit: 1,
+    );
+    return rows.isEmpty ? null : rows.first['pdf_path'] as String?;
+  }
+
+  /// Returns all jobs with `status = 'queued'` ordered by creation time.
+  Future<List<Map<String, Object?>>> getQueuedJobs() async {
+    final db = await _database();
+    return db.query(
+      'email_delivery_jobs',
+      where: "status = 'queued'",
+      orderBy: 'created_at ASC',
+    );
+  }
+
+  /// Atomically claims a job for sending by transitioning from 'queued' to 'sending'
+  /// and incrementing attempt_count. Returns true if successfully claimed.
+  Future<bool> claimJob(int jobId) async {
+    final db = await _database();
+    final now = DateTime.now().toIso8601String();
+    final changes = await db.rawUpdate(
+      '''UPDATE email_delivery_jobs
+         SET status = 'sending', attempt_count = attempt_count + 1, updated_at = ?
+         WHERE id = ? AND status = 'queued' ''',
+      [now, jobId],
+    );
+    return changes == 1;
+  }
+
+  /// Marks a job as successfully sent with the confirmed delivery timestamp.
+  Future<void> markSent(int jobId, {required String sentAt}) async {
+    final db = await _database();
+    final now = DateTime.now().toIso8601String();
+    await db.update(
+      'email_delivery_jobs',
+      {
+        'status': 'sent',
+        'sent_at': sentAt,
+        'failure_reason': null,
+        'last_error': null,
+        'updated_at': now,
+      },
+      where: 'id = ?',
+      whereArgs: [jobId],
+    );
+  }
+
+  /// Marks a job as failed with specific status and structured reason.
+  Future<void> markFailed(
+    int jobId, {
+    required String status,
+    required String failureReason,
+    String? lastError,
+  }) async {
+    final db = await _database();
+    final now = DateTime.now().toIso8601String();
+    await db.update(
+      'email_delivery_jobs',
+      {
+        'status': status,
+        'failure_reason': failureReason,
+        'last_error': lastError,
+        'updated_at': now,
+      },
+      where: 'id = ?',
+      whereArgs: [jobId],
+    );
+  }
+
+  /// Corrects a rejected recipient email in place while preserving original_recipient_email.
+  ///
+  /// Restricted to jobs in 'recipient_rejected' or 'failed' status.
+  Future<bool> updateRecipientEmail(int jobId, String newEmail) async {
+    final db = await _database();
+    final now = DateTime.now().toIso8601String();
+    final count = await db.update(
+      'email_delivery_jobs',
+      {
+        'recipient_email': newEmail.trim(),
+        'status': 'queued',
+        'failure_reason': null,
+        'last_error': null,
+        'updated_at': now,
+      },
+      where: "id = ? AND status IN ('recipient_rejected', 'failed')",
+      whereArgs: [jobId],
+    );
+    return count > 0;
+  }
+
+  /// Re-queues an uncertain or failed job for a technician-authorized retry.
+  ///
+  /// Restricted to jobs in 'uncertain_timeout', 'server_rejected', or 'failed' status.
+  Future<bool> requeueJob(int jobId) async {
+    final db = await _database();
+    final now = DateTime.now().toIso8601String();
+    final count = await db.update(
+      'email_delivery_jobs',
+      {'status': 'queued', 'updated_at': now},
+      where:
+          "id = ? AND status IN ('uncertain_timeout', 'server_rejected', 'failed')",
+      whereArgs: [jobId],
+    );
+    return count > 0;
+  }
+
+  /// Marks an uncertain delivery as resolved manually, preserving previous failure details.
+  Future<bool> markResolvedManually(
+    int jobId, {
+    required String resolvedAt,
+    required String notes,
+  }) async {
+    final trimmed = notes.trim();
+    if (trimmed.isEmpty) {
+      throw ArgumentError('Resolution notes must not be empty.');
+    }
+    final db = await _database();
+    final now = DateTime.now().toIso8601String();
+    final count = await db.update(
+      'email_delivery_jobs',
+      {
+        'status': 'resolved_manually',
+        'resolved_at': resolvedAt,
+        'resolution_notes': trimmed,
+        'updated_at': now,
+      },
+      where:
+          "id = ? AND status IN ('uncertain_timeout', 'recipient_rejected', 'server_rejected', 'failed')",
+      whereArgs: [jobId],
+    );
+    return count > 0;
+  }
+
+  /// Recovers any crashed in-flight 'sending' jobs by transitioning them to 'uncertain_timeout'.
+  Future<int> recoverStaleSendingJobs() async {
+    final db = await _database();
+    final now = DateTime.now().toIso8601String();
+    return db.rawUpdate(
+      '''UPDATE email_delivery_jobs
+         SET status = 'uncertain_timeout',
+             failure_reason = 'uncertain_timeout',
+             last_error = 'Onderbroken tijdens verzenden (stale sending recovery)',
+             updated_at = ?
+         WHERE status = 'sending' ''',
+      [now],
     );
   }
 }

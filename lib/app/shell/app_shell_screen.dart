@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../features/certificate_draft/ui/verbrandingsattest_screen.dart';
+import '../../features/email_delivery/data/email_delivery_coordinator.dart';
 import '../../features/technician_settings/technician_settings_applet.dart';
 import '../../features/visit_history/ui/visit_history_screen.dart';
 import '../dashboard/dashboard_screen.dart';
 import '../localization/app_dictionary.dart';
 import '../theme/app_colors.dart';
-import '../theme/app_theme.dart';
+import 'app_bar_title.dart';
 import 'app_drawer.dart';
 import 'app_shell_controller.dart';
 import 'applet_content_placeholder.dart';
@@ -19,18 +20,39 @@ import 'applet_content_placeholder.dart';
 /// - Adaptive navigation:
 ///   * On phones (< 720px): Hamburger icon opens the Drawer directly underneath the persistent AppBar.
 ///   * On tablets (>= 720px): Side menu is permanently docked on the left.
+/// - Outbox trigger: checks outbox on initial load and app resume.
 class AppShellScreen extends StatefulWidget {
-  const AppShellScreen({super.key});
+  final EmailDeliveryCoordinator? deliveryCoordinator;
+
+  const AppShellScreen({super.key, this.deliveryCoordinator});
 
   @override
   State<AppShellScreen> createState() => _AppShellScreenState();
 }
 
-class _AppShellScreenState extends State<AppShellScreen> {
+class _AppShellScreenState extends State<AppShellScreen>
+    with WidgetsBindingObserver {
+  late final EmailDeliveryCoordinator _deliveryCoordinator;
   final AppShellController _controller = AppShellController();
   final GlobalKey<ScaffoldState> _phoneScaffoldKey = GlobalKey<ScaffoldState>();
   bool _isDrawerOpen = false;
-  bool _hasOpenedCombustion = true;
+  bool _hasOpenedCombustion = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _deliveryCoordinator =
+        widget.deliveryCoordinator ?? EmailDeliveryCoordinator.instance;
+    WidgetsBinding.instance.addObserver(this);
+    _deliveryCoordinator.processOutbox();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _deliveryCoordinator.processOutbox();
+    }
+  }
 
   @override
   void didChangeDependencies() {
@@ -47,6 +69,7 @@ class _AppShellScreenState extends State<AppShellScreen> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _controller.dispose();
     super.dispose();
   }
@@ -137,7 +160,7 @@ class _AppShellScreenState extends State<AppShellScreen> {
                             }
                           },
                         ),
-                  title: _AppBarTitle(controller: _controller),
+                  title: AppBarTitle(controller: _controller),
                   bottom: const PreferredSize(
                     preferredSize: Size.fromHeight(1.0),
                     child: Divider(
@@ -195,42 +218,6 @@ class _AppShellScreenState extends State<AppShellScreen> {
           },
         );
       },
-    );
-  }
-}
-
-/// Displays the persistent AppBar title displaying a clean 1-line title
-/// auto-scaled with [FittedBox] so it never wraps or cuts off on any screen.
-class _AppBarTitle extends StatelessWidget {
-  final AppShellController controller;
-
-  const _AppBarTitle({required this.controller});
-
-  @override
-  Widget build(BuildContext context) {
-    if (controller.activeApplet == AppletType.combustion) {
-      return const FittedBox(
-        fit: BoxFit.scaleDown,
-        child: Text(
-          AppDictionary.menuCombustion,
-          textAlign: TextAlign.center,
-          maxLines: 1,
-          style: TextStyle(
-            fontFamily: AppTheme.fontFamily,
-            fontWeight: FontWeight.w700,
-            fontSize: 16.5,
-            letterSpacing: 0.2,
-          ),
-        ),
-      );
-    }
-    return Text(
-      controller.appBarTitle,
-      style: const TextStyle(
-        fontFamily: AppTheme.fontFamily,
-        fontWeight: FontWeight.w700,
-        fontSize: 20,
-      ),
     );
   }
 }

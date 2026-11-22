@@ -34,18 +34,12 @@ class AppDatabase {
     return await openDatabase(
       dbPath,
       version: DatabaseSchema.version,
-      onConfigure: (db) async {
-        // Enforce foreign key constraints across all relationships
-        await db.execute('PRAGMA foreign_keys = ON;');
-      },
-      onCreate: (db, version) async {
-        await DatabaseSchema.createAllTables(db);
-      },
+      onConfigure: (db) => db.execute('PRAGMA foreign_keys = ON;'),
+      onCreate: (db, _) => DatabaseSchema.createAllTables(db),
       onUpgrade: (db, oldVersion, newVersion) async {
         if (oldVersion < 2) {
           await db.execute(
-            'ALTER TABLE technician_profile ADD COLUMN box_number TEXT;',
-          );
+              'ALTER TABLE technician_profile ADD COLUMN box_number TEXT;');
         }
         if (oldVersion < 3) {
           // Columns added for Slice 3.1: Stooktoestel compliance
@@ -143,8 +137,7 @@ class AppDatabase {
         if (oldVersion < 7) {
           try {
             await db.execute(
-              'ALTER TABLE maintenance_visits ADD COLUMN customer_signature_exception TEXT;',
-            );
+                'ALTER TABLE maintenance_visits ADD COLUMN customer_signature_exception TEXT;');
           } catch (e, stack) {
             debugPrint('[AppDatabase] v7 migration query warning: $e\n$stack');
           }
@@ -152,8 +145,7 @@ class AppDatabase {
         if (oldVersion < 8) {
           try {
             await db.execute(
-              'ALTER TABLE technician_profile ADD COLUMN analyzer_serial_number TEXT;',
-            );
+                'ALTER TABLE technician_profile ADD COLUMN analyzer_serial_number TEXT;');
           } catch (e, stack) {
             debugPrint('[AppDatabase] v8 migration query warning: $e\n$stack');
           }
@@ -161,17 +153,14 @@ class AppDatabase {
         if (oldVersion < 9) {
           try {
             await db.execute(
-              'ALTER TABLE technician_profile ADD COLUMN analyzer_brand_model TEXT;',
-            );
+                'ALTER TABLE technician_profile ADD COLUMN analyzer_brand_model TEXT;');
           } catch (e, stack) {
             debugPrint('[AppDatabase] v9 migration query warning: $e\n$stack');
           }
         }
         if (oldVersion < 10) {
-          // A failed migration must leave the version eligible for retry.
           await db.execute(
-            'ALTER TABLE maintenance_visits ADD COLUMN klant_undo_json TEXT;',
-          );
+              'ALTER TABLE maintenance_visits ADD COLUMN klant_undo_json TEXT;');
         }
         if (oldVersion < 11) await createVekaAttemptTables(db);
         if (oldVersion < 12) {
@@ -201,6 +190,24 @@ class AppDatabase {
             }
           }
           await EmailDeliverySchema.createTablesAndIndexes(db);
+        }
+        if (oldVersion < 13) {
+          final tables = await db.rawQuery(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name='email_delivery_jobs';",
+          );
+          if (tables.isNotEmpty) {
+            final cols =
+                await db.rawQuery('PRAGMA table_info(email_delivery_jobs);');
+            final names = cols.map((r) => r['name'] as String).toSet();
+            if (!names.contains('resolved_at')) {
+              await db.execute(
+                  'ALTER TABLE email_delivery_jobs ADD COLUMN resolved_at TEXT;');
+            }
+            if (!names.contains('resolution_notes')) {
+              await db.execute(
+                  'ALTER TABLE email_delivery_jobs ADD COLUMN resolution_notes TEXT;');
+            }
+          }
         }
       },
     );

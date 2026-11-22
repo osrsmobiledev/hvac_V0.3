@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:hvac_app/app/localization/app_dictionary.dart';
 import 'package:hvac_app/app/theme/app_colors.dart';
 import 'package:hvac_app/core/utils/name_capitalization_formatter.dart';
+import 'package:hvac_app/core/utils/technician_recognition_formatters.dart';
 import '../../widgets/bento_main_section.dart';
 import 'firma_field.dart';
 import 'technician_timing_fields.dart';
@@ -19,6 +21,7 @@ class TechnicianSection extends StatefulWidget {
   final TextEditingController endTimeController;
   final VoidCallback onProfileChanged;
   final VoidCallback onTimingsChanged;
+  final String? fuelType;
 
   const TechnicianSection({
     super.key,
@@ -33,6 +36,7 @@ class TechnicianSection extends StatefulWidget {
     required this.endTimeController,
     required this.onProfileChanged,
     required this.onTimingsChanged,
+    this.fuelType,
   });
 
   @override
@@ -100,11 +104,17 @@ class _TechnicianSectionState extends State<TechnicianSection> {
                   label: AppDictionary.lblGV,
                   controller: widget.gvController,
                   hint: AppDictionary.hintGvNumber,
-                  textCapitalization: TextCapitalization.characters,
-                  validator: (_) => (widget.gvController.text.trim().isEmpty &&
-                          widget.tvController.text.trim().isEmpty)
-                      ? 'GV-nummer vereist'
-                      : null,
+                  prefixText: TechnicianRecognitionFormatters.gvPrefix,
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly,
+                    LengthLimitingTextInputFormatter(5),
+                  ],
+                  validator: (_) => TechnicianRecognitionFormatters.validateGv(
+                    widget.gvController.text,
+                    fuelType: widget.fuelType,
+                    isTvEmpty: widget.tvController.text.trim().isEmpty,
+                  ),
                   onChanged: _onGvChanged,
                 ),
               ),
@@ -115,11 +125,17 @@ class _TechnicianSectionState extends State<TechnicianSection> {
                   label: AppDictionary.lblTV,
                   controller: widget.tvController,
                   hint: AppDictionary.hintTvNumber,
-                  textCapitalization: TextCapitalization.characters,
-                  validator: (_) => (widget.gvController.text.trim().isEmpty &&
-                          widget.tvController.text.trim().isEmpty)
-                      ? 'TV-nummer vereist'
-                      : null,
+                  prefixText: TechnicianRecognitionFormatters.tvPrefix,
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly,
+                    LengthLimitingTextInputFormatter(5),
+                  ],
+                  validator: (_) => TechnicianRecognitionFormatters.validateTv(
+                    widget.tvController.text,
+                    fuelType: widget.fuelType,
+                    isGvEmpty: widget.gvController.text.trim().isEmpty,
+                  ),
                   onChanged: _onTvChanged,
                 ),
               ),

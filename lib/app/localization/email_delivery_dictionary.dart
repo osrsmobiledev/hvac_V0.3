@@ -1,8 +1,6 @@
 import 'package:hvac_app/features/email_delivery/data/email_settings_model.dart';
 
 /// Centralized Dutch (Flemish) strings for email delivery and configuration.
-///
-/// Follows the Flemish terminology and official app dictionary standards.
 abstract final class EmailDeliveryDictionary {
   // Section & Card Header
   static const String cardTitle = 'E-mailconfiguratie (SMTP)';
@@ -91,76 +89,56 @@ abstract final class EmailDeliveryDictionary {
   static const String btnRetryInit = 'Opnieuw proberen';
 
   // ── Recipient confirmation dialog (Slice 6.2) ────────────────────────────
-
-  /// Title shown above the recipient list in the confirmation dialog.
-  static const String recipientDialogTitle = 'Ontvangers bevestigen';
-
-  /// Intro text explaining that the certificate will be prepared in the outbox queue.
+  static const String recipientDialogTitle = 'Attest voltooien';
   static const String recipientDialogIntro =
-      'Het verbrandingsattest wordt klaargezet in de e-mailwachtrij als PDF-bijlage.';
-
-  /// Label prefix for the customer recipient row.
+      'Kies hoe u het verbrandingsattest wilt bezorgen:';
   static const String recipientCustomerLabel = 'Klant';
-
-  /// Label prefix for the technician copy row.
   static const String recipientTechnicianLabel = 'Kopie technicus';
-
-  /// Shown when the customer has no email address in the snapshot.
-  static const String recipientNoCustomerEmail =
-      'Geen e-mailadres beschikbaar voor klant.';
-
-  /// Shown when neither customer nor technician email is available.
+  static const String recipientNoCustomerEmail = 'Geen e-mailadres ingesteld';
+  static const String recipientDigitalDeliverySubtitle =
+      'Attest digitaal bezorgen via e-mail';
+  static const String recipientPaperNotice =
+      'Attest wordt bewaard voor afdrukken of postbezorging.';
   static const String recipientNoneAvailable =
       'Geen e-mailadres beschikbaar om naar te verzenden.';
-
-  /// Confirm button in the recipient dialog.
-  static const String recipientDialogConfirm = 'In wachtrij plaatsen';
-
-  /// Cancel button in the recipient dialog.
-  static const String recipientDialogCancel = 'Overslaan';
-
-  /// Toast shown after jobs are successfully queued.
+  static const String recipientDialogAbort = 'Annuleren';
+  static const String finalizeAndEmailAction = 'Voltooien & E-mailen';
+  static const String finalizeTechnicianCopyOnlyAction = 'Kopie naar technicus';
+  static const String finalizeOnlySaveAction = 'Alleen bewaren';
+  static const String finalizeLaterHint =
+      'Tip: U kunt het attest later altijd nog e-mailen of delen via Historiek.';
+  static const String finalizationUnconfiguredHint =
+      'Attest bewaard. E-mail staat in wachtrij (configureer eerst SMTP in Instellingen).';
+  static const String finalizationCancelled =
+      'Voltooien geannuleerd — attest blijft als concept.';
   static const String recipientJobsQueued =
       'E-mailtaak klaargezet in de wachtrij.';
-
-  /// Toast shown when jobs were already queued previously (idempotent duplicate).
   static const String recipientJobsAlreadyQueued =
       'E-mailtaak stond reeds in de wachtrij.';
-
-  /// Toast shown when the technician cancels the recipient dialog.
   static const String recipientDialogSkipped =
-      'Attest opgeslagen. E-mail overgeslagen.';
-
-  /// Toast shown after PDF archive succeeds.
+      'Attest bewaard in Historiek. E-mail overgeslagen.';
+  static const String outboxUnconfiguredNotice =
+      'E-mailaccount is nog niet geconfigureerd. Stel eerst uw SMTP-gegevens in via Instellingen.';
+  static const String outboxNeedsAttentionNotice =
+      'E-mailinstellingen vereisen aandacht. Controleer uw app-wachtwoord in Instellingen.';
+  static const String outboxOfflineNotice =
+      'Geen internetverbinding bereikbaar. Taken blijven veilig in de wachtrij.';
+  static const String outboxSendSuccess = 'E-mail(s) succesvol verzonden.';
   static const String archiveSuccess = 'PDF-archief aangemaakt.';
-
-  /// Toast shown when PDF archive fails (but visit is preserved).
   static const String archiveFailure =
       'PDF-archivering mislukt — attest bewaard, e-mail geblokkeerd.';
-
-  /// Toast shown when outbox queue insertion fails while visit & PDF are preserved.
   static const String outboxQueueFailed =
       'Toevoegen aan e-mailwachtrij mislukt.';
-
-  /// Title for dialog when outbox queue insertion fails.
   static const String outboxRetryDialogTitle = 'E-mailwachtrij mislukt';
-
-  /// Message explaining visit & PDF are safe, offering to retry outbox queueing.
   static const String outboxRetryDialogMessage =
       'Het attest en de PDF zijn veilig bewaard, maar het toevoegen aan de '
       'e-mailwachtrij is mislukt. Wilt u het opnieuw proberen?';
-
-  /// Action button to retry outbox queueing.
   static const String outboxRetryAction = 'Opnieuw proberen';
-
-  /// Action button to skip outbox queueing.
   static const String outboxRetryCancel = 'Overslaan';
-
-  /// Toast shown when outbox queueing is skipped after a failure.
   static const String outboxQueueSkippedAfterFailure =
       'Attest bewaard. E-mailwachtrij overgeslagen.';
 
-  // ── PDF database registration retry (Slice 6.2) ─────────────────────────
+  // ── PDF registration retry (Slice 6.2) ──────────────────────────────────
   static const String pdfRegistrationRetryTitle =
       'Database-registratie mislukt';
   static const String pdfRegistrationRetryMessage =
@@ -169,8 +147,6 @@ abstract final class EmailDeliveryDictionary {
       'heeft het voltooide bezoek geen gearchiveerd PDF-attest.';
   static const String pdfRegistrationRetryAction = 'Opnieuw proberen';
   static const String pdfRegistrationRetryCancel = 'Verwijderen en overslaan';
-
-  // Second confirmation dialog before destructive deletion
   static const String pdfRegistrationDeleteConfirmTitle =
       'Niet-geregistreerde PDF verwijderen?';
   static const String pdfRegistrationDeleteConfirmMessage =
@@ -186,9 +162,54 @@ abstract final class EmailDeliveryDictionary {
   static const String pdfFileNotFoundError =
       'Gearchiveerd PDF-bestand niet gevonden op het toestel.';
 
+  // ── Historiek email tracker & recovery (Slice 6.3) ──────────────────────
+  static const String trackerDialogTitle = 'E-mailbezorging';
+  static const String trackerNoJobs = 'Geen e-mailtaken voor dit attest.';
+  static const String trackerEmptyExplanation =
+      'Dit attest is bewaard zonder e-mail. U kunt het alsnog bezorgen:';
+  static const String actionSendEmailLater = 'Alsnog e-mailen';
+  static const String badgeQueued = 'In wachtrij';
+  static const String badgeSending = 'Verzenden...';
+  static const String badgeSent = 'Verzonden';
+  static const String badgeRecipientRejected = 'Adres geweigerd';
+  static const String badgeServerRejected = 'Server geweigerd';
+  static const String badgeUncertainTimeout = 'Onzekere aflevering';
+  static const String badgeResolvedManually = 'Handmatig opgelost';
+  static const String actionSendNow = 'Nu verzenden';
+  static const String actionSharePdf = 'Attest delen';
+  static const String actionCorrectEmail = 'E-mailadres aanpassen';
+  static const String actionRetry = 'Opnieuw proberen';
+  static const String actionResolveManually = 'Markeren als handmatig opgelost';
+  static const String actionClose = 'Sluiten';
+  static const String labelOriginalEmail = 'Oorspronkelijk:';
+  static const String labelSentAt = 'Verzonden op:';
+  static const String labelResolvedAt = 'Opgelost op:';
+  static const String labelResolutionNotes = 'Toelichting:';
+  static const String labelLastError = 'Foutmelding:';
+  static const String correctEmailTitle = 'E-mailadres aanpassen';
+  static const String correctEmailPrompt =
+      'Voer het gecorrigeerde e-mailadres in om de taak opnieuw klaar te zetten:';
+  static const String correctEmailFieldLabel = 'Nieuw e-mailadres';
+  static const String correctEmailInvalid = 'Ongeldig e-mailadres';
+  static const String correctEmailConfirm = 'Aanpassen en verzenden';
+  static const String correctEmailCancel = 'Annuleren';
+  static const String uncertainRetryTitle = 'Mogelijk reeds ontvangen';
+  static const String uncertainRetryMessage =
+      'De vorige verzending werd onderbroken na verzending. De ontvanger heeft '
+      'het attest mogelijk al ontvangen. Wilt u het attest toch opnieuw verzenden?';
+  static const String uncertainRetryConfirm = 'Toch opnieuw verzenden';
+  static const String uncertainRetryCancel = 'Annuleren';
+  static const String manualResolveTitle = 'Handmatig oplossen';
+  static const String manualResolveMessage =
+      'Bevestig dat dit attest handmatig is bezorgd (bv. afgeprint of getoond).';
+  static const String manualResolveNotesLabel =
+      'Toelichting (bv. print meegegeven)';
+  static const String manualResolveConfirm = 'Bevestigen';
+  static const String manualResolveCancel = 'Annuleren';
+  static const String sharePdfError =
+      'Gearchiveerd PDF-bestand niet gevonden om te delen.';
+
   /// Email subject line for a certificate.
-  ///
-  /// [attestNumber] is substituted at runtime. Set [isCopy] to true for the technician copy.
   static String emailSubject(String attestNumber, {bool isCopy = false}) {
     final clean = attestNumber.trim();
     final base =
@@ -209,25 +230,15 @@ abstract final class EmailDeliveryDictionary {
   static const String emailBodyTechnician =
       'Kopie verbrandingsattest — intern exemplaar.';
 
-  // ─────────────────────────────────────────────────────────────────────────
-
   /// Maps typed [SmtpConnectionResult] to a user-facing Flemish feedback string.
-  static String messageForConnectionResult(SmtpConnectionResult result) {
-    switch (result) {
-      case SmtpConnectionResult.success:
-        return testConnectionSuccess;
-      case SmtpConnectionResult.authenticationFailed:
-        return authFailed;
-      case SmtpConnectionResult.networkTimeout:
-        return networkTimeout;
-      case SmtpConnectionResult.socketError:
-        return socketError;
-      case SmtpConnectionResult.tlsHandshakeError:
-        return tlsError;
-      case SmtpConnectionResult.configurationError:
-        return configError;
-      case SmtpConnectionResult.serverError:
-        return serverError;
-    }
-  }
+  static String messageForConnectionResult(SmtpConnectionResult result) =>
+      switch (result) {
+        SmtpConnectionResult.success => testConnectionSuccess,
+        SmtpConnectionResult.authenticationFailed => authFailed,
+        SmtpConnectionResult.networkTimeout => networkTimeout,
+        SmtpConnectionResult.socketError => socketError,
+        SmtpConnectionResult.tlsHandshakeError => tlsError,
+        SmtpConnectionResult.configurationError => configError,
+        SmtpConnectionResult.serverError => serverError,
+      };
 }

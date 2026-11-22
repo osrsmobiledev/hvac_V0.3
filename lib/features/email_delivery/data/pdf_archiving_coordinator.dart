@@ -4,7 +4,6 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:sqflite/sqflite.dart';
 
-import '../../../app/localization/email_delivery_dictionary.dart';
 import '../../../core/database/app_database.dart';
 import 'archive_outcome.dart';
 import 'email_outbox_repository.dart';
@@ -15,13 +14,12 @@ import 'pdf_archive_service.dart';
 /// This is the data-layer coordinator; UI only calls it, never executes SQL directly.
 class PdfArchivingCoordinator {
   static ArchiveOutcome _failureOutcome(String error) => ArchiveOutcome(
-        archiveSuccess: false,
-        archivePath: '',
-        errorMessage: error,
-        copyTechnicianDefault: true,
-        technicianEmail: '',
-        snapshot: const {},
-      );
+      archiveSuccess: false,
+      archivePath: '',
+      errorMessage: error,
+      copyTechnicianDefault: true,
+      technicianEmail: '',
+      snapshot: const {});
 
   final Future<Database> Function() _database;
   final EmailOutboxRepository _outbox;
@@ -187,29 +185,16 @@ class PdfArchivingCoordinator {
     required String technicianEmail,
     required String attestNumber,
   }) async {
-    final jobs = <EmailJobSpec>[
-      if (sendToCustomer && customerEmail.isNotEmpty)
-        EmailJobSpec(
-          visitId: visitId,
-          recipientType: RecipientType.customer,
-          recipientName: customerName,
-          recipientEmail: customerEmail,
-          subject: EmailDeliveryDictionary.emailSubject(attestNumber),
-          bodyText: EmailDeliveryDictionary.emailBodyCustomer(attestNumber),
-          pdfPath: pdfPath,
-        ),
-      if (sendToTechnician && technicianEmail.isNotEmpty)
-        EmailJobSpec(
-          visitId: visitId,
-          recipientType: RecipientType.technician,
-          recipientName: 'Technicus',
-          recipientEmail: technicianEmail,
-          subject:
-              EmailDeliveryDictionary.emailSubject(attestNumber, isCopy: true),
-          bodyText: EmailDeliveryDictionary.emailBodyTechnician,
-          pdfPath: pdfPath,
-        ),
-    ];
+    final jobs = EmailJobSpec.buildJobs(
+      visitId: visitId,
+      pdfPath: pdfPath,
+      sendToCustomer: sendToCustomer,
+      customerName: customerName,
+      customerEmail: customerEmail,
+      sendToTechnician: sendToTechnician,
+      technicianEmail: technicianEmail,
+      attestNumber: attestNumber,
+    );
     if (jobs.isEmpty) return EmailQueueResult.skipped;
     final inserted = await _outbox.createJobs(jobs);
     return inserted > 0
@@ -217,13 +202,25 @@ class PdfArchivingCoordinator {
         : EmailQueueResult.alreadyQueued;
   }
 
+  /// Loads default technician copy preference and email address from SQLite.
+  Future<({bool copyTechnician, String technicianEmail})>
+      loadSmtpDefaults() async {
+    final db = await _database();
+    final row = await _loadSmtpRow(db);
+    return (
+      copyTechnician: (row['email_copy_technician'] as int? ?? 1) == 1,
+      technicianEmail: (row['email'] as String? ?? '').trim(),
+    );
+  }
+
   Future<Map<String, Object?>> _loadSmtpRow(Database db) async {
     try {
       final rows = await db.query('technician_profile',
           columns: ['email', 'email_copy_technician'], limit: 1);
       return rows.isNotEmpty ? rows.first : const {};
-    } catch (_) {}
-    return const {};
+    } catch (_) {
+      return const {};
+    }
   }
 
   Future<void> _recordFailureIfFinalized(Database db, int visitId) async {

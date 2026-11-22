@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:hvac_app/core/utils/belgian_formatters.dart';
+import 'package:hvac_app/core/utils/technician_recognition_formatters.dart';
 import '../../../domain/draft_visit.dart';
 import '../../../domain/technician_profile.dart';
 
@@ -71,8 +72,10 @@ abstract final class FirmaProfileSync {
         BelgianFormatters.stripKboPrefix(profile.kboNumber);
     controllers.firstName.text = profile.technicianFirstName;
     controllers.lastName.text = profile.technicianLastName;
-    controllers.gv.text = profile.gvNumber;
-    controllers.tv.text = profile.tvNumber;
+    controllers.gv.text =
+        TechnicianRecognitionFormatters.stripGvPrefix(profile.gvNumber);
+    controllers.tv.text =
+        TechnicianRecognitionFormatters.stripTvPrefix(profile.tvNumber);
     controllers.analyzerBrand.text = profile.analyzerBrandModel;
     controllers.analyzerSerial.text = profile.analyzerSerialNumber;
     final today = draft.visitDate.isNotEmpty
@@ -97,8 +100,8 @@ abstract final class FirmaProfileSync {
       kboNumber: BelgianFormatters.normalizeKbo(c.kboNumber.text),
       technicianFirstName: c.firstName.text.trim(),
       technicianLastName: c.lastName.text.trim(),
-      gvNumber: c.gv.text.trim(),
-      tvNumber: c.tv.text.trim(),
+      gvNumber: TechnicianRecognitionFormatters.normalizeGv(c.gv.text),
+      tvNumber: TechnicianRecognitionFormatters.normalizeTv(c.tv.text),
       analyzerBrandModel: c.analyzerBrand.text.trim(),
       analyzerSerialNumber: c.analyzerSerial.text.trim(),
     );
