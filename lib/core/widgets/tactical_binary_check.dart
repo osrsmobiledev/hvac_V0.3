@@ -37,12 +37,52 @@ class TacticalBinaryCheck extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (isCompact) {
-      return _buildCompact(context);
+      return _CompactBinaryCheck(
+        value: value,
+        onChanged: onChanged,
+        positiveLabel: positiveLabel,
+        negativeLabel: negativeLabel,
+        height: height,
+        width: width,
+        useNokLabel: useNokLabel,
+        isSymmetricalGold: isSymmetricalGold,
+      );
     }
-    return _buildStandard(context);
+    return _StandardBinaryCheck(
+      value: value,
+      onChanged: onChanged,
+      positiveLabel: positiveLabel,
+      negativeLabel: negativeLabel,
+      height: height,
+      useNokLabel: useNokLabel,
+      isSymmetricalGold: isSymmetricalGold,
+    );
   }
+}
 
-  Widget _buildCompact(BuildContext context) {
+class _CompactBinaryCheck extends StatelessWidget {
+  final bool? value;
+  final ValueChanged<bool?> onChanged;
+  final String? positiveLabel;
+  final String? negativeLabel;
+  final double height;
+  final double? width;
+  final bool useNokLabel;
+  final bool isSymmetricalGold;
+
+  const _CompactBinaryCheck({
+    required this.value,
+    required this.onChanged,
+    required this.positiveLabel,
+    required this.negativeLabel,
+    required this.height,
+    required this.width,
+    required this.useNokLabel,
+    required this.isSymmetricalGold,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     final effectivePositive = positiveLabel ?? MetingDictionary.lblOk;
     final effectiveNegative = negativeLabel ??
         (useNokLabel ? MetingDictionary.lblNok : MetingDictionary.lblNotOk);
@@ -111,8 +151,29 @@ class TacticalBinaryCheck extends StatelessWidget {
       ),
     );
   }
+}
 
-  Widget _buildStandard(BuildContext context) {
+class _StandardBinaryCheck extends StatelessWidget {
+  final bool? value;
+  final ValueChanged<bool?> onChanged;
+  final String? positiveLabel;
+  final String? negativeLabel;
+  final double height;
+  final bool useNokLabel;
+  final bool isSymmetricalGold;
+
+  const _StandardBinaryCheck({
+    required this.value,
+    required this.onChanged,
+    required this.positiveLabel,
+    required this.negativeLabel,
+    required this.height,
+    required this.useNokLabel,
+    required this.isSymmetricalGold,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     final effectivePositive = positiveLabel ?? MetingDictionary.lblOk;
     final effectiveNegative = negativeLabel ??
         (useNokLabel ? MetingDictionary.lblNok : MetingDictionary.lblNotOk);

@@ -92,9 +92,17 @@ class Bo2TimeWheels extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    _buildWheel(hourController, 24, onHourChanged),
+                    _Bo2WheelColumn(
+                      controller: hourController,
+                      count: 24,
+                      onChanged: onHourChanged,
+                    ),
                     const SizedBox(width: 36),
-                    _buildWheel(minuteController, 60, onMinuteChanged),
+                    _Bo2WheelColumn(
+                      controller: minuteController,
+                      count: 60,
+                      onChanged: onMinuteChanged,
+                    ),
                   ],
                 ),
               ),
@@ -104,12 +112,21 @@ class Bo2TimeWheels extends StatelessWidget {
       ),
     );
   }
+}
 
-  Widget _buildWheel(
-    FixedExtentScrollController controller,
-    int count,
-    ValueChanged<int> onChanged,
-  ) {
+class _Bo2WheelColumn extends StatelessWidget {
+  final FixedExtentScrollController controller;
+  final int count;
+  final ValueChanged<int> onChanged;
+
+  const _Bo2WheelColumn({
+    required this.controller,
+    required this.count,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return SizedBox(
       width: 100,
       child: CupertinoPicker(

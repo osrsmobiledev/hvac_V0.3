@@ -54,15 +54,16 @@ class StepperInputBox extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  _stepperBtn(
+                  _StepperButton(
                     icon: Icons.remove,
                     isLeft: true,
+                    height: height,
                     onTap: () {
                       onNudgeDown?.call();
                       fieldState.didChange(controller.text);
                     },
                   ),
-                  _divider(),
+                  _StepperDivider(height: height),
                   Expanded(
                     child: TextFormField(
                       controller: controller,
@@ -94,10 +95,11 @@ class StepperInputBox extends StatelessWidget {
                       },
                     ),
                   ),
-                  _divider(),
-                  _stepperBtn(
+                  _StepperDivider(height: height),
+                  _StepperButton(
                     icon: Icons.add,
                     isLeft: false,
+                    height: height,
                     onTap: () {
                       onNudgeUp?.call();
                       fieldState.didChange(controller.text);
@@ -111,12 +113,23 @@ class StepperInputBox extends StatelessWidget {
       },
     );
   }
+}
 
-  Widget _stepperBtn({
-    required IconData icon,
-    required bool isLeft,
-    required VoidCallback onTap,
-  }) {
+class _StepperButton extends StatelessWidget {
+  final IconData icon;
+  final bool isLeft;
+  final double height;
+  final VoidCallback onTap;
+
+  const _StepperButton({
+    required this.icon,
+    required this.isLeft,
+    required this.height,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -134,8 +147,15 @@ class StepperInputBox extends StatelessWidget {
       ),
     );
   }
+}
 
-  Widget _divider() {
+class _StepperDivider extends StatelessWidget {
+  final double height;
+
+  const _StepperDivider({required this.height});
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
       width: 1.0,
       height: height - 16,

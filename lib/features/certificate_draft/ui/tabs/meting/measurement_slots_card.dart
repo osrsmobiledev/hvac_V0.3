@@ -46,34 +46,6 @@ class MeasurementSlotsCard extends StatelessWidget {
     required this.onChanged,
   });
 
-  Widget _buildSlotLayout(String slotKey) {
-    final s = slots[slotKey] ?? SlotFormControllers();
-    return CombustionFieldsLayout(
-      key: ValueKey(slotKey),
-      boiler: boiler,
-      activeSlot: slotKey,
-      coOk: s.coOk,
-      onCoOkChanged: (v) {
-        s.setManualCoOk(v, boiler);
-        onChanged();
-      },
-      efficiencyHiOk: s.efficiencyHiOk,
-      onEfficiencyHiOkChanged: (v) {
-        s.setManualHiOk(v, boiler);
-        onChanged();
-      },
-      o2Controller: s.o2,
-      co2Controller: s.co2,
-      coMgKwhController: s.coMgKwh,
-      flueTempTgController: s.flueTempTg,
-      ambientTempTaController: s.ambientTempTa,
-      calculatedNetTemp: s.calculatedNetTemp,
-      efficiencyHiController: s.efficiencyHi,
-      efficiencyHsController: s.efficiencyHs,
-      onChanged: onChanged,
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     int activeIndex = 0;
@@ -104,13 +76,72 @@ class MeasurementSlotsCard extends StatelessWidget {
           IndexedStack(
             index: activeIndex,
             children: [
-              _buildSlotLayout('proef1'),
-              _buildSlotLayout('proef2_laaglast'),
-              _buildSlotLayout('proef2_hooglast'),
+              _MeasurementSlotView(
+                slotKey: 'proef1',
+                boiler: boiler,
+                slotControllers: slots['proef1'] ?? SlotFormControllers(),
+                onChanged: onChanged,
+              ),
+              _MeasurementSlotView(
+                slotKey: 'proef2_laaglast',
+                boiler: boiler,
+                slotControllers:
+                    slots['proef2_laaglast'] ?? SlotFormControllers(),
+                onChanged: onChanged,
+              ),
+              _MeasurementSlotView(
+                slotKey: 'proef2_hooglast',
+                boiler: boiler,
+                slotControllers:
+                    slots['proef2_hooglast'] ?? SlotFormControllers(),
+                onChanged: onChanged,
+              ),
             ],
           ),
         ],
       ),
+    );
+  }
+}
+
+class _MeasurementSlotView extends StatelessWidget {
+  final String slotKey;
+  final BoilerDraft boiler;
+  final SlotFormControllers slotControllers;
+  final VoidCallback onChanged;
+
+  const _MeasurementSlotView({
+    required this.slotKey,
+    required this.boiler,
+    required this.slotControllers,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return CombustionFieldsLayout(
+      key: ValueKey(slotKey),
+      boiler: boiler,
+      activeSlot: slotKey,
+      coOk: slotControllers.coOk,
+      onCoOkChanged: (v) {
+        slotControllers.setManualCoOk(v, boiler);
+        onChanged();
+      },
+      efficiencyHiOk: slotControllers.efficiencyHiOk,
+      onEfficiencyHiOkChanged: (v) {
+        slotControllers.setManualHiOk(v, boiler);
+        onChanged();
+      },
+      o2Controller: slotControllers.o2,
+      co2Controller: slotControllers.co2,
+      coMgKwhController: slotControllers.coMgKwh,
+      flueTempTgController: slotControllers.flueTempTg,
+      ambientTempTaController: slotControllers.ambientTempTa,
+      calculatedNetTemp: slotControllers.calculatedNetTemp,
+      efficiencyHiController: slotControllers.efficiencyHi,
+      efficiencyHsController: slotControllers.efficiencyHs,
+      onChanged: onChanged,
     );
   }
 }
