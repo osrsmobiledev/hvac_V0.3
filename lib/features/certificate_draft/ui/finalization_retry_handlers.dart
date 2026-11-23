@@ -113,6 +113,7 @@ abstract final class FinalizationRetryHandlers {
           technicianEmail: confirmation.technicianEmail,
           attestNumber: PdfArchivingCoordinator.attestNumberFromSnapshot(
               archiveOutcome.snapshot),
+          customerNote: confirmation.customNote,
         );
         if (!context.mounted) return;
         final msg = switch (result) {

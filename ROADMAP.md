@@ -50,13 +50,37 @@
 - [x] **Slice 6.1 — Email Configuration & Connection Test:** Configure outbound SMTP settings (Gmail App-password or Custom SMTP with SSL/TLS vs STARTTLS) with auto-send and technician-copy options. Store passwords via a recoverable staged credential protocol (`smtp_password_staged` -> `smtp_password` in `flutter_secure_storage: ^9.2.2` with `smtp_state` in SQLite v12), verify credentials cleanly via `package:mailer ^7.2.0` (`checkCredentials`) with instant tactical feedback, and provide a single-account disconnect action (**E-mailinstellingen wissen**) with confirmation dialog and crash-safe clearing protocol (`clearing` -> `unconfigured`). Target destination is **Instellingen** (`AppletType.technicianSettings`), top-aligned using `WorkflowTabContainer` to match the Verbrandingsattest Bento layout. Status: Completed & verified (37 focused email tests + 6 theme/navigation tests passing, 358 full suite tests passing, 0 analyzer lints, all files <= 250 lines). Tested on Android by owner.
 - [x] **Slice 6.2 — PDF Archiving & Outbox Creation:** On visit finalization (`Voltooien`), freeze the certificate snapshot in SQLite, stage and verify the PDF in `certificates/staging/` via dedicated `PdfArchiveService` under isolate-level `Lock()`, publish to unique filename in `certificates/`, prompt recipient confirmation (`EmailRecipientDialog`), and queue frozen jobs in `email_delivery_jobs`. Status: Completed & accepted on Android by owner (28 focused tests passing, 386 full suite tests passing, 0 analyzer lints, all files <= 250 lines).
 - [x] **Slice 6.3 — Offline Outbox, History Tracker & Native Share:** Dispatch queued emails triggered from root UI shell on app resume, verify connection via `mailer.checkCredentials()` (preflight failure leaves jobs `queued` with their `attempt_count` unchanged, which is 0 for fresh, never-claimed jobs), claim jobs atomair under app-scoped lock, classify recipient rejections via isolated `classifyCommunicationException` matching locked `mailer` responses (`RCPT TO` unambiguously recipient-specific `5.1.x`/`551`/`553` on first reply line -> `recipient_rejected`, ambiguous bare `550`, `4xx` temporary or `5.7.x` policy rejections and `MAIL FROM` -> `server_rejected`, in-flight auth failure -> marks current job `server_rejected` with `failure_reason = 'authentication_failed'`, sets `smtp_state = 'needs_attention'`, stops the batch via early return, and leaves later unclaimed jobs in `queued` with their `attempt_count` unchanged, which is 0 for fresh, never-claimed jobs), handle `uncertain_timeout` with duplicate-risk confirmation on retry, support in-place address corrections restricted to eligible failure statuses, execute real database schema migration to v13 (adding `resolved_at` and `resolution_notes` to `email_delivery_jobs` via `AppDatabase.onUpgrade`), require non-empty resolution notes without fallbacks, support PDF archive recovery in Historiek ("Archivering opnieuw proberen" for `pdf_status = 'failed'` preserving `snapshot_json`), offer "Alsnog e-mailen" (reading frozen `snapshot_json`; technician-only copy requires configured/selected technician email; Option A confirmed by owner allowing technician-only copy), and offer zero-config native share sheet fallback via `Printing.sharePdf` with asynchronous file operations. Status: Completed and accepted on Android by owner (Option A confirmed: technician-only dispatch without customer email is accepted product intent; native PDF sharing and offline outbox handling verified on Android device; post-audit fixes for in-flight auth abort, PDF archive recovery, and write-boundary validation verified across 448 automated tests, 0 analyzer lints, all files <= 250 lines).
-- [ ] **Slice 6.4 — Aanpasbare E-mailtekst & Notities:** Allow technician to customize outgoing email text and append visit-specific notes (under brainstorming).
+- [x] **Slice 6.4 — Optionele Klanten-Opmerking & Voorwaardelijke Gating:** Allow technician to add an optional message to the customer's email via an expandable Material 3 text field behind "Opmerking toevoegen". Enforce 3-layer dependency invariant: note input renders only when customer has email and is checked; unchecking customer or cancelling collapses the field, clears controller, and unfocuses keyboard; `EmailJobSpec.buildJobs` enforces lowest-boundary pruning and 500-character safety limit so technician copies never produce false remark claims when no customer email is dispatched. Full text frozen into `email_delivery_jobs.body_text` for retries and Historiek tracking. Works for both visit finalization and "Alsnog e-mailen". Status: Completed and accepted on Android by owner (10 focused tests passing, 458 full suite tests passing, 0 analyzer lints, all files <= 250 lines).
 
 ---
 
 ## 2. Current Handoff (Active State for AI Agent)
 
-**Active Milestone: Milestone 6 (Email Delivery & PDF Archiving). Slice 6.3 completed and accepted on Android by owner (Option A confirmed, device checks passed, 448 tests passing). Next active slice: Slice 6.4 (Aanpasbare E-mailtekst & Notities).**
+**Active Milestone: Milestone 6 (Email Delivery & PDF Archiving). Slice 6.4 completed and accepted on Android by owner (458 tests passing). Next active milestone / slice: Milestone 6 complete; ready for next feature brainstorming.**
+
+### Slice 6.4 Implementation Summary & Verification
+Slice 6.4 completed and accepted on Android by the owner. Full implementation and 3-layer dependency invariant verified across the 458-test automated suite (0 analyzer lints, all files <= 250 lines):
+
+1. **Expandable Note Input Component (`EmailCustomNoteInput`):**
+   - Starts collapsed with compact "Opmerking toevoegen" button (`Icons.note_add_outlined`).
+   - Expands on tap to show standard Material 3 multiline `TextField` with `maxLength: 500`, `MaxLengthEnforcement.enforced`, and dense styling.
+   - Close button with tooltip (`EmailDeliveryDictionary.emailNoteActionRemove`) clears the controller and drops the software keyboard (`FocusScope.of(context).unfocus()`).
+
+2. **UI Dependency Gating (`RecipientDialogContent` & `EmailRecipientDialog`):**
+   - Note input is conditionally rendered only when `customerEmail.trim().isNotEmpty && sendCustomer`. If customer has no email or is unchecked, the note field does not exist in the widget tree.
+   - Unchecking customer checkbox immediately clears `_noteController` and unfocuses the keyboard. Re-checking starts clean and collapsed.
+   - Confirming with customer unchecked strictly returns `customNote: null`.
+
+3. **Lowest Data Boundary Invariant (`EmailJobSpec.buildJobs`):**
+   - Computes `effectiveNote` once: valid only when `hasCustomer && rawTrimmed.isNotEmpty`, sanitized and truncated at 500 characters.
+   - Both customer and technician jobs receive the identical `effectiveNote`.
+   - If no customer email is dispatched, `effectiveNote = null`; technician copy never makes false claims of a customer remark.
+   - Full body text frozen into SQLite `body_text` on queueing, preserving exact text across retries and Historiek outbox tracker.
+   - Integrated with both visit finalization and Historiek "Alsnog e-mailen" flow.
+
+4. **Quality Gates & Test Coverage:**
+   - 10 focused tests in `test/email_custom_note_test.dart` and `test/email_custom_note_dialog_test.dart` covering dictionary formatting, boundary pruning, 500-char limits, UI gating, and buffer reset.
+   - Full gate pass: 458 tests green, 0 static analysis issues, all files <= 250 lines. Tested and confirmed on Android device by owner.
 
 ### Slice 6.3 Implementation Summary & Verification
 Slice 6.3 core implementation was accepted earlier on Android by the owner, with post-audit closure still pending. Post-audit fixes are verified across the 441-test automated suite (0 analyzer lints, all files <= 250 lines). Post-audit device re-tests, the open owner decision, and implementation/test gaps are recorded below:

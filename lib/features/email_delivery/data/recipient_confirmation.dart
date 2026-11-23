@@ -5,6 +5,7 @@ class RecipientConfirmation {
   final String customerName;
   final bool sendToTechnician;
   final String technicianEmail;
+  final String? customNote;
 
   const RecipientConfirmation({
     required this.sendToCustomer,
@@ -12,6 +13,7 @@ class RecipientConfirmation {
     required this.customerName,
     required this.sendToTechnician,
     required this.technicianEmail,
+    this.customNote,
   });
 }
 

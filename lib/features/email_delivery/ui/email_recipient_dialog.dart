@@ -57,13 +57,21 @@ class EmailRecipientDialog extends StatefulWidget {
 class _EmailRecipientDialogState extends State<EmailRecipientDialog> {
   late bool _copyTechnician;
   late bool _sendCustomer;
+  late final TextEditingController _noteController;
 
   @override
   void initState() {
     super.initState();
+    _noteController = TextEditingController();
     _copyTechnician =
         widget.defaultCopyTechnician && widget.technicianEmail.isNotEmpty;
     _sendCustomer = widget.snapshot.klantEmail.trim().isNotEmpty;
+  }
+
+  @override
+  void dispose() {
+    _noteController.dispose();
+    super.dispose();
   }
 
   String get _customerEmail => widget.snapshot.klantEmail.trim();
@@ -100,12 +108,15 @@ class _EmailRecipientDialogState extends State<EmailRecipientDialog> {
   }
 
   void _onConfirm() {
+    final note = _noteController.text.trim();
+    final effectiveCustomerSend = _sendCustomer && _hasCustomerEmail;
     final result = RecipientConfirmation(
-      sendToCustomer: _sendCustomer && _hasCustomerEmail,
+      sendToCustomer: effectiveCustomerSend,
       customerEmail: _customerEmail,
       customerName: _customerName,
       sendToTechnician: _copyTechnician && _hasTechnicianEmail,
       technicianEmail: widget.technicianEmail,
+      customNote: (effectiveCustomerSend && note.isNotEmpty) ? note : null,
     );
     Navigator.of(context).pop(RecipientDialogResult.queue(result));
   }
@@ -191,7 +202,16 @@ class _EmailRecipientDialogState extends State<EmailRecipientDialog> {
           hasInitialCustomerEmail: _hasCustomerEmail,
           sendCustomer: _sendCustomer,
           onSendCustomerChanged: _hasCustomerEmail
-              ? (val) => setState(() => _sendCustomer = val ?? false)
+              ? (val) {
+                  final next = val ?? false;
+                  setState(() {
+                    _sendCustomer = next;
+                    if (!next) {
+                      _noteController.clear();
+                      FocusScope.of(context).unfocus();
+                    }
+                  });
+                }
               : null,
           hasTechnicianEmail: _hasTechnicianEmail,
           technicianEmail: widget.technicianEmail,
@@ -199,6 +219,7 @@ class _EmailRecipientDialogState extends State<EmailRecipientDialog> {
           onCopyTechnicianChanged: _hasTechnicianEmail
               ? (val) => setState(() => _copyTechnician = val ?? false)
               : null,
+          noteController: _noteController,
         ),
       ),
     );

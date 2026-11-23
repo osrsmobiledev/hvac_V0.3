@@ -184,6 +184,7 @@ class PdfArchivingCoordinator {
     required bool sendToTechnician,
     required String technicianEmail,
     required String attestNumber,
+    String? customerNote,
   }) async {
     if (pdfPath.trim().isEmpty) return EmailQueueResult.skipped;
     final jobs = EmailJobSpec.buildJobs(
@@ -195,6 +196,7 @@ class PdfArchivingCoordinator {
       sendToTechnician: sendToTechnician,
       technicianEmail: technicianEmail,
       attestNumber: attestNumber,
+      customerNote: customerNote,
     );
     if (jobs.isEmpty) return EmailQueueResult.skipped;
     final inserted = await _outbox.createJobs(jobs);

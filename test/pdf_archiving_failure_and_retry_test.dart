@@ -48,6 +48,7 @@ class _FakeCoordinator extends PdfArchivingCoordinator {
     required bool sendToTechnician,
     required String technicianEmail,
     required String attestNumber,
+    String? customerNote,
   }) async {
     jobCalls.add(_JobCallRecord(visitId, pdfPath, sendToCustomer, customerEmail,
         sendToTechnician, technicianEmail, attestNumber));

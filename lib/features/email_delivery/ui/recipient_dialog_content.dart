@@ -3,6 +3,7 @@ import '../../../app/localization/email_delivery_dictionary.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_theme.dart';
 import 'customer_recipient_card.dart';
+import 'email_custom_note_input.dart';
 import 'technician_recipient_card.dart';
 
 /// Pure layout widget presenting customer and technician recipient options.
@@ -17,6 +18,7 @@ class RecipientDialogContent extends StatelessWidget {
   final String technicianEmail;
   final bool copyTechnician;
   final ValueChanged<bool?>? onCopyTechnicianChanged;
+  final TextEditingController noteController;
 
   const RecipientDialogContent({
     super.key,
@@ -29,6 +31,7 @@ class RecipientDialogContent extends StatelessWidget {
     required this.technicianEmail,
     required this.copyTechnician,
     required this.onCopyTechnicianChanged,
+    required this.noteController,
   });
 
   @override
@@ -63,6 +66,10 @@ class RecipientDialogContent extends StatelessWidget {
               copyTechnician: copyTechnician,
               onChanged: onCopyTechnicianChanged,
             ),
+          ],
+          if (customerEmail.trim().isNotEmpty && sendCustomer) ...[
+            const SizedBox(height: 12),
+            EmailCustomNoteInput(controller: noteController),
           ],
           const SizedBox(height: 14),
           const Row(

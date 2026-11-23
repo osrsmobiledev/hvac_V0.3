@@ -51,28 +51,45 @@ class EmailJobSpec {
     required bool sendToTechnician,
     required String technicianEmail,
     required String attestNumber,
+    String? customerNote,
   }) {
     if (pdfPath.trim().isEmpty) return const [];
+    final cleanCustomerEmail = customerEmail.trim();
+    final cleanTechEmail = technicianEmail.trim();
+    final hasCustomer = sendToCustomer && cleanCustomerEmail.isNotEmpty;
+    final hasTech = sendToTechnician && cleanTechEmail.isNotEmpty;
+
+    // Lowest data boundary invariant: customerNote is only valid when an email
+    // is actually dispatched to the customer. Sanitize and bound once.
+    final rawTrimmed = customerNote?.trim();
+    final effectiveNote = (hasCustomer &&
+            rawTrimmed != null &&
+            rawTrimmed.isNotEmpty)
+        ? (rawTrimmed.length > 500 ? rawTrimmed.substring(0, 500) : rawTrimmed)
+        : null;
+
     return [
-      if (sendToCustomer && customerEmail.isNotEmpty)
+      if (hasCustomer)
         EmailJobSpec(
           visitId: visitId,
           recipientType: RecipientType.customer,
           recipientName: customerName,
-          recipientEmail: customerEmail,
+          recipientEmail: cleanCustomerEmail,
           subject: EmailDeliveryDictionary.emailSubject(attestNumber),
-          bodyText: EmailDeliveryDictionary.emailBodyCustomer(attestNumber),
+          bodyText: EmailDeliveryDictionary.emailBodyCustomer(attestNumber,
+              customNote: effectiveNote),
           pdfPath: pdfPath,
         ),
-      if (sendToTechnician && technicianEmail.isNotEmpty)
+      if (hasTech)
         EmailJobSpec(
           visitId: visitId,
           recipientType: RecipientType.technician,
           recipientName: 'Technicus',
-          recipientEmail: technicianEmail,
+          recipientEmail: cleanTechEmail,
           subject:
               EmailDeliveryDictionary.emailSubject(attestNumber, isCopy: true),
-          bodyText: EmailDeliveryDictionary.emailBodyTechnician,
+          bodyText: EmailDeliveryDictionary.emailBodyTechnicianMessage(
+              customNote: effectiveNote),
           pdfPath: pdfPath,
         ),
     ];

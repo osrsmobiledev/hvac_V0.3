@@ -5,13 +5,11 @@ abstract final class EmailDeliveryDictionary {
   // Section & Card Header
   static const String cardTitle = 'E-mailconfiguratie (SMTP)';
   static const String cardSubtitle =
-      'Configureer uitgaande SMTP voor het bezorgen van verbrandingsattesten.';
-
+      'Configureer uitgaande SMTP voor het bezorgen van attesten.';
   // Providers
   static const String providerLabel = 'E-mailprovider';
   static const String providerGmail = 'Gmail (App-wachtwoord)';
   static const String providerCustom = 'Aangepaste SMTP';
-
   // Fields
   static const String hostLabel = 'SMTP Host';
   static const String hostHint = 'smtp.gmail.com';
@@ -22,46 +20,39 @@ abstract final class EmailDeliveryDictionary {
   static const String passwordHint = '16-cijferig app-wachtwoord';
   static const String passwordSavedPlaceholder = '••••••••••••••••';
   static const String gmailHelpText =
-      'Tip: Gebruik een 16-cijferig Google App-wachtwoord (zonder spaties), '
-      'niet uw persoonlijke Google-wachtwoord.';
-
+      'Tip: Gebruik een 16-cijferig Google App-wachtwoord (zonder spaties).';
   // Encryption Modes
   static const String encryptionLabel = 'Beveiliging / Versleuteling';
   static const String sslTlsOption = 'SSL/TLS (Poort 465 - Impliciet)';
   static const String startTlsOption = 'STARTTLS (Poort 587 - Expliciet)';
-
   // Switches
   static const String autoSendLabel = 'Automatisch verzenden';
   static const String autoSendSubtitle =
-      'Verstuur attesten direct bij het voltooien van een bezoek';
+      'Verstuur attesten direct bij voltooien van een bezoek';
   static const String copyTechnicianLabel = 'Kopie naar technicus';
   static const String copyTechnicianSubtitle =
-      'Vink technicus-kopie standaard aan in de afrondingsdialoog';
-
+      'Vink technicus-kopie standaard aan in de dialoog';
   // Actions
   static const String testConnectionButton = 'Verbinding testen';
   static const String testingConnection = 'Verbinding testen...';
   static const String saveSettingsButton = 'Instellingen opslaan';
   static const String savingSettings = 'Opslaan...';
-
   // Feedback Messages
   static const String testConnectionSuccess =
       'Verbinding en inloggegevens geslaagd (SMTP AUTH OK)';
   static const String saveSettingsSuccess =
       'E-mailinstellingen succesvol opgeslagen';
   static const String saveSettingsError =
-      'Er is een fout opgetreden bij het opslaan van de instellingen.';
+      'Fout bij het opslaan van de instellingen.';
   static const String clearSettingsButton = 'E-mailinstellingen wissen';
   static const String clearingSettings = 'Bezig met wissen...';
   static const String clearSettingsDialogTitle = 'E-mailinstellingen wissen?';
   static const String clearSettingsDialogMessage =
-      'Dit verwijdert de SMTP-verbinding en inloggegevens van dit toestel '
-      'en schakelt automatisch verzenden uit. Bedrijfs- en technicusgegevens, '
-      'klanten, toestellen, bezoeken, PDF\'s en wachtrij-taken blijven behouden.';
+      'Dit wist de SMTP-gegevens van dit toestel. Overige gegevens blijven behouden.';
   static const String clearSettingsConfirm = 'Wissen';
   static const String clearSettingsCancel = 'Annuleren';
   static const String clearSettingsSuccess =
-      'E-mailinstellingen en inloggegevens gewist';
+      'E-mailinstellingen en inloggegevens gewist.';
   static const String clearSettingsError =
       'Fout bij het wissen van de instellingen.';
   static const String authFailed =
@@ -85,10 +76,9 @@ abstract final class EmailDeliveryDictionary {
   static const String invalidSenderError =
       'Geen geldig afzender-e-mailadres beschikbaar voor verzending.';
   static const String initSettingsError =
-      'Kan e-mailinstellingen niet laden. Controleer de lokale databaseverbinding.';
+      'Kan e-mailinstellingen niet laden. Controleer lokale verbinding.';
   static const String btnRetryInit = 'Opnieuw proberen';
-
-  // ── Recipient confirmation dialog (Slice 6.2) ────────────────────────────
+  // Recipient confirmation dialog
   static const String recipientDialogTitle = 'Attest voltooien';
   static const String recipientDialogIntro =
       'Kies hoe u het verbrandingsattest wilt bezorgen:';
@@ -106,9 +96,9 @@ abstract final class EmailDeliveryDictionary {
   static const String finalizeTechnicianCopyOnlyAction = 'Kopie naar technicus';
   static const String finalizeOnlySaveAction = 'Alleen bewaren';
   static const String finalizeLaterHint =
-      'Tip: U kunt het attest later altijd nog e-mailen of delen via Historiek.';
+      'U kunt het attest later altijd nog e-mailen of delen via Historiek.';
   static const String finalizationUnconfiguredHint =
-      'Attest bewaard. E-mail staat in wachtrij (configureer eerst SMTP in Instellingen).';
+      'Attest bewaard. E-mail staat in wachtrij (configureer eerst SMTP).';
   static const String finalizationCancelled =
       'Voltooien geannuleerd — attest blijft als concept.';
   static const String recipientJobsQueued =
@@ -131,27 +121,24 @@ abstract final class EmailDeliveryDictionary {
       'Toevoegen aan e-mailwachtrij mislukt.';
   static const String outboxRetryDialogTitle = 'E-mailwachtrij mislukt';
   static const String outboxRetryDialogMessage =
-      'Het attest en de PDF zijn veilig bewaard, maar het toevoegen aan de '
+      'Attest en PDF zijn bewaard, maar toevoegen aan de '
       'e-mailwachtrij is mislukt. Wilt u het opnieuw proberen?';
   static const String outboxRetryAction = 'Opnieuw proberen';
   static const String outboxRetryCancel = 'Overslaan';
   static const String outboxQueueSkippedAfterFailure =
       'Attest bewaard. E-mailwachtrij overgeslagen.';
-
-  // ── PDF registration retry (Slice 6.2) ──────────────────────────────────
+  // PDF registration retry
   static const String pdfRegistrationRetryTitle =
       'Database-registratie mislukt';
   static const String pdfRegistrationRetryMessage =
-      'De PDF is aangemaakt, maar de registratie in de database is mislukt. '
-      'Bij overslaan wordt het niet-geregistreerde PDF-bestand verwijderd en '
-      'heeft het voltooide bezoek geen gearchiveerd PDF-attest.';
+      'De PDF is aangemaakt, maar registratie in de database is mislukt. '
+      'Bij overslaan wordt de niet-geregistreerde PDF verwijderd.';
   static const String pdfRegistrationRetryAction = 'Opnieuw proberen';
   static const String pdfRegistrationRetryCancel = 'Verwijderen en overslaan';
   static const String pdfRegistrationDeleteConfirmTitle =
       'Niet-geregistreerde PDF verwijderen?';
   static const String pdfRegistrationDeleteConfirmMessage =
-      'Weet u zeker dat u wilt overslaan? Het gegenereerde PDF-bestand wordt '
-      'definitief verwijderd en het voltooide bezoek heeft dan geen gearchiveerd PDF-attest.';
+      'Weet u zeker dat u wilt overslaan? De PDF wordt definitief verwijderd.';
   static const String pdfRegistrationDeleteConfirmAction =
       'Definitief verwijderen';
   static const String pdfRegistrationDeleteConfirmCancel = 'Terug';
@@ -161,8 +148,7 @@ abstract final class EmailDeliveryDictionary {
       'Niet-geregistreerde PDF kon niet worden verwijderd van het toestel.';
   static const String pdfFileNotFoundError =
       'Gearchiveerd PDF-bestand niet gevonden op het toestel.';
-
-  // ── Historiek email tracker & recovery (Slice 6.3) ──────────────────────
+  // Historiek email tracker & recovery
   static const String trackerDialogTitle = 'E-mailbezorging';
   static const String trackerNoJobs = 'Geen e-mailtaken voor dit attest.';
   static const String trackerEmptyExplanation =
@@ -196,8 +182,8 @@ abstract final class EmailDeliveryDictionary {
   static const String correctEmailCancel = 'Annuleren';
   static const String uncertainRetryTitle = 'Mogelijk reeds ontvangen';
   static const String uncertainRetryMessage =
-      'De vorige verzending werd onderbroken na verzending. De ontvanger heeft '
-      'het attest mogelijk al ontvangen. Wilt u het attest toch opnieuw verzenden?';
+      'Vorige verzending werd onderbroken. De ontvanger heeft '
+      'het attest mogelijk al ontvangen. Toch opnieuw verzenden?';
   static const String uncertainRetryConfirm = 'Toch opnieuw verzenden';
   static const String uncertainRetryCancel = 'Annuleren';
   static const String manualResolveTitle = 'Handmatig oplossen';
@@ -209,6 +195,10 @@ abstract final class EmailDeliveryDictionary {
   static const String manualResolveCancel = 'Annuleren';
   static const String sharePdfError =
       'Gearchiveerd PDF-bestand niet gevonden om te delen.';
+  static const String emailNoteActionAdd = 'Opmerking toevoegen';
+  static const String emailNoteActionRemove = 'Opmerking verwijderen';
+  static const String emailNoteLabel = 'Opmerking voor klant (optioneel)';
+  static const String emailNoteHint = 'Bijv. Factuur volgt later per post...';
 
   /// Email subject line for a certificate.
   static String emailSubject(String attestNumber, {bool isCopy = false}) {
@@ -218,18 +208,31 @@ abstract final class EmailDeliveryDictionary {
     return isCopy ? '$base (kopie)' : base;
   }
 
-  /// Email body for the customer recipient.
-  static String emailBodyCustomer(String attestNumber) {
+  /// Email body for the customer recipient with optional custom note.
+  static String emailBodyCustomer(String attestNumber, {String? customNote}) {
     final clean = attestNumber.trim();
     final nrSuffix = clean.isNotEmpty ? ' (nr. $clean)' : '';
+    final trimmed = customNote?.trim();
+    final noteBlock = (trimmed != null && trimmed.isNotEmpty)
+        ? '\n\nOpmerking van de technicus:\n$trimmed\n\n'
+        : '\n\n';
     return 'Geachte,\n\n'
-        'In bijlage vindt u het verbrandingsattest van uw stooktoestel$nrSuffix.\n\n'
+        'In bijlage vindt u het verbrandingsattest van uw stooktoestel$nrSuffix.'
+        '$noteBlock'
         'Met vriendelijke groeten';
   }
 
   /// Email body for the technician copy.
   static const String emailBodyTechnician =
       'Kopie verbrandingsattest — intern exemplaar.';
+
+  /// Email body for technician copy with optional customer note reference.
+  static String emailBodyTechnicianMessage({String? customNote}) {
+    final trimmed = customNote?.trim();
+    return (trimmed != null && trimmed.isNotEmpty)
+        ? '$emailBodyTechnician\n\nToegevoegde opmerking aan klant:\n$trimmed'
+        : emailBodyTechnician;
+  }
 
   /// Maps typed [SmtpConnectionResult] to a user-facing Flemish feedback string.
   static String messageForConnectionResult(SmtpConnectionResult result) =>

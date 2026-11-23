@@ -164,6 +164,7 @@ class _EmailDeliveryCardState extends State<EmailDeliveryCard> {
         sendToTechnician: conf.sendToTechnician,
         technicianEmail: conf.technicianEmail,
         attestNumber: visitData.volgnummerAttest,
+        customerNote: conf.customNote,
       );
     });
   }
