@@ -179,6 +179,7 @@ abstract final class EmailDeliveryDictionary {
   static const String actionSharePdf = 'Attest delen';
   static const String actionCorrectEmail = 'E-mailadres aanpassen';
   static const String actionRetry = 'Opnieuw proberen';
+  static const String actionRetryArchive = 'PDF opnieuw archiveren';
   static const String actionResolveManually = 'Markeren als handmatig opgelost';
   static const String actionClose = 'Sluiten';
   static const String labelOriginalEmail = 'Oorspronkelijk:';

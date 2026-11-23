@@ -104,5 +104,63 @@ void main() {
       final inserted = await outbox.createJobs([]);
       expect(inserted, equals(0));
     });
+
+    test(
+        'refuses to store jobs with empty or whitespace-only pdfPath (all-or-nothing)',
+        () async {
+      const emptyJob = EmailJobSpec(
+        visitId: 1,
+        recipientType: RecipientType.customer,
+        recipientName: 'Jan',
+        recipientEmail: 'jan@example.com',
+        subject: 'Attest',
+        bodyText: 'Body',
+        pdfPath: '',
+      );
+      expect(
+        () => outbox.createJobs([emptyJob]),
+        throwsA(isA<ArgumentError>()),
+      );
+      expect(await outbox.getJobsForVisit(1), isEmpty);
+
+      const whitespaceJob = EmailJobSpec(
+        visitId: 1,
+        recipientType: RecipientType.customer,
+        recipientName: 'Jan',
+        recipientEmail: 'jan@example.com',
+        subject: 'Attest',
+        bodyText: 'Body',
+        pdfPath: '   ',
+      );
+      expect(
+        () => outbox.createJobs([whitespaceJob]),
+        throwsA(isA<ArgumentError>()),
+      );
+      expect(await outbox.getJobsForVisit(1), isEmpty);
+
+      const validJob = EmailJobSpec(
+        visitId: 1,
+        recipientType: RecipientType.customer,
+        recipientName: 'Jan',
+        recipientEmail: 'jan@example.com',
+        subject: 'Attest',
+        bodyText: 'Body',
+        pdfPath: '/path/to/valid.pdf',
+      );
+      const invalidSecondJob = EmailJobSpec(
+        visitId: 1,
+        recipientType: RecipientType.technician,
+        recipientName: 'Tech',
+        recipientEmail: 'tech@example.com',
+        subject: 'Attest (kopie)',
+        bodyText: 'Body',
+        pdfPath: '',
+      );
+      expect(
+        () => outbox.createJobs([validJob, invalidSecondJob]),
+        throwsA(isA<ArgumentError>()),
+      );
+      expect(await outbox.getJobsForVisit(1), isEmpty);
+    });
   });
 }

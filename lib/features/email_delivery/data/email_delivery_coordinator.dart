@@ -157,15 +157,16 @@ class EmailDeliveryCoordinator {
       if (outcome.isSuccess) {
         await _outbox.markSent(jobId, sentAt: outcome.sentAt!);
       } else {
-        if (outcome.isAuthFailure) {
-          await settingsRepo.updateSmtpState('needs_attention');
-        }
         await _outbox.markFailed(
           jobId,
           status: outcome.status,
           failureReason: outcome.failureReason ?? 'unknown',
           lastError: outcome.lastError,
         );
+        if (outcome.isAuthFailure) {
+          await settingsRepo.updateSmtpState('needs_attention');
+          return OutboxDispatchResult.needsAttention;
+        }
       }
     }
     return OutboxDispatchResult.success;

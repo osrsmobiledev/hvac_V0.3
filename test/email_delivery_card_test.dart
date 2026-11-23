@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hvac_app/app/localization/email_delivery_dictionary.dart';
 import 'package:hvac_app/core/database/database_schema.dart';
+import 'package:hvac_app/features/email_delivery/data/email_delivery_coordinator.dart';
 import 'package:hvac_app/features/email_delivery/data/email_outbox_repository.dart';
 import 'package:hvac_app/features/email_delivery/ui/email_delivery_card.dart';
 import 'package:path/path.dart' as p;
@@ -126,6 +127,29 @@ void main() {
     await tester.tap(find.text(EmailDeliveryDictionary.actionSendNow));
     await pumpCard(tester);
     expect(coord.manualProcessCalls, 1);
+  });
+
+  testWidgets(
+      'Manual send auth failure displays needs attention notice and not success',
+      (tester) async {
+    await insertJob(tester, id: 10, status: 'queued');
+    final coord = MockEmailDeliveryCoordinator()
+      ..processOutboxResult = OutboxDispatchResult.needsAttention;
+    await tester.pumpWidget(MaterialApp(
+      home: Scaffold(
+        body: EmailDeliveryCard(
+            visitId: 42, outboxRepository: outbox, coordinator: coord),
+      ),
+    ));
+    await pumpCard(tester);
+
+    await tester.tap(find.text(EmailDeliveryDictionary.actionSendNow));
+    await pumpCard(tester);
+
+    expect(coord.manualProcessCalls, 1);
+    expect(find.text(EmailDeliveryDictionary.outboxNeedsAttentionNotice),
+        findsOneWidget);
+    expect(find.text(EmailDeliveryDictionary.outboxSendSuccess), findsNothing);
   });
 
   testWidgets('Unconfigured SMTP greys out send button and shows notice',

@@ -5,24 +5,29 @@ import '../../../app/localization/email_delivery_dictionary.dart';
 /// Pure layout widget for visits in Historiek without queued email delivery jobs.
 class EmailEmptyOutboxView extends StatelessWidget {
   final String? pdfPath;
+  final String? pdfStatus;
   final bool isProcessing;
   final VoidCallback onSharePdf;
   final VoidCallback onAddEmail;
+  final VoidCallback? onRetryArchive;
   final VoidCallback onClose;
 
   const EmailEmptyOutboxView({
     super.key,
     required this.pdfPath,
+    this.pdfStatus,
     required this.isProcessing,
     required this.onSharePdf,
     required this.onAddEmail,
+    this.onRetryArchive,
     required this.onClose,
   });
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final hasPdf = pdfPath != null && pdfPath!.isNotEmpty;
+    final hasPdf =
+        pdfPath != null && pdfPath!.isNotEmpty && pdfStatus != 'failed';
 
     return Padding(
       padding: const EdgeInsets.all(20),
@@ -62,12 +67,22 @@ class EmailEmptyOutboxView extends StatelessWidget {
           ),
           const SizedBox(height: 14),
           Text(
-            EmailDeliveryDictionary.trackerEmptyExplanation,
+            pdfStatus == 'failed'
+                ? EmailDeliveryDictionary.archiveFailure
+                : EmailDeliveryDictionary.trackerEmptyExplanation,
             style: Theme.of(context).textTheme.bodyMedium,
           ),
           const SizedBox(height: 18),
+          if (onRetryArchive != null && (!hasPdf || pdfStatus == 'failed')) ...[
+            FilledButton.icon(
+              onPressed: isProcessing ? null : onRetryArchive,
+              icon: const Icon(Icons.refresh, size: 16),
+              label: const Text(EmailDeliveryDictionary.actionRetryArchive),
+            ),
+            const SizedBox(height: 8),
+          ],
           FilledButton.icon(
-            onPressed: isProcessing ? null : onAddEmail,
+            onPressed: (isProcessing || !hasPdf) ? null : onAddEmail,
             icon: const Icon(Icons.alternate_email, size: 16),
             label: const Text(EmailDeliveryDictionary.actionSendEmailLater),
           ),

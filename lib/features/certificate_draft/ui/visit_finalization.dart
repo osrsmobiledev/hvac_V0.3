@@ -61,7 +61,8 @@ abstract final class VisitFinalization {
   }
 
   /// Unified finalization workflow: prompts for recipients BEFORE database finalization.
-  /// Cancelling leaves the draft 100% active with zero database updates or file changes.
+  /// Cancelling keeps the draft active and prevents finalization, snapshot
+  /// freezing, PDF archiving, outbox creation, and dispatch.
   static Future<bool> executeWorkflow(
     BuildContext context, {
     required int visitId,

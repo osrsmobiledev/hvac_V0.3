@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 
 import '../../../app/localization/email_delivery_dictionary.dart';
 import '../../../app/localization/visit_history_dictionary.dart' as labels;
+import '../../email_delivery/data/email_delivery_coordinator.dart';
+import '../../email_delivery/data/email_outbox_repository.dart';
+import '../../email_delivery/data/pdf_archiving_coordinator.dart';
 import '../../email_delivery/ui/email_delivery_card.dart';
 import '../../pdf_export/ui/pdf_preview_dialog.dart';
 import '../../reporting_delivery/ui/veka_tracker.dart';
@@ -43,7 +46,12 @@ class _VisitHistoryScreenState extends State<VisitHistoryScreen> {
       context: context,
       builder: (_) => Dialog(
         child: SingleChildScrollView(
-          child: EmailDeliveryCard(visitId: entry.id),
+          child: EmailDeliveryCard(
+            visitId: entry.id,
+            outboxRepository: EmailOutboxRepository(),
+            coordinator: EmailDeliveryCoordinator.instance,
+            archivingCoordinator: PdfArchivingCoordinator(),
+          ),
         ),
       ),
     );

@@ -20,10 +20,12 @@ class MockEmailDeliveryCoordinator extends EmailDeliveryCoordinator {
         : const EmailSettings(smtpState: 'configured');
   }
 
+  OutboxDispatchResult processOutboxResult = OutboxDispatchResult.success;
+
   @override
   Future<OutboxDispatchResult> processOutbox({bool forceManual = false}) async {
     if (forceManual) manualProcessCalls++;
-    return OutboxDispatchResult.success;
+    return processOutboxResult;
   }
 
   @override

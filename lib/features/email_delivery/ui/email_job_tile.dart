@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../app/localization/email_delivery_dictionary.dart';
+import 'email_failure_disclosure.dart';
 import 'email_recovery_dialogs.dart';
 import 'email_status_badge.dart';
 
@@ -123,20 +124,14 @@ class EmailJobTile extends StatelessWidget {
                 style: const TextStyle(fontSize: 11, color: Colors.teal),
               ),
             ),
-          if (lastError != null && lastError.isNotEmpty && status != 'sent')
-            Padding(
-              padding: const EdgeInsets.only(top: 6),
-              child: Container(
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  color: Colors.red.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: Text(
-                  '${EmailDeliveryDictionary.labelLastError} $lastError',
-                  style: const TextStyle(fontSize: 11, color: Colors.redAccent),
-                ),
-              ),
+          if (status != 'sent' &&
+              status != 'queued' &&
+              status != 'sending' &&
+              status != 'resolved_manually')
+            EmailFailureDisclosure(
+              status: status,
+              failureReason: job['failure_reason'] as String?,
+              lastError: lastError,
             ),
           if (status == 'recipient_rejected')
             Padding(

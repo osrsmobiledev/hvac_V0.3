@@ -8,8 +8,7 @@ export 'email_job_models.dart';
 /// Repository that atomically creates queued email delivery jobs.
 ///
 /// Jobs are inserted into `email_delivery_jobs` with `status = 'queued'`.
-/// A UNIQUE index on `(visit_id, recipient_type)` prevents duplicates;
-/// `INSERT OR IGNORE` silently skips any already-queued job for the same pair.
+/// A UNIQUE index on `(visit_id, recipient_type)` prevents duplicates.
 class EmailOutboxRepository {
   final Future<Database> Function() _database;
 
@@ -18,11 +17,16 @@ class EmailOutboxRepository {
 
   /// Atomically inserts one or more [jobs] into `email_delivery_jobs`.
   ///
-  /// Uses INSERT OR IGNORE so that re-running finalization (e.g. after a
-  /// crash) does not create duplicate jobs for the same visit + recipient.
-  /// Returns the number of jobs actually inserted (0 if all were duplicates).
+  /// Uses INSERT OR IGNORE so that re-running finalization skips duplicates.
+  /// Returns the number of jobs inserted (0 if empty or duplicates).
+  /// Throws [ArgumentError] if any job has an empty or whitespace-only pdfPath.
   Future<int> createJobs(List<EmailJobSpec> jobs) async {
     if (jobs.isEmpty) return 0;
+    for (final job in jobs) {
+      if (job.pdfPath.trim().isEmpty) {
+        throw ArgumentError('Email jobs must have a non-empty pdfPath.');
+      }
+    }
     final db = await _database();
     return db.transaction((tx) async {
       var inserted = 0;
@@ -80,6 +84,24 @@ class EmailOutboxRepository {
       limit: 1,
     );
     return rows.isEmpty ? null : rows.first['pdf_path'] as String?;
+  }
+
+  /// Returns both the archived PDF path and status for [visitId].
+  Future<({String? path, String status})?> getPdfInfoForVisit(
+      int visitId) async {
+    final db = await _database();
+    final rows = await db.query(
+      'maintenance_visits',
+      columns: ['pdf_path', 'pdf_status'],
+      where: 'id = ?',
+      whereArgs: [visitId],
+      limit: 1,
+    );
+    if (rows.isEmpty) return null;
+    return (
+      path: rows.first['pdf_path'] as String?,
+      status: rows.first['pdf_status'] as String? ?? 'draft',
+    );
   }
 
   /// Returns all jobs with `status = 'queued'` ordered by creation time.

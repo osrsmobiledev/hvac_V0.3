@@ -50,6 +50,53 @@ Follow the official Flutter Architecture Guide (UI Layer + Data Layer):
 8. **Recoverable Dual-Store Credential Updates:** When updating state across SQLite and Android KeyStore, use a staged credential protocol (`smtp_password_staged` -> `smtp_password`) with `smtp_state` tracking. Startup recovery must deterministically resolve active credentials, and unresolved states (`needs_attention`) block automated sending.
 
 ## 5. Verification & Handoff
-- Before marking a slice complete, strictly pass the Mandatory 3-Gate Pre-Handoff Quality Gate in `IMPLEMENTATION_CHECKLIST.md` by executing `.\tool\check_gates.ps1` (automates Gate 1 formatting, linter, <= 250 lines check, and full test suite). Never hand off based solely on a compilation pass.
-- Give the owner 3–4 short, concrete steps to test the feature on their Android emulator/device.
-- After the owner confirms the slice works, commit the changes to Git with a clear message (e.g., feat: completed Slice 1.1), push to the repository, and update the Current Handoff section at the bottom of `ROADMAP.md`.
+Before declaring any slice or coding task complete, strictly follow the 3-Tier Pre-Handoff Quality Gate in [`IMPLEMENTATION_CHECKLIST.md`](file:///c:/Users/Admin/Documents/hvac_V0.3/IMPLEMENTATION_CHECKLIST.md):
+
+- **Inspect Working Tree Before Testing:** Inspect `git status`, `git diff --check` (detects whitespace errors; note that it does not establish consistent line endings), and the actual diff for scope and accidental changes before running tests or declaring work ready. Do not claim line endings were verified unless an explicit line-ending check was performed.
+- **Review Actual Diff Before Handoff:**
+  - Trace the affected behavior from its entry points to storage or external effects.
+  - Identify the invariant and check whether a lower-level or alternate entry point can bypass it.
+  - For requirements involving persisted or external state:
+    - List the public paths that can write or change that state.
+    - Identify where the invariant is enforced.
+    - Include a test that calls the lowest relevant write boundary directly, bypassing higher layers.
+    - Mark the invariant as unproven if that boundary has not been checked.
+  - Review failure and recovery behavior, including whether data remains recoverable.
+  - Verify key cases with tests and remove unrelated edits.
+  - Report unverified behavior honestly instead of treating its summary as proof.
+- **Tier 1 — Automated Quality Gate (`.\tool\check_gates.ps1`):**
+  - Run focused unit and widget tests for changed behavior first.
+  - Execute `.\tool\check_gates.ps1` from the repository root before declaring code work complete. The script authoritatively verifies formatting (Gate 1A), static analysis (Gate 1B), Dart file lengths in `lib/` and `test/` <= 250 lines (Gate 1C), and the full automated test suite.
+  - The script automatically captures full test output to `$env:TEMP\hvac-test-suite.log` and outputs a concise pass/fail summary (with tail on failure) to prevent terminal buffer truncation.
+  - **Wait for Completion & Record Exit Code:** Always wait for the process to exit and record its actual exit code. Do not start duplicate runs, report a pass while still running, or infer results from partial output.
+  - **Documented Totals Integrity:** Update documented test totals in `ROADMAP.md` and feature workflows only after the full gate exits successfully with exit code 0. For documentation-only tasks, do not run the test suite or update test counts.
+- **Tier 2 — Manual Architecture & Lifecycle Review:**
+  - Automated tests do not replace manual inspection. Verify controller/listener disposal, `HttpClient` closure in `finally`, `if (!mounted)` guards, dropdown keying, and Sentinel patterns as detailed in `IMPLEMENTATION_CHECKLIST.md`.
+- **Tier 3 — Focused Feature & Owner Device Testing:**
+  - Provide the owner with 3–4 short, concrete steps to test the feature on an Android emulator or physical device. Never hand off based solely on an automated pass.
+  - **Strict Stop-and-Wait Policy:** Wait for the owner's explicit confirmation on Android before moving to the next slice or making Git commits.
+  - **Git Commit & Push:** After the owner confirms the slice works on Android, commit with a clear message (e.g., `feat: completed Slice 1.1`), push to the repository, and update the Current Handoff section at the bottom of `ROADMAP.md`.
+- **Documentation Hierarchy & Consistency:** When working across documents and code, strictly adhere to this order of authority:
+  1. **Direct Owner Decisions & Instructions:** The ultimate authority on product intent and scope.
+  2. **Owner-Approved Master Workflows (`doc/`):** Define canonical product behavior, domain invariants, persisted state transitions, recovery guarantees, and acceptance criteria.
+  3. **Code & Automated Tests:** Executable evidence of current implementation behavior; tests never override or redefine product requirements.
+  4. **`ROADMAP.md`:** Concise progress tracking, active handoff, open decisions, verification status, owner device check steps, and links to the relevant master workflow (never duplicate detailed feature specs).
+  5. **`IMPLEMENTATION_CHECKLIST.md`:** Cross-feature architectural quality gates and lifecycle rules (must not duplicate feature-specific workflow rules).
+  - *Conflict Resolution & Honesty:* Resolve all conflicts against owner intent and canonical master workflows. Distinguish current code behavior, documented claims, explicit owner decisions, and inference. General slice acceptance does not prove an untested detail. Cite exact evidence; never assume an untested detail or choose silently when sources conflict—report unresolved decisions and gaps honestly. Link to master sections rather than copying detailed specifications across files.
+  - Before claiming an action has no side effects, trace awaited work before and during that action.
+- **Safe Section Inspection:** When inspecting the active handoff state, use this heading-based PowerShell search instead of splitting on platform-specific newlines or using fragile fixed line numbers:
+  ```powershell
+  Select-String -Path .\ROADMAP.md -Pattern '^## 2\. Current Handoff' -Context 0,30
+  ```
+
+### Standard Completion Report Format
+Every slice handoff or task completion summary to the owner must follow this concise structure:
+1. **Scope & Files Changed:** Single user-visible outcome. Explicitly separate:
+   - *Files changed in current task:* exact list of modified/added files.
+   - *Pre-existing working tree changes (if any):* uncommitted files from earlier work.
+2. **Key Architecture & Library Choices:** Critical design decisions, locked packages, or patterns applied (or note "N/A — workflow documentation only").
+3. **Verification Results:**
+   - *For code / slice work:* Focused test outcome, full `.\tool\check_gates.ps1` exit status, and total test count.
+   - *For documentation-only work:* Explicitly state "Flutter checks not run—documentation-only" and report relevant documentation checks (`git diff --check`, working-tree audit).
+4. **Owner Device Testing Status:** Concrete 3–4 step manual testing instructions on Android, or explicit pending status for hardware-only checks (or "N/A — documentation-only").
+5. **Remaining Risks or Unverified Items:** Document any pending hardware tests (e.g. cloud backup/restore), external mock bounds, or edge cases.

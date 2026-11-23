@@ -185,6 +185,7 @@ class PdfArchivingCoordinator {
     required String technicianEmail,
     required String attestNumber,
   }) async {
+    if (pdfPath.trim().isEmpty) return EmailQueueResult.skipped;
     final jobs = EmailJobSpec.buildJobs(
       visitId: visitId,
       pdfPath: pdfPath,

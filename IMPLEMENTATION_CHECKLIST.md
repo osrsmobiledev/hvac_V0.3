@@ -48,11 +48,8 @@
 Run through these exact 20 verification checks before marking any tab, applet, or slice complete:
 
 ### [ ] 1. File Length Limit ($\le$ 250 Lines)
-- [ ] No Dart file in `lib/` exceeds **250 lines**. Split large widgets into small, private `StatelessWidget` classes or sibling files.
-- **PowerShell check command:**
-  ```powershell
-  Get-ChildItem -Path "lib" -Recurse -Filter "*.dart" | ForEach-Object { $c = (Get-Content $_.FullName).Count; if ($c -gt 240) { Write-Host "$c lines: $($_.FullName)" } }
-  ```
+- [ ] No Dart file in `lib/` or `test/` exceeds **250 lines**. Split large widgets, screens, models, or test suites into focused, modular files.
+- [ ] Authoritatively verified across both `lib/` and `test/` by `.\tool\check_gates.ps1` (Gate 1C). Do not rely on duplicate ad-hoc counting commands.
 
 ### [ ] 2. Zero Silent Error Swallowing
 - [ ] No empty `catch (_)` blocks anywhere.
@@ -216,21 +213,28 @@ Run through these exact 20 verification checks before marking any tab, applet, o
 
 ---
 
-## 3. Mandatory 3-Gate Pre-Handoff Quality Gate
+## 3. Mandatory 3-Tier Pre-Handoff Quality Gate
 
-Every AI agent must strictly run and pass all three gates **before declaring any slice complete or asking the owner to test**. Never hand off based solely on a compilation pass.
+Every AI agent must strictly run and pass all three tiers **before declaring any slice complete or asking the owner to test**. Never hand off based solely on a compilation pass.
 
-### Gate 1: Static Hygiene & File Health
-1. **Static Analysis:**
-   - Execute `analyze_files` (or `flutter analyze`). Must exit with **0 errors, 0 warnings, 0 infos**.
-2. **Strict File-Length Verification ($\le 250$ Lines):**
-   - Run the PowerShell check:
-     ```powershell
-     Get-ChildItem -Path "lib" -Recurse -Filter "*.dart" | ForEach-Object { $c = (Get-Content $_.FullName).Count; if ($c -gt 240) { Write-Host "$c lines: $($_.FullName)" } }
-     ```
-   - Zero files in `lib/` or `test/` may exceed 250 lines. Extract modular widgets or models before handoff.
+### Tier 1: Automated Quality Gate (`.\tool\check_gates.ps1`)
+The single authoritative automated script verifying formatting, static analysis, file length limits, and the complete test suite. Run from the repository root:
+1. **Gate 1A — Code Formatting:**
+   - Command: `dart format --output=none --set-exit-if-changed lib test`
+   - Must exit with 0 unformatted files.
+2. **Gate 1B — Static Analysis:**
+   - Command: `flutter analyze --no-pub`
+   - Must exit with **0 errors, 0 warnings, 0 lints**.
+3. **Gate 1C — Strict Source File Length Verification ($\le 250$ Lines):**
+   - Authoritatively scans all `*.dart` files in both `lib/` and `test/`.
+   - Zero files may exceed 250 lines.
+4. **Full Automated Test Suite:**
+   - Command: executed within `.\tool\check_gates.ps1` (captures full output to `$env:TEMP\hvac-test-suite.log` and displays summary or failure tail).
+   - Every unit, widget, and integration test in the suite must pass with exit code 0.
+   - Note: Automated test execution verifies regression safety, but does not replace Tier 2 manual architecture review or Tier 3 physical device verification.
 
-### Gate 2: Lifecycle & Resource Hygiene (Zero Leak Gate)
+### Tier 2: Manual Architecture, Lifecycle & Resource Review
+Automated tests verify expected behavior, but cannot replace manual inspection of asynchronous lifecycles and domain contracts:
 1. **Controller & Listener Disposal:**
    - Every `TextEditingController`, `FocusNode`, `AnimationController`, or `ScrollController` allocated in `initState()` must be disposed in `dispose()`.
 2. **Network & Stream Safety:**
@@ -239,18 +243,15 @@ Every AI agent must strictly run and pass all three gates **before declaring any
    - Every `setState()` following an `await` must be guarded by `if (!mounted) return;`.
 4. **Dynamic Collection & Dropdown Keying:**
    - Dropdowns populated by dynamic or async results must be keyed (`key: ValueKey(...)`) and the item model must implement `operator ==` and `hashCode` to prevent Flutter dropdown mismatch crashes.
-
-### Gate 3: End-to-End Domain & Database Trace
-1. **Branch & Boundary Coverage:**
-   - Verify all alternate branches of logic (not just the primary scenario).
-   - Test all 3 input states: **empty**, **invalid**, and **valid**.
-   - Verify that downstream systems (SQLite, PDF, VEKA) match upstream form rules 1:1.
-2. **End-to-End Database Roundtrip:**
+5. **Database & Domain Roundtrip:**
    - Trace values: `UI Input -> Controller -> Domain Entity -> Repository -> SQLite Table -> Reopen Draft -> UI Restoration`.
-   - Ensure no fields are dropped, zeroed, or defaulted to `null` unintentionally.
-3. **Automated Tests:**
-   - Run focused unit and widget tests confirming both success and failure cases pass.
-   - Guard against test runner hangs: configure global timeout (`dart_test.yaml: timeout: 60s`), use bounded `pump(Duration)` for debounced forms instead of open-ended `pumpAndSettle()`, and wrap real SQLite I/O in `tester.runAsync()`.
-4. **Stop-and-Wait Owner Verification:**
-   - Provide 3–4 concrete, human-testable steps on device/emulator.
-   - Stop and wait for the owner's explicit confirmation before touching the next slice.
+   - Verify Sentinel pattern on `copyWith` so clearing nullable inputs saves `NULL` rather than reverting to previous values.
+
+### Tier 3: Focused Feature & Owner Device Testing
+1. **Focused Feature Testing:**
+   - Run focused unit and widget tests for the specific slice or bug fix before running the full gate suite.
+   - Verify all alternate branches of logic (empty, invalid, valid input states).
+   - Guard against test runner hangs: use bounded `pump(Duration)` for debounced forms and wrap real SQLite I/O in `tester.runAsync()`.
+2. **Owner Device Verification & Stop-and-Wait:**
+   - Provide 3–4 concrete, human-testable steps on Android emulator or physical device.
+   - **Strict Stop-and-Wait Policy:** Wait for the owner's explicit confirmation on Android before moving to the next slice or making Git commits.

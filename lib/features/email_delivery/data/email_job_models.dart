@@ -51,28 +51,30 @@ class EmailJobSpec {
     required bool sendToTechnician,
     required String technicianEmail,
     required String attestNumber,
-  }) =>
-      [
-        if (sendToCustomer && customerEmail.isNotEmpty)
-          EmailJobSpec(
-            visitId: visitId,
-            recipientType: RecipientType.customer,
-            recipientName: customerName,
-            recipientEmail: customerEmail,
-            subject: EmailDeliveryDictionary.emailSubject(attestNumber),
-            bodyText: EmailDeliveryDictionary.emailBodyCustomer(attestNumber),
-            pdfPath: pdfPath,
-          ),
-        if (sendToTechnician && technicianEmail.isNotEmpty)
-          EmailJobSpec(
-            visitId: visitId,
-            recipientType: RecipientType.technician,
-            recipientName: 'Technicus',
-            recipientEmail: technicianEmail,
-            subject: EmailDeliveryDictionary.emailSubject(attestNumber,
-                isCopy: true),
-            bodyText: EmailDeliveryDictionary.emailBodyTechnician,
-            pdfPath: pdfPath,
-          ),
-      ];
+  }) {
+    if (pdfPath.trim().isEmpty) return const [];
+    return [
+      if (sendToCustomer && customerEmail.isNotEmpty)
+        EmailJobSpec(
+          visitId: visitId,
+          recipientType: RecipientType.customer,
+          recipientName: customerName,
+          recipientEmail: customerEmail,
+          subject: EmailDeliveryDictionary.emailSubject(attestNumber),
+          bodyText: EmailDeliveryDictionary.emailBodyCustomer(attestNumber),
+          pdfPath: pdfPath,
+        ),
+      if (sendToTechnician && technicianEmail.isNotEmpty)
+        EmailJobSpec(
+          visitId: visitId,
+          recipientType: RecipientType.technician,
+          recipientName: 'Technicus',
+          recipientEmail: technicianEmail,
+          subject:
+              EmailDeliveryDictionary.emailSubject(attestNumber, isCopy: true),
+          bodyText: EmailDeliveryDictionary.emailBodyTechnician,
+          pdfPath: pdfPath,
+        ),
+    ];
+  }
 }
