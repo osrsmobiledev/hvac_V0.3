@@ -3,9 +3,12 @@
 ## 1. Context Management (Prevent Context Bloat)
 Do NOT read every Markdown file in the workspace on every turn. Load context selectively:
 1. **Always check first:** Read `ROADMAP.md` (Current Handoff section) to see the active milestone and next slice.
-2. **When changing data models, storage, or packages:** Read `ARCHITECTURE.md`.
-3. **When implementing a specific tab, form field, PDF section, or VEKA rule:** Read only the relevant section of `VERBRANDINGSATTEST_WORKFLOW.md`, `PROJECT_BRIEF.md`, and `references/official/FLEMISH_REGULATORY_AND_VEKA_NORMS.md`.
-4. **Reuse `references/legacy/code/` layouts:** The owner likes the visual layout and styling of the legacy PDF builders, time spinner, theme, and localization dictionary. Preserve their visual design while re-wiring their broken data inputs according to `ARCHITECTURE.md`.
+2. **When planning code changes:** Answer the **Section 0 Pre-Code Check** from `IMPLEMENTATION_CHECKLIST.md` (negative states, lowest data boundary, exact scope).
+3. **When changing data models, storage, or packages:** Read `ARCHITECTURE.md`.
+4. **When building or modifying UI components, tokens, or forms:** Read `doc/UI_DESIGN_SYSTEM.md`.
+5. **When implementing a specific tab, form field, PDF section, or VEKA rule:** Read only the relevant section of `doc/MASTER_HVAC_LIFECYCLE_WORKFLOW.md`, `doc/MASTER_EMAIL_DELIVERY_WORKFLOW.md`, `doc/BASISREGISTER_AND_VEKA_API_SPECIFICATION.md`, `doc/PRE_FLIGHT_VALIDATION_BLUEPRINT.md`, and `references/official/FLEMISH_REGULATORY_AND_VEKA_NORMS.md`.
+6. **Archive-Only Documentation:** `doc/LESSONS_LEARNED.md` is a historical archive of past bug analyses. Do **not** load it during routine coding turns.
+7. **Reuse `references/legacy/code/` layouts:** The owner likes the visual layout and styling of the legacy PDF builders, time spinner, theme, and localization dictionary. Preserve their visual design while re-wiring their broken data inputs according to `ARCHITECTURE.md`.
 
 ## 2. How to Collaborate with the Owner
 - The owner has strong domain knowledge but is not a software developer. Explain technical choices in plain language.
@@ -33,7 +36,7 @@ Follow the official Flutter Architecture Guide (UI Layer + Data Layer):
 - **Widgets & Forms:**
   - Use small private `StatelessWidget` classes with `const` constructors instead of `_buildX()` helper methods.
   - Keep business logic, SQL queries, and PDF/API mapping out of widget `build()` methods.
-  - Wrap form screens in a `GestureDetector(onTap: () => FocusScope.of(context).unfocus())` so tapping outside dismisses the phone keyboard.
+  - For global tap-to-dismiss keyboard handling and list drag dismissal, follow `doc/UI_DESIGN_SYSTEM.md` (never add redundant per-screen `GestureDetector` wrappers).
   - Always set appropriate `keyboardType` (numeric vs text) and `textInputAction` (`Next` / `Done`) on `TextField`s.
 - **Adaptive Layouts (Phone & Tablet):** The app must look premium on both phones and tablets:
   - **Forms:** Never let text fields stretch 100% width on a tablet. Constrain form widths (e.g., max 600px) and center them, or use a 2-column layout for wide screens.
@@ -52,28 +55,19 @@ Follow the official Flutter Architecture Guide (UI Layer + Data Layer):
 ## 5. Verification & Handoff
 Before declaring any slice or coding task complete, strictly follow the 3-Tier Pre-Handoff Quality Gate in [`IMPLEMENTATION_CHECKLIST.md`](file:///c:/Users/Admin/Documents/hvac_V0.3/IMPLEMENTATION_CHECKLIST.md):
 
+- **Plan First (Section 0 Pre-Code Check):** In your plan before writing any application code, answer the 3 questions in Section 0 of `IMPLEMENTATION_CHECKLIST.md`: (1) Negative states (prerequisites OFF/empty/null/offline), (2) Lowest data boundary enforcing the invariant, and (3) Exact user-visible outcome and files to touch.
 - **Inspect Working Tree Before Testing:** Inspect `git status`, `git diff --check` (detects whitespace errors; note that it does not establish consistent line endings), and the actual diff for scope and accidental changes before running tests or declaring work ready. Do not claim line endings were verified unless an explicit line-ending check was performed.
-- **Review Actual Diff Before Handoff:**
-  - Trace the affected behavior from its entry points to storage or external effects.
-  - Identify the invariant and check whether a lower-level or alternate entry point can bypass it.
-  - For requirements involving persisted or external state:
-    - List the public paths that can write or change that state.
-    - Identify where the invariant is enforced.
-    - Include a test that calls the lowest relevant write boundary directly, bypassing higher layers.
-    - Mark the invariant as unproven if that boundary has not been checked.
-  - Review failure and recovery behavior, including whether data remains recoverable.
-  - Verify key cases with tests and remove unrelated edits.
-  - Report unverified behavior honestly instead of treating its summary as proof.
 - **Tier 1 — Automated Quality Gate (`.\tool\check_gates.ps1`):**
   - Run focused unit and widget tests for changed behavior first.
   - Execute `.\tool\check_gates.ps1` from the repository root before declaring code work complete. The script authoritatively verifies formatting (Gate 1A), static analysis (Gate 1B), Dart file lengths in `lib/` and `test/` <= 250 lines (Gate 1C), and the full automated test suite.
   - The script automatically captures full test output to `$env:TEMP\hvac-test-suite.log` and outputs a concise pass/fail summary (with tail on failure) to prevent terminal buffer truncation.
   - **Wait for Completion & Record Exit Code:** Always wait for the process to exit and record its actual exit code. Do not start duplicate runs, report a pass while still running, or infer results from partial output.
   - **Documented Totals Integrity:** Update documented test totals in `ROADMAP.md` and feature workflows only after the full gate exits successfully with exit code 0. For documentation-only tasks, do not run the test suite or update test counts.
-- **Tier 2 — Manual Architecture & Lifecycle Review:**
-  - Automated tests do not replace manual inspection. Verify controller/listener disposal, `HttpClient` closure in `finally`, `if (!mounted)` guards, dropdown keying, and Sentinel patterns as detailed in `IMPLEMENTATION_CHECKLIST.md`.
+- **Tier 2 — Adversarial Self-Audit on `git diff` (Mandatory Before Handoff):**
+  - Switch from builder mode to bug-hunter mode before handing off. Perform the 4 checks in Tier 2 of `IMPLEMENTATION_CHECKLIST.md`: (1) Toggle-Off & Missing-Prerequisite Sweep across UI, memory, and data payloads, (2) Negative & Boundary Tests for every positive test, (3) Roundtrip Trace, and (4) Lifecycle & Leak Check.
+  - Mark any invariant as unproven if its lowest data boundary has not been checked with an automated test. General slice acceptance does not prove an untested detail.
 - **Tier 3 — Focused Feature & Owner Device Testing:**
-  - Provide the owner with 3–4 short, concrete steps to test the feature on an Android emulator or physical device. Never hand off based solely on an automated pass.
+  - Provide the owner with 3–4 short, concrete steps to test the feature on an Android emulator or physical device, including at least one negative or edge-case step. Never hand off based solely on an automated pass.
   - **Strict Stop-and-Wait Policy:** Wait for the owner's explicit confirmation on Android before moving to the next slice or making Git commits.
   - **Git Commit & Push:** After the owner confirms the slice works on Android, commit with a clear message (e.g., `feat: completed Slice 1.1`), push to the repository, and update the Current Handoff section at the bottom of `ROADMAP.md`.
 - **Documentation Hierarchy & Consistency:** When working across documents and code, strictly adhere to this order of authority:
@@ -96,7 +90,7 @@ Every slice handoff or task completion summary to the owner must follow this con
    - *Pre-existing working tree changes (if any):* uncommitted files from earlier work.
 2. **Key Architecture & Library Choices:** Critical design decisions, locked packages, or patterns applied (or note "N/A — workflow documentation only").
 3. **Verification Results:**
-   - *For code / slice work:* Focused test outcome, full `.\tool\check_gates.ps1` exit status, and total test count.
+   - *For code / slice work:* Focused test outcome, full `.\tool\check_gates.ps1` exit status, total test count, and a brief Tier 2 Adversarial Self-Audit summary (listing key toggle-off/negative cases verified on `git diff`).
    - *For documentation-only work:* Explicitly state "Flutter checks not run—documentation-only" and report relevant documentation checks (`git diff --check`, working-tree audit).
 4. **Owner Device Testing Status:** Concrete 3–4 step manual testing instructions on Android, or explicit pending status for hardware-only checks (or "N/A — documentation-only").
 5. **Remaining Risks or Unverified Items:** Document any pending hardware tests (e.g. cloud backup/restore), external mock bounds, or edge cases.

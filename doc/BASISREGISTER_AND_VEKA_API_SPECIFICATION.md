@@ -237,3 +237,24 @@ Tapping `[ 🟢 Basisregister Geverifieerd ✓ ℹ️ ]` presents a non-develope
 - [ ] **Automated Flag Logic:** Automatically set `gebouwIdNietGekend` and `gebouweenheidIdNietGekend` to `true`/`false`.
 - [ ] **VEKA Status State Machine:** Implement transitions: `not_submitted` $\to$ `submitted_api` / `reported_manually_portal`.
 - [ ] **Manual Fallback Dialog:** Add one-tap "Markeer als handmatig gemeld op VEKA portaal" for nieuwbouw visits.
+
+---
+
+## 5. Invalidation Governance & OSLO v2 Hierarchy Traversal
+
+### 5.1 Adres-ID Governance & Automatische Fallbacks
+* **Geen Handmatige Invoer van ID's:** Technici voeren nooit handmatig `adresId`, `gebouwId` of `gebouweenheidId` in. Deze worden uitsluitend op de achtergrond gevuld via de Basisregisters API service.
+* **Automatische Vlagafleiding:**
+  * Als `gebouweenheidId` ontbreekt of `null` is: `gebouweenheidIdNietGekend = true` (anders `false`).
+  * Als `gebouwId` ontbreekt of `null` is: `gebouwIdNietGekend = true` (anders `false`).
+* **Nieuwbouw & Offline Safe-Harbor:** Niet-gekarteerde nieuwbouw of offline kelderbezoeken mogen **nooit** de lokale attestcreatie, digitale handtekeningen of PDF-archivering blokkeren (Golden Rule #5). Een ontbrekend `adresId` wordt gemarkeerd voor handmatige melding via het VEKA-portaal.
+
+### 5.2 Ongeldigverklaring (Invalidation) & 5-Veldige Vergelijking
+* **Ongeldigverklaring bij Wijziging:** Elke handmatige wijziging aan geverifieerde adresvelden (straat, huisnummer, busnummer, postcode, gemeente) of het omschakelen van `isSameAsCustomer` moet de verificatiestatus direct ongeldig maken (`verificationStatus = 'unverified'`, `adresId = null`, etc.) om te voorkomen dat oude ID's aan een gewijzigd adres blijven hangen.
+* **5-Veldige Adresvergelijking:** Vergelijk altijd alle 5 adresvelden (`street`, `houseNumber`, `boxNumber`, `postalCode`, `city`) om te bepalen of een installatieadres afwijkt van het klantadres; vergelijk nooit alleen straat en nummer, omdat verschillende appartementen/bussen anders abusievelijk samenvallen.
+
+### 5.3 OSLO v2 API Link-Hiërarchie & Netwerkbeveiliging
+* De Basisregisters-integratie volgt de officiële OSLO v2 link-hiërarchie:
+  `/v2/adresmatch` $\to$ `/v2/gebouweenheden?adresobjectid={id}` $\to$ `/v2/gebouweenheden/{id}` om betrouwbaar `gebouweenheidId` en `gebouwId` op te halen voor de geselecteerde kandidaat.
+* **Zoekveiligheid:** Verplicht `postcode` bij zoekopdrachten om HTTP 400 Bad Request te voorkomen. Wis verouderde zoekresultaten zodra zoekvelden wijzigen.
+* **Timeouts:** Sluit altijd een `.timeout()` aan op de volledige `HttpClient` request- en streamcyclus en sluit de client in een `finally`-blok.

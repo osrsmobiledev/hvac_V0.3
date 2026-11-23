@@ -552,3 +552,31 @@ De geautomatiseerde tests voor Slice 5.5 dekken een 201 met nummer en waarschuwi
 - Doorloop de drie verplichte gates uit [IMPLEMENTATION_CHECKLIST.md](../IMPLEMENTATION_CHECKLIST.md#3-mandatory-3-gate-pre-handoff-quality-gate). Controleer opmaak, statische analyse en de limiet van 250 regels. Controleer daarna resources en schermlevensduur, en tenslotte de volledige weg van formulier naar SQLite en terug met gerichte tests.
 - Lever voor Slice 5.2 een startinstructie voor de Android-mockconfiguratie en vier eigenaarstests. Zet A klaar met een adres. Wijzig het bezoek naar B en herstart om A te heropenen. Bevestig A met de gesimuleerde portaaluitkomst en controleer bewijs en adres na herstart. Genereer een Test-PDF offline en controleer de status.
 - Voor Slice 5.5 zijn de app-code, analyse en automatische tests klaar. De volledige Android-eigenaarstest staat in de [actieve handoff](../ROADMAP.md#2-current-handoff-active-state-for-ai-agent). Wacht op die test en goedkeuring voordat de slice wordt afgesloten of de volgende slice start. De beveiligde API-verificatie volgt pas als de app klaar is en toegang is geregeld.
+
+---
+
+## Hoofdstuk 6: PDF-architectuur, A4-precisielayout en archivering
+
+### 6.1 Single-Page A4 Precisielayout ($\le 825.89\text{ pt}$)
+* **Totale Hoogte:** De som van alle wettelijke sectiehoogtes, titels en tussenruimtes moet strikt $\le 825.89\text{ pt}$ blijven (841.89 pt A4-hoogte min 16 pt verticale marges).
+* **Positieve Marge (Headroom):** Behoud minimaal +1.5 tot +2.0 pt speling om sub-pixel verschillen tussen verschillende PDF-rasterizers op te vangen.
+* **Geïntegreerde Brander (Wettelijke Vlaamse Norm):** Als de ketel een geïntegreerde brander heeft (`burner_type != 'afzonderlijk'`), moeten alle 5 branderregels op het attest volledig leeg blijven.
+* **Installatie-adres Normalisatie:** Als het installatieadres identiek is aan het klantadres (5-veldige vergelijking: straat, huisnummer, busnummer, postcode, gemeente), blijft het rechter installatievak op de PDF blanco.
+
+### 6.2 Vertical Budgeting & Twee-Zone Bounding Box
+* **Verbod op `pw.Spacer()` & `pw.Expanded`:** Gebruik nooit `pw.Spacer()` of niet-begrensde `pw.Expanded` binnen PDF-containers met variabele tekstinvoer.
+* **Twee-Zone Verticale Partitionering:**
+  * **Zone 1 (Gebreken & Opmerkingen):** Vaste hoogte begrensd op 46.5 pt bij lettergrootte 5.2 pt.
+  * **Zone 2 (Handtekeningen):** Vaste hoogte van 38.0 pt.
+  * Deze strikte wiskundige scheiding garandeert dat overlopende tekst de handtekeningen of de wettelijke voettekst nooit naar beneden kan drukken of laten verdwijnen.
+* **Tekstbudgettering vs. Invoerlimieten:** Invoervelden die naar de PDF vloeien moeten strikt begrensd worden op `maxLength: 200` (`MaxLengthEnforcement.enforced`). Bij lettergrootte 5.2 pt bevat een regel van 544 pt ~210 tekens, zodat 200 tekens wiskundig gegarandeerd binnen 2 regels past.
+
+### 6.3 PDF Preview & Interactieve Gebaren
+* Gebruik `PdfPreview.builder` met `InteractiveViewer` op 240 DPI voor mobiele schermen.
+* Ondersteun multi-touch pinch-to-zoom (1.0x tot 5.0x), 1-vinger pan, dubbel-tik 2.5x toggle en knoppen (`+`, `-`, `Fit`).
+
+### 6.4 Veilige Archivering & Staging (`certificates/staging/`)
+* **Staging naast Bestemming:** Tijdelijke PDF-bestanden worden geschreven in `certificates/staging/` op hetzelfde bestandssysteem als `certificates/` voor een betrouwbare, directe hernoeming.
+* **Lengteverificatie:** Verifieer de bestandsgrootte op schijf tegen de bytes in het geheugen vóór hernoemen naar een unieke tijdstempel-bestandsnaam.
+* **Verweesde Bestanden Opruimen:** Voer bij het opstarten van de app een opruimactie uit om tijdelijke `.tmp`-bestanden van eventuele eerdere crashes te wissen.
+* **Scheiding van Verantwoordelijkheid:** Houd openbare OS-export (`PdfFileSaver`) strikt gescheiden van interne applicatie-archivering (`PdfArchiveService`).

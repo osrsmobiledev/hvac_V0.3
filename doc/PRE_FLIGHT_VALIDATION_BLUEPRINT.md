@@ -152,6 +152,16 @@ Centralized in `lib/core/utils/belgian_formatters.dart`:
 | **Telefoon (Vast)** | Exactly 8 digits (starts with `1,2,3,5,6,7,8,9`) | `BelgianFormatters.validatePhone` | `"Ongeldig telefoonnummer (bv. 470 12 34 56)"` |
 | **KBO / Ondernemingsnr** | 10 digits with statutory Modulo 97 check: `97 - (first8 % 97) == checksum` | `BelgianFormatters.validateKbo` | `"Ongeldig controlegetal (Modulo 97)"` |
 | **E-mailadres** | Optional or required RFC regex: `r'^[^@\s]+@[^@\s]+\.[^@\s]+$'` | `BelgianFormatters.validateEmail` | `"Vul een geldig e-mailadres in (bv. info@firma.be)"` |
+| **Erkenningsnummer (GV/TV)** | Exactly 5 digits `\d{5}` matching boiler fuel (GV voor gas, TV voor stookolie) | `TechnicianRecognitionFormatters.validate` | `"Erkenningsnummer vereist exact 5 cijfers"` |
+
+### 4.1 Statutory Recognition Number & Fuel Cross-Validation Parity
+* **Strikte 5 Cijfers:** Nooit losse `isNotEmpty` checks voor wettelijke erkenningsnummers. Het veld accepteert exact 5 numerieke cijfers via een native numeriek toetsenbord.
+* **Idempotente Prefix-Afhandeling:** Formatters en PDF-generators moeten visuele prefixes (`GV `, `TV `) altijd eerst strippen/sanitizen vóór toevoeging, om dubbele prefixes (`GV GV 12345`) wiskundig uit te sluiten.
+* **Dynamische Kruisvalidatie:** De pre-flight afrondingscontrole controleert dynamisch of het erkenningsnummer past bij de gekozen brandstof in Tab 5:
+  - Aardgas / Vloeibaar gas $\to$ vereist geldig **GV**-nummer.
+  - Stookolie (vloeibaar) $\to$ vereist geldig **TV**-nummer.
+* **Negatieve Boundary Tests:** Geautomatiseerde tests moeten bewijzen dat onvolledige of ongeldige nummers (bv. 4 cijfers) de afronding strikt blokkeren voordat een record definitief bevriest in SQLite.
+
 
 ---
 
