@@ -42,6 +42,7 @@ Execute the project gate command (`.\tool\check_gates.ps1`). It must exit with c
 - Gate 1A: Code formatting clean (`dart format`).
 - Gate 1B: Static analysis clean with zero errors, warnings, or lints (`flutter analyze`).
 - Gate 1C: Strict file length verification ($\le 250$ lines across all files in `lib/` and `test/`).
+- Gate 1D: Mechanical anti-pattern & whitespace checks clean (zero git whitespace errors or banned patterns).
 - Full automated test suite passes 100%.
 
 ### Tier 2: Adversarial Self-Audit on `git diff` (Mandatory Before Handoff)

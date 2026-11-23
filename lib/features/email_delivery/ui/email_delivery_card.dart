@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../app/localization/email_delivery_dictionary.dart';
+import '../../../core/widgets/tactical_feedback.dart';
 import '../../pdf_export/data/pdf_visit_loader.dart';
 import '../data/email_delivery_coordinator.dart';
 import '../data/email_outbox_repository.dart';
@@ -104,10 +105,13 @@ class _EmailDeliveryCardState extends State<EmailDeliveryCard> {
       final outcome =
           await _archivingCoordinator.archiveAndUpdateStatus(widget.visitId);
       if (!mounted) return;
-      final msg = outcome.archiveSuccess
-          ? EmailDeliveryDictionary.archiveSuccess
-          : (outcome.errorMessage ?? EmailDeliveryDictionary.archiveFailure);
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+      if (outcome.archiveSuccess) {
+        TacticalFeedback.showSuccess(
+            context, EmailDeliveryDictionary.archiveSuccess);
+      } else {
+        TacticalFeedback.showError(context,
+            outcome.errorMessage ?? EmailDeliveryDictionary.archiveFailure);
+      }
     });
   }
 
@@ -122,18 +126,18 @@ class _EmailDeliveryCardState extends State<EmailDeliveryCard> {
           _smtpNeedsAttention = true;
         }
       });
-      final msg = switch (res) {
-        OutboxDispatchResult.offline =>
-          EmailDeliveryDictionary.outboxOfflineNotice,
-        OutboxDispatchResult.success =>
-          EmailDeliveryDictionary.outboxSendSuccess,
-        OutboxDispatchResult.needsAttention =>
-          EmailDeliveryDictionary.outboxNeedsAttentionNotice,
-        _ => null,
-      };
-      if (msg != null) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(msg)));
+      switch (res) {
+        case OutboxDispatchResult.offline:
+          TacticalFeedback.showInfo(
+              context, EmailDeliveryDictionary.outboxOfflineNotice);
+        case OutboxDispatchResult.success:
+          TacticalFeedback.showSuccess(
+              context, EmailDeliveryDictionary.outboxSendSuccess);
+        case OutboxDispatchResult.needsAttention:
+          TacticalFeedback.showError(
+              context, EmailDeliveryDictionary.outboxNeedsAttentionNotice);
+        default:
+          break;
       }
     });
   }

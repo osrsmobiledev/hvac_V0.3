@@ -59,7 +59,10 @@ class PdfArchivingCoordinator {
 
       try {
         snapshot = jsonDecode(snapshotJson) as Map<String, Object?>;
-      } catch (_) {}
+      } catch (e, stack) {
+        debugPrint(
+            '[PdfArchivingCoordinator] archivePdf snapshot error: $e\n$stack');
+      }
 
       smtpRow = await _loadSmtpRow(db);
 
@@ -237,7 +240,9 @@ class PdfArchivingCoordinator {
         where: 'id = ? AND is_draft = 0',
         whereArgs: [visitId],
       );
-    } catch (_) {}
+    } catch (e, stack) {
+      debugPrint('[PdfArchivingCoordinator] _recordFailure error: $e\n$stack');
+    }
   }
 
   /// Extracts attest number from a decoded snapshot map.

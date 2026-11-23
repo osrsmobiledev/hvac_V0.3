@@ -126,7 +126,10 @@ abstract final class VisitFinalization {
       if (archiveOutcome.snapshot.isNotEmpty) {
         visitData = PdfVisitLoader.fromSnapshot(archiveOutcome.snapshot);
       }
-    } catch (_) {}
+    } catch (e, stack) {
+      debugPrint(
+          '[VisitFinalization] _archiveAndPromptRecipients error: $e\n$stack');
+    }
 
     final dialogResult = await EmailRecipientDialog.show(
       context,

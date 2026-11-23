@@ -228,7 +228,10 @@ abstract final class PdfVisitLoader {
         trimmed.length > 50) {
       try {
         return base64Decode(trimmed);
-      } catch (_) {}
+      } catch (e, stack) {
+        debugPrint(
+            '[PdfVisitLoader] _resolveSignatureBytes base64 error: $e\n$stack');
+      }
     }
 
     // 3. File path on disk

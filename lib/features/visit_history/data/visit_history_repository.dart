@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:sqflite/sqflite.dart';
 
 import '../../../core/database/app_database.dart';
@@ -179,6 +180,9 @@ class VisitHistoryRepository {
           whereArgs: [custId],
         );
       }
-    } catch (_) {}
+    } catch (e, stack) {
+      debugPrint(
+          '[VisitHistoryRepository] backfillCustomerEmail error: $e\n$stack');
+    }
   }
 }

@@ -5,6 +5,7 @@ import 'package:path/path.dart' as p;
 import 'package:printing/printing.dart';
 
 import '../../../app/localization/email_delivery_dictionary.dart';
+import '../../../core/widgets/tactical_feedback.dart';
 
 typedef SharePdfFunction = Future<void> Function(
     List<int> bytes, String filename);
@@ -20,10 +21,8 @@ abstract final class PdfShareHelper {
       final file = File(pdfPath);
       if (!await file.exists()) {
         if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-                content: Text(EmailDeliveryDictionary.sharePdfError)),
-          );
+          TacticalFeedback.showError(
+              context, EmailDeliveryDictionary.sharePdfError);
         }
         return;
       }
@@ -34,11 +33,11 @@ abstract final class PdfShareHelper {
       } else {
         await Printing.sharePdf(bytes: bytes, filename: filename);
       }
-    } catch (_) {
+    } catch (e, stack) {
+      debugPrint('[PdfShareHelper] sharePdf error: $e\n$stack');
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text(EmailDeliveryDictionary.sharePdfError)),
-        );
+        TacticalFeedback.showError(
+            context, EmailDeliveryDictionary.sharePdfError);
       }
     }
   }

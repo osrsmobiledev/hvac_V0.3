@@ -30,19 +30,19 @@ abstract final class PdfHeaderBuilder {
         crossAxisAlignment: pw.CrossAxisAlignment.center,
         children: [
           pw.Text('VERBRANDINGSATTEST', style: PdfComponents.titleBoldText),
-          pw.Spacer(flex: 2),
+          pw.Spacer(flex: 2), // gate-1d-ok: horizontal header row spacer
           PdfComponents.labeledCheckbox(
             label: 'onderhoud',
             isChecked: isOnderhoud,
             textStyle: PdfComponents.titleBoldText,
           ),
-          pw.Spacer(flex: 2),
+          pw.Spacer(flex: 2), // gate-1d-ok: horizontal header row spacer
           PdfComponents.labeledCheckbox(
             label: 'keuring voor eerste ingebruikname',
             isChecked: isKeuring,
             textStyle: PdfComponents.titleBoldText,
           ),
-          pw.Spacer(flex: 3),
+          pw.Spacer(flex: 3), // gate-1d-ok: horizontal header row spacer
           pw.Row(
             children: [
               pw.Text('volgnummer attest: ',

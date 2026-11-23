@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../../app/localization/visit_history_dictionary.dart';
+import '../../../core/widgets/tactical_feedback.dart';
 import '../../pdf_export/ui/pdf_preview_dialog.dart';
 import '../data/visit_history_repository.dart';
 
@@ -55,11 +56,10 @@ class VisitHistoryRemindersCard extends StatelessWidget {
     try {
       await const MethodChannel('com.example.hvac_app/reminders')
           .invokeMethod<void>('share', message);
-    } catch (_) {
+    } catch (e, stack) {
+      debugPrint('[VisitHistoryRemindersCard] share error: $e\n$stack');
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text(VisitHistoryDictionary.shareFailed)),
-        );
+        TacticalFeedback.showError(context, VisitHistoryDictionary.shareFailed);
       }
     }
   }

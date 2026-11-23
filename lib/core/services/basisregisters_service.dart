@@ -194,7 +194,10 @@ abstract final class BasisregistersService {
             final gebouwMap = detJson['gebouw'] as Map<String, dynamic>?;
             return gebouwMap?['objectId']?.toString();
           }
-        } catch (_) {}
+        } catch (e, stack) {
+          debugPrint(
+              '[BasisregistersService] resolveVekaIds error: $e\n$stack');
+        }
         return null;
       });
 
