@@ -99,17 +99,29 @@ class _VerbrandingsattestScreenState extends State<VerbrandingsattestScreen>
     ];
     for (var index = 0; index < keys.length; index++) {
       final key = keys[index];
-      if (key?.currentState?.validate() ?? false) continue;
+      final formValid = key?.currentState?.validate() ?? false;
+      // Tab 4 (index 2 in `keys`, tab index 3) must also have no active Klant edit session.
+      final klantEditBlocked =
+          index == 2 && DraftSaveScope.hasBlocked(_draftSaves);
+      if (formValid && !klantEditBlocked) continue;
       _tabController.animateTo(index + 1);
       final tabTitle = _tabTitles[index + 1];
-      final detail = FormScrollHelper.findFirstError(key?.currentContext);
-      final msg = detail != null
-          ? '$tabTitle: $detail'
-          : VisitHistoryDictionary.checkTab(tabTitle);
+      final detail = !formValid
+          ? FormScrollHelper.findFirstError(key?.currentContext)
+          : null;
+      final msg = klantEditBlocked && formValid
+          ? VisitHistoryDictionary.customerEditing
+          : detail != null
+              ? '$tabTitle: $detail'
+              : VisitHistoryDictionary.checkTab(tabTitle);
       TacticalFeedback.showError(context, msg);
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) FormScrollHelper.scrollToFirstInvalid(key?.currentContext);
-      });
+      if (!formValid) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            FormScrollHelper.scrollToFirstInvalid(key?.currentContext);
+          }
+        });
+      }
       return;
     }
     _finalizing = true;

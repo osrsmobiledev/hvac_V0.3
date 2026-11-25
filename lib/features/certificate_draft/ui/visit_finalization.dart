@@ -44,6 +44,14 @@ abstract final class VisitFinalization {
     return ok ?? false;
   }
 
+  static Never _throwSaveError(Object error) {
+    final isCust =
+        error is VekaException && error.issue == VekaIssue.customerEditing;
+    throw VisitFinalizationException(isCust
+        ? VisitHistoryDictionary.customerEditing
+        : VisitHistoryDictionary.archiveError);
+  }
+
   /// Finalizes the visit draft in SQLite and invalidates warmup caches.
   static Future<bool> save(DraftSaveScope scope, int visitId) async {
     try {
@@ -52,11 +60,7 @@ abstract final class VisitFinalization {
       AppWarmupService.instance.invalidate();
       return needsFollowUp;
     } catch (error) {
-      final isCust =
-          error is VekaException && error.issue == VekaIssue.customerEditing;
-      throw VisitFinalizationException(isCust
-          ? VisitHistoryDictionary.customerEditing
-          : VisitHistoryDictionary.archiveError);
+      _throwSaveError(error);
     }
   }
 
@@ -69,7 +73,11 @@ abstract final class VisitFinalization {
     required DraftSaveScope saveScope,
     PdfArchivingCoordinator? coordinatorOverride,
   }) async {
-    await saveScope.settle();
+    try {
+      await saveScope.settle();
+    } catch (error) {
+      _throwSaveError(error);
+    }
 
     final visitData = await PdfVisitLoader.loadVisitData(visitId);
     final coordinator = coordinatorOverride ?? PdfArchivingCoordinator();

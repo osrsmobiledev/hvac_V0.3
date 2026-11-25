@@ -18,14 +18,20 @@ class DraftSaveScope extends InheritedWidget {
     }
   }
 
+  /// Returns true when any registered debouncer blocks persistence (e.g. active Klant edit).
+  static bool hasBlocked(Iterable<Debouncer> saves) =>
+      saves.any((save) => save.saveBlocked?.call() ?? false);
+
+  bool get isBlocked => hasBlocked(saves);
+
   Future<void> settle() async {
-    if (saves.any((save) => save.saveBlocked?.call() ?? false)) {
+    if (isBlocked) {
       throw const VekaException(VekaIssue.customerEditing);
     }
     for (final save in saves.toList()) {
       await save.settle();
     }
-    if (saves.any((save) => save.saveBlocked?.call() ?? false)) {
+    if (isBlocked) {
       throw const VekaException(VekaIssue.customerEditing);
     }
   }

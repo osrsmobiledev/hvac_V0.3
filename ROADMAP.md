@@ -56,7 +56,7 @@
 
 ## 2. Current Handoff (Active State for AI Agent)
 
-**Active Milestone: Milestone 6 (Email Delivery & PDF Archiving) complete and accepted on Android by owner (466 tests passing). Next active milestone / slice: ready for Milestone 7 brainstorming.**
+**Active Milestone: Milestone 6 (Email Delivery & PDF Archiving) complete and accepted on Android by owner (468 tests passing, including the unsaved-Klant finalization guard). Next active milestone / slice: ready for Milestone 7 brainstorming.**
 
 ### Slice 6.4 Implementation Summary & Verification
 Slice 6.4 completed and accepted on Android by the owner. Full implementation and 3-layer dependency invariant verified across the 458-test automated suite (0 analyzer lints, all files <= 250 lines):
