@@ -2,16 +2,16 @@ import 'package:flutter/material.dart';
 
 import '../../../app/localization/email_delivery_dictionary.dart';
 import '../../../core/widgets/tactical_feedback.dart';
+import '../../pdf_export/data/pdf_visit_data.dart';
 import '../../pdf_export/data/pdf_visit_loader.dart';
 import '../data/email_delivery_coordinator.dart';
 import '../data/email_outbox_repository.dart';
 import '../data/email_settings_repository.dart';
 import '../data/pdf_archiving_coordinator.dart';
-import 'email_delivery_actions.dart';
 import 'email_empty_outbox_view.dart';
-import 'email_job_tile.dart';
+import 'email_load_error_view.dart';
+import 'email_loaded_jobs_view.dart';
 import 'email_recipient_dialog.dart';
-import 'email_tracker_header.dart';
 import 'pdf_share_helper.dart';
 
 export 'pdf_share_helper.dart' show SharePdfFunction;
@@ -24,6 +24,7 @@ class EmailDeliveryCard extends StatefulWidget {
   final EmailSettingsRepository? settingsRepository;
   final PdfArchivingCoordinator? archivingCoordinator;
   final SharePdfFunction? sharePdfOverride;
+  final Future<PdfVisitData> Function(int visitId)? visitDataLoader;
 
   const EmailDeliveryCard({
     super.key,
@@ -33,6 +34,7 @@ class EmailDeliveryCard extends StatefulWidget {
     this.settingsRepository,
     this.archivingCoordinator,
     this.sharePdfOverride,
+    this.visitDataLoader,
   });
 
   @override
@@ -49,7 +51,7 @@ class _EmailDeliveryCardState extends State<EmailDeliveryCard> {
 
   List<Map<String, Object?>>? _jobs;
   String? _archivedPdfPath, _pdfStatus;
-  bool _isLoading = true, _isProcessing = false;
+  bool _isLoading = true, _hasLoadError = false, _isProcessing = false;
   bool _isSmtpConfigured = true,
       _smtpNeedsAttention = false,
       _isOffline = false;
@@ -60,31 +62,45 @@ class _EmailDeliveryCardState extends State<EmailDeliveryCard> {
     _loadJobs();
   }
 
+  Future<void> _retryLoad() async {
+    setState(() {
+      _isLoading = true;
+      _hasLoadError = false;
+    });
+    await _loadJobs();
+  }
+
   Future<void> _loadJobs() async {
-    final jobs = await _outbox.getJobsForVisit(widget.visitId);
-    String? pdfPath;
-    String? pdfStatus;
-    if (jobs.isEmpty) {
-      final info = await _outbox.getPdfInfoForVisit(widget.visitId);
-      pdfStatus = info?.status;
-      if (info?.path != null &&
-          await _archivingCoordinator.archiveFileExists(info!.path!)) {
-        pdfPath = info.path;
-      } else if (pdfStatus != null) {
-        pdfStatus = 'failed';
+    try {
+      final jobs = await _outbox.getJobsForVisit(widget.visitId);
+      String? pdfPath;
+      String? pdfStatus;
+      if (jobs.isEmpty) {
+        final info = await _outbox.getPdfInfoForVisit(widget.visitId);
+        pdfStatus = info?.status;
+        if (info?.path != null &&
+            await _archivingCoordinator.archiveFileExists(info!.path!)) {
+          pdfPath = info.path;
+        } else if (pdfStatus != null) {
+          pdfStatus = 'failed';
+        }
       }
-    }
-    final s = await (widget.settingsRepository?.loadSettings() ??
-        _coordinator.loadSettings());
-    if (mounted) {
+      final s = await (widget.settingsRepository?.loadSettings() ??
+          _coordinator.loadSettings());
+      if (!mounted) return;
       setState(() {
         _jobs = jobs;
         _archivedPdfPath = pdfPath;
         _pdfStatus = pdfStatus;
         _isSmtpConfigured = s.isConfigured;
         _smtpNeedsAttention = s.needsAttention;
-        _isLoading = false;
+        _hasLoadError = false;
       });
+    } catch (e, stack) {
+      debugPrint('[EmailDeliveryCard] _loadJobs error: $e\n$stack');
+      if (mounted) setState(() => _hasLoadError = true);
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -145,7 +161,8 @@ class _EmailDeliveryCardState extends State<EmailDeliveryCard> {
   Future<void> _promptAddEmail() async {
     final path = (_archivedPdfPath ?? '').trim();
     if (path.isEmpty) return;
-    final visitData = await PdfVisitLoader.loadVisitData(widget.visitId);
+    final loader = widget.visitDataLoader ?? PdfVisitLoader.loadVisitData;
+    final visitData = await loader(widget.visitId);
     final smtp = await _archivingCoordinator.loadSmtpDefaults();
     if (!mounted) return;
 
@@ -187,6 +204,13 @@ class _EmailDeliveryCardState extends State<EmailDeliveryCard> {
       );
     }
 
+    if (_hasLoadError) {
+      return EmailLoadErrorView(
+        onRetry: _retryLoad,
+        onClose: () => Navigator.of(context).pop(),
+      );
+    }
+
     final jobs = _jobs ?? const [];
     if (jobs.isEmpty) {
       return EmailEmptyOutboxView(
@@ -202,52 +226,21 @@ class _EmailDeliveryCardState extends State<EmailDeliveryCard> {
       );
     }
 
-    final hasQueuedJobs =
-        jobs.any((j) => (j['status'] as String? ?? 'queued') == 'queued');
-    final firstPdfPath = jobs
-        .map((j) => j['pdf_path'] as String?)
-        .firstWhere((p) => p != null && p.isNotEmpty, orElse: () => null);
-
-    return Padding(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          EmailTrackerHeader(
-            isProcessing: _isProcessing,
-            onClose: () => Navigator.of(context).pop(),
-          ),
-          const SizedBox(height: 12),
-          for (int i = 0; i < jobs.length; i++) ...[
-            if (i > 0) const SizedBox(height: 10),
-            EmailJobTile(
-              job: jobs[i],
-              isProcessing: _isProcessing,
-              onCorrectEmail: (em) => _handleAction(() =>
-                  _coordinator.correctRecipientEmail(jobs[i]['id'] as int, em)),
-              onRetry: () => _handleAction(
-                  () => _coordinator.retryJob(jobs[i]['id'] as int)),
-              onResolveManually: (n) => _handleAction(() => _coordinator
-                  .resolveJobManually(jobs[i]['id'] as int, notes: n)),
-            ),
-          ],
-          const SizedBox(height: 16),
-          EmailDeliveryActions(
-            hasQueuedJobs: hasQueuedJobs,
-            isProcessing: _isProcessing,
-            isConfigured: _isSmtpConfigured,
-            needsAttention: _smtpNeedsAttention,
-            isOffline: _isOffline,
-            firstPdfPath: firstPdfPath,
-            onSendNow: _sendQueuedJobs,
-            onSharePdf: () => _handleAction(() => PdfShareHelper.sharePdf(
-                context, firstPdfPath ?? '',
-                sharePdfOverride: widget.sharePdfOverride)),
-            onClose: () => Navigator.of(context).pop(),
-          ),
-        ],
-      ),
+    return EmailLoadedJobsView(
+      jobs: jobs,
+      isProcessing: _isProcessing,
+      isConfigured: _isSmtpConfigured,
+      needsAttention: _smtpNeedsAttention,
+      isOffline: _isOffline,
+      onCorrectEmail: (id, em) =>
+          _handleAction(() => _coordinator.correctRecipientEmail(id, em)),
+      onRetryJob: (id) => _handleAction(() => _coordinator.retryJob(id)),
+      onResolveManually: (id, n) =>
+          _handleAction(() => _coordinator.resolveJobManually(id, notes: n)),
+      onSendNow: _sendQueuedJobs,
+      onSharePdf: (p) => _handleAction(() => PdfShareHelper.sharePdf(context, p,
+          sharePdfOverride: widget.sharePdfOverride)),
+      onClose: () => Navigator.of(context).pop(),
     );
   }
 }

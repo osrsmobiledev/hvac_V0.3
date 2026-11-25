@@ -56,7 +56,7 @@
 
 ## 2. Current Handoff (Active State for AI Agent)
 
-**Active Milestone: Milestone 6 (Email Delivery & PDF Archiving). Slice 6.4 completed and accepted on Android by owner (458 tests passing). Next active milestone / slice: Milestone 6 complete; ready for next feature brainstorming.**
+**Active Milestone: Milestone 6 (Email Delivery & PDF Archiving) complete and accepted on Android by owner (466 tests passing). Next active milestone / slice: ready for Milestone 7 brainstorming.**
 
 ### Slice 6.4 Implementation Summary & Verification
 Slice 6.4 completed and accepted on Android by the owner. Full implementation and 3-layer dependency invariant verified across the 458-test automated suite (0 analyzer lints, all files <= 250 lines):
@@ -83,7 +83,7 @@ Slice 6.4 completed and accepted on Android by the owner. Full implementation an
    - Full gate pass: 458 tests green, 0 static analysis issues, all files <= 250 lines. Tested and confirmed on Android device by owner.
 
 ### Slice 6.3 Implementation Summary & Verification
-Slice 6.3 core implementation was accepted earlier on Android by the owner, with post-audit closure still pending. Post-audit fixes are verified across the 441-test automated suite (0 analyzer lints, all files <= 250 lines). Post-audit device re-tests, the open owner decision, and implementation/test gaps are recorded below:
+Slice 6.3 core implementation was accepted earlier on Android by the owner, and post-audit code/test closure is now verified across the 466-test automated suite (0 analyzer lints, all files <= 250 lines; Option A confirmed and closed). Remaining device QA status is recorded below:
 
 1. **Serialized Outbox Processing & Live-Send Protection (`EmailDeliveryCoordinator`):**
    - App-scoped coordinator instance (`EmailDeliveryCoordinator.instance`) and static `_sharedLock` (`package:synchronized`) shared within the app isolate.
@@ -171,14 +171,15 @@ Slice 6.3 core implementation was accepted earlier on Android by the owner, with
     - Failed retry preserves visit data and `snapshot_json`, displays the error message, and keeps the retry action available for subsequent attempts.
     - Verified with widget tests (`test/pdf_archive_recovery_test.dart`).
 
-14. **Open Implementation & Test Gaps:**
-    - *Missing "Alsnog e-mailen" Widget Test:* While `EmailEmptyOutboxView` and `EmailRecipientDialog` are tested in isolation, an end-to-end widget test simulating a user tap on "Alsnog e-mailen" (preferably a focused `EmailDeliveryCard` widget test in `test/email_delivery_card_test.dart`, or at the screen level in `test/visit_history_test.dart`) is not yet implemented.
-    - *`EmailDeliveryCard._loadJobs()` Failure Path:* Lacks explicit `try/catch` error handling; if reading the database (`getJobsForVisit`, `getPdfInfoForVisit`) or settings throws an exception, the card remains indefinitely in the loading indicator state (`_isLoading = true`).
+14. **Resolved Closure Items (466-Test Suite):**
+    - *"Alsnog e-mailen" End-to-End Widget Tests:* Added `test/email_delivery_card_recovery_test.dart` covering empty-outbox `"Alsnog e-mailen"` -> `EmailRecipientDialog` (customer + technician, Option A technician-only without customer email, and cancel/no-op).
+    - *`EmailDeliveryCard._loadJobs()` Failure Path:* Wrapped `_loadJobs()` in `try/catch/finally` with `debugPrint` logging, `mounted`-guarded `_isLoading = false`, and retryable `EmailLoadErrorView` (`EmailFailureDictionary.trackerLoadError`), plus sibling `EmailLoadedJobsView` extraction keeping `email_delivery_card.dart` under 250 lines.
+    - *`EmailOutboxBanner` `needs_attention` Precedence Fix:* Reordered `EmailOutboxBanner.build()` to check `needsAttention` before `!isConfigured`, preventing `smtp_state == 'needs_attention'` from being shadowed by `outboxUnconfiguredNotice`; verified with `test/email_outbox_banner_test.dart` (including live **Nu verzenden** auth-failure transition).
 
 15. **Reconciled Verification & Android Device Testing State:**
-    - *Owner Device Acceptance:* Native PDF sharing ("Delen via Android") and offline/unconfigured outbox sending ("Nu verzenden") tested and confirmed working on Android device by the owner; Option A approved (technician-only dispatch accepted).
-    - *Automated Quality Gate:* All 448 automated tests pass cleanly with exit code 0 (`.\tool\check_gates.ps1`), 0 analyzer issues, all files <= 250 lines.
-    - *Pending Physical Android Hardware Checks:* In-flight SMTP authentication failure and Android KeyStore cloud backup exclusion (`FlutterSecureStorage.xml`) remain recorded as pending physical Android hardware tests.
+    - *Owner Device Acceptance:* Native PDF sharing ("Delen via Android"), offline/unconfigured outbox sending ("Nu verzenden"), and SMTP authentication failure recovery (persistent *"E-mailinstellingen vereisen aandacht"* banner + credential restore delivery) tested and confirmed working on Android device by the owner; Option A confirmed and closed (technician-only dispatch accepted).
+    - *Automated Quality Gate:* All 466 automated tests pass cleanly with exit code 0 (`.\tool\check_gates.ps1`), 0 analyzer issues, all files <= 250 lines.
+    - *Deferred Pre-Release QA Check:* Android KeyStore cloud backup exclusion (`FlutterSecureStorage.xml`) end-to-end backup/restore cycle remains recorded as a deferred pre-release QA check.
 
 ### Owner Check on Android
 

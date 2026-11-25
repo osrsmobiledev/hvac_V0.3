@@ -35,6 +35,10 @@ abstract final class EmailFailureDictionary {
   /// Label for collapsing the technical details disclosure.
   static const String hideTechnicalDetails = 'Technische details verbergen';
 
+  /// Shown when loading the email delivery tracker from local storage fails.
+  static const String trackerLoadError =
+      'Kan e-mailstatus niet laden. Probeer het opnieuw.';
+
   /// Returns a concise technician-friendly explanation based on failure category and reason.
   static String failureExplanation(String status, String? reason) {
     if (reason == 'authentication_failed') {

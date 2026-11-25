@@ -20,19 +20,19 @@ class EmailOutboxBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (!isConfigured) {
-      return const _OutboxNoticeCard(
-        color: AppColors.warningOrange,
-        icon: Icons.warning_amber_rounded,
-        message: EmailDeliveryDictionary.outboxUnconfiguredNotice,
-      );
-    }
-
     if (needsAttention) {
       return const _OutboxNoticeCard(
         color: AppColors.errorRed,
         icon: Icons.lock_reset,
         message: EmailDeliveryDictionary.outboxNeedsAttentionNotice,
+      );
+    }
+
+    if (!isConfigured) {
+      return const _OutboxNoticeCard(
+        color: AppColors.warningOrange,
+        icon: Icons.warning_amber_rounded,
+        message: EmailDeliveryDictionary.outboxUnconfiguredNotice,
       );
     }
 
