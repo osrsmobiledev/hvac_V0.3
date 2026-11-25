@@ -6,12 +6,24 @@ analyzer:
     - build/**
     - .dart_tool/**
     - android/**
+    - ios/**
+    - linux/**
+    - macos/**
+    - windows/**
+    - web/**
+    - "**/*.g.dart"
+    - "**/*.freezed.dart"
 
 linter:
   rules:
+    # Style & const optimizations
     prefer_const_constructors: true
     prefer_const_declarations: true
+
+    # High-value bug-catching lints
     avoid_print: true
     unawaited_futures: true
     cancel_subscriptions: true
     close_sinks: true
+    use_build_context_synchronously: true
+    only_throw_errors: true

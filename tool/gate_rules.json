@@ -1,0 +1,15 @@
+{
+  "rules": [
+    {
+      "name": "Raw SnackBar",
+      "scope": "lib",
+      "pattern": "\\.showSnackBar\\(",
+      "excludePathPattern": "tactical_feedback\\.dart$"
+    },
+    {
+      "name": "pw.Spacer",
+      "scope": "lib",
+      "pattern": "pw\\.Spacer\\("
+    }
+  ]
+}
