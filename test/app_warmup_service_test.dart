@@ -1,6 +1,8 @@
 // File: test/app_warmup_service_test.dart
 // Responsibility: Unit tests for AppWarmupService (engine pre-warming & cache).
 
+import 'dart:async';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:hvac_app/core/database/app_database.dart';
@@ -87,6 +89,32 @@ class FakeTechnicianProfileRepository implements TechnicianProfileRepository {
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
+class _FlakyDraftRepository implements DraftRepository {
+  int callCount = 0;
+  bool shouldThrow;
+  Completer<DraftVisit>? gate;
+
+  _FlakyDraftRepository({this.shouldThrow = false, this.gate});
+
+  @override
+  Future<DraftVisit> getOrCreateActiveDraft({Database? dbOverride}) async {
+    callCount++;
+    if (gate != null) return gate!.future;
+    if (shouldThrow) throw Exception('Simulated SQLite error');
+    return const DraftVisit(
+      id: 99,
+      activityType: 'onderhoud',
+      attestNumber: 'RETRY-001',
+      visitDate: '2026-10-31',
+      startTime: '',
+      endTime: '',
+    );
+  }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
 void main() {
   setUp(() {
     AppWarmupService.instance.resetForTesting();
@@ -140,6 +168,71 @@ void main() {
       // Calls must NOT increase because cached result was returned
       expect(fakeDraftRepo.callCount, 1);
       expect(fakeProfileRepo.callCount, 1);
+    });
+
+    test('Failed warmup does not cache partial state and next call retries',
+        () async {
+      final fakeDb = FakeAppDatabase();
+      final flakyDraftRepo = _FlakyDraftRepository(shouldThrow: true);
+      final fakeProfileRepo = FakeTechnicianProfileRepository();
+
+      await AppWarmupService.instance.warmup(
+        databaseOverride: fakeDb,
+        draftRepoOverride: flakyDraftRepo,
+        profileRepoOverride: fakeProfileRepo,
+      );
+
+      expect(AppWarmupService.instance.isWarmedUp, isFalse);
+      expect(AppWarmupService.instance.cachedResult, isNull);
+
+      flakyDraftRepo.shouldThrow = false;
+      final retryResult = await AppWarmupService.instance.warmup(
+        databaseOverride: fakeDb,
+        draftRepoOverride: flakyDraftRepo,
+        profileRepoOverride: fakeProfileRepo,
+      );
+
+      expect(AppWarmupService.instance.isWarmedUp, isTrue);
+      expect(retryResult.activeDraft?.id, 99);
+      expect(flakyDraftRepo.callCount, 2);
+    });
+
+    test(
+        'Concurrent warmup calls coalesce and invalidate mid-flight discards stale cache',
+        () async {
+      final fakeDb = FakeAppDatabase();
+      final gate = Completer<DraftVisit>();
+      final gatedDraftRepo = _FlakyDraftRepository(gate: gate);
+      final fakeProfileRepo = FakeTechnicianProfileRepository();
+
+      final f1 = AppWarmupService.instance.warmup(
+        databaseOverride: fakeDb,
+        draftRepoOverride: gatedDraftRepo,
+        profileRepoOverride: fakeProfileRepo,
+      );
+      final f2 = AppWarmupService.instance.warmup(
+        databaseOverride: fakeDb,
+        draftRepoOverride: gatedDraftRepo,
+        profileRepoOverride: fakeProfileRepo,
+      );
+
+      await Future<void>.delayed(Duration.zero);
+      expect(gatedDraftRepo.callCount, 1);
+
+      AppWarmupService.instance.invalidate();
+      gate.complete(const DraftVisit(
+        id: 77,
+        activityType: 'onderhoud',
+        attestNumber: 'STALE',
+        visitDate: '2026-10-31',
+        startTime: '',
+        endTime: '',
+      ));
+
+      final results = await Future.wait([f1, f2]);
+      expect(results[0].activeDraft?.id, 77);
+      expect(AppWarmupService.instance.isWarmedUp, isFalse);
+      expect(AppWarmupService.instance.cachedResult, isNull);
     });
   });
 }

@@ -55,6 +55,8 @@ class AppWarmupService {
 
   bool _isWarmedUp = false;
   WarmupResult? _cachedResult;
+  Future<WarmupResult>? _inFlightWarmup;
+  int _generation = 0;
 
   bool get isWarmedUp => _isWarmedUp;
   WarmupResult? get cachedResult => _cachedResult;
@@ -68,8 +70,29 @@ class AppWarmupService {
     if (_isWarmedUp && _cachedResult != null) {
       return _cachedResult!;
     }
+    if (_inFlightWarmup != null) {
+      return _inFlightWarmup!;
+    }
 
+    final runGeneration = _generation;
+    final future = _runWarmup(
+      runGeneration,
+      databaseOverride: databaseOverride,
+      draftRepoOverride: draftRepoOverride,
+      profileRepoOverride: profileRepoOverride,
+    );
+    _inFlightWarmup = future;
+    return future;
+  }
+
+  Future<WarmupResult> _runWarmup(
+    int runGeneration, {
+    AppDatabase? databaseOverride,
+    DraftRepository? draftRepoOverride,
+    TechnicianProfileRepository? profileRepoOverride,
+  }) async {
     final stopwatch = Stopwatch()..start();
+    var succeeded = false;
     DraftVisit? draft;
     TechnicianProfile? profile;
     Customer? customer;
@@ -119,14 +142,17 @@ class AppWarmupService {
           }
         }
       }
+      succeeded = true;
     } catch (e, stack) {
       debugPrint('[AppWarmupService] warmup error: $e\n$stack');
     } finally {
       stopwatch.stop();
+      if (runGeneration == _generation) {
+        _inFlightWarmup = null;
+      }
     }
 
-    _isWarmedUp = true;
-    _cachedResult = WarmupResult(
+    final result = WarmupResult(
       activeDraft: draft,
       profile: profile,
       activeCustomer: customer,
@@ -138,7 +164,13 @@ class AppWarmupService {
       eindbeoordeling: eindbeoordeling,
       elapsed: stopwatch.elapsed,
     );
-    return _cachedResult!;
+
+    // Only cache when warmup succeeded and was not invalidated mid-flight.
+    if (succeeded && runGeneration == _generation) {
+      _isWarmedUp = true;
+      _cachedResult = result;
+    }
+    return result;
   }
 
   @visibleForTesting
@@ -146,7 +178,9 @@ class AppWarmupService {
 
   /// The next visit needs a fresh cache after a certificate is archived.
   void invalidate() {
+    _generation++;
     _isWarmedUp = false;
     _cachedResult = null;
+    _inFlightWarmup = null;
   }
 }

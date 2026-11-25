@@ -7,6 +7,7 @@ import 'package:mailer/smtp_server.dart';
 import '../../../core/utils/email_validator.dart';
 import 'email_send_outcome.dart';
 import 'email_settings_model.dart';
+import 'smtp_exception_classifier.dart';
 
 /// Type definition for the credentials check function to facilitate testing.
 typedef CredentialsChecker = Future<void> Function(
@@ -25,12 +26,18 @@ typedef SendFunction = Future<SendReport> Function(
 class EmailSenderService {
   final CredentialsChecker _checker;
   final SendFunction _sendFunction;
+  final Duration _checkTimeout;
+  final Duration _sendTimeout;
 
   EmailSenderService({
     CredentialsChecker? checker,
     SendFunction? sendFunction,
+    Duration checkTimeout = const Duration(seconds: 6),
+    Duration sendTimeout = const Duration(seconds: 35),
   })  : _checker = checker ?? checkCredentials,
-        _sendFunction = sendFunction ?? send;
+        _sendFunction = sendFunction ?? send,
+        _checkTimeout = checkTimeout,
+        _sendTimeout = sendTimeout;
 
   /// Validates standard email address syntax format using shared [EmailAddressValidator].
   static bool isFormatValidEmail(String email) =>
@@ -87,7 +94,9 @@ class EmailSenderService {
 
     final server = _buildServer(settings, password);
     try {
-      await _checker(server, timeout: const Duration(seconds: 4));
+      // Outer Dart timeout guards against a hung mailer Future holding the outbox lock.
+      await _checker(server, timeout: const Duration(seconds: 4))
+          .timeout(_checkTimeout);
       return SmtpConnectionResult.success;
     } on SmtpClientAuthenticationException {
       return SmtpConnectionResult.authenticationFailed;
@@ -114,11 +123,19 @@ class EmailSenderService {
     required String pdfPath,
   }) async {
     final file = File(pdfPath);
-    if (!await file.exists()) {
-      return const EmailSendOutcome(
+    try {
+      if (!await file.exists()) {
+        return const EmailSendOutcome(
+          status: 'failed',
+          failureReason: 'missing_attachment',
+          lastError: 'Gearchiveerd PDF-bestand niet gevonden op het toestel',
+        );
+      }
+    } catch (e) {
+      return EmailSendOutcome(
         status: 'failed',
         failureReason: 'missing_attachment',
-        lastError: 'Gearchiveerd PDF-bestand niet gevonden op het toestel',
+        lastError: 'Kan PDF-bijlage niet lezen: $e',
       );
     }
 
@@ -131,11 +148,12 @@ class EmailSenderService {
       ..attachments.add(FileAttachment(file));
 
     try {
+      // Outer Dart timeout guards against a hung mailer Future holding the outbox lock.
       await _sendFunction(
         message,
         server,
         timeout: const Duration(seconds: 30),
-      );
+      ).timeout(_sendTimeout);
       return EmailSendOutcome(
         status: 'sent',
         sentAt: DateTime.now().toIso8601String(),
@@ -190,57 +208,8 @@ class EmailSenderService {
       EmailSendOutcome(status: status, failureReason: reason, lastError: err);
 
   /// Classifies communication exceptions emitted by package:mailer ^7.3.0.
-  ///
-  /// Parses the first server reply line to distinguish permanent recipient rejections,
-  /// temporary 4xx server issues, policy/relay rejections (5.7.x), bare 550, and unknown errors.
   static EmailSendOutcome classifyCommunicationException(
     SmtpClientCommunicationException e,
-  ) {
-    final msg = e.message;
-    if (msg.contains('After sending RCPT TO:')) {
-      const marker = 'Response from server:';
-      final idx = msg.indexOf(marker);
-      if (idx == -1) {
-        return _outcome('uncertain_timeout', 'uncertain_timeout', msg);
-      }
-      final afterMarker = msg.substring(idx + marker.length).trimLeft();
-      final newlineIdx = afterMarker.indexOf('\n');
-      final firstLine = (newlineIdx == -1
-              ? afterMarker
-              : afterMarker.substring(0, newlineIdx))
-          .trim();
-
-      final match = RegExp(
-        r'^(?:<\s*)?(\d{3})(?:[- ]\s*([245]\.\d{1,3}\.\d{1,3}))?',
-      ).firstMatch(firstLine);
-      if (match == null) {
-        return _outcome('uncertain_timeout', 'uncertain_timeout', msg);
-      }
-
-      final code = match.group(1)!;
-      final enhanced = match.group(2);
-
-      if (code.startsWith('4') ||
-          (enhanced != null && enhanced.startsWith('4.'))) {
-        return _outcome('server_rejected', 'server_rejected', msg);
-      }
-      if (code == '554' || (enhanced != null && enhanced.startsWith('5.7.'))) {
-        return _outcome('server_rejected', 'server_rejected', msg);
-      }
-      if ((enhanced != null && enhanced.startsWith('5.1.')) ||
-          code == '551' ||
-          code == '553') {
-        return _outcome('recipient_rejected', 'recipient_rejected', msg);
-      }
-      if (code.startsWith('5')) {
-        return _outcome('server_rejected', 'server_rejected', msg);
-      }
-      return _outcome('uncertain_timeout', 'uncertain_timeout', msg);
-    }
-    if (msg.contains('After sending MAIL FROM:')) {
-      return _outcome('server_rejected', 'server_rejected', msg);
-    }
-    return _outcome('uncertain_timeout', 'uncertain_timeout',
-        'Communicatiefout tijdens verzending: $msg');
-  }
+  ) =>
+      SmtpExceptionClassifier.classify(e);
 }

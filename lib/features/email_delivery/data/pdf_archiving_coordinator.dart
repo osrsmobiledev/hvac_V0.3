@@ -8,19 +8,12 @@ import '../../../core/database/app_database.dart';
 import 'archive_outcome.dart';
 import 'email_outbox_repository.dart';
 import 'pdf_archive_service.dart';
+import 'pdf_archiving_outcome_helper.dart';
 
 /// Coordinates post-finalization PDF archiving and email outbox creation.
 ///
 /// This is the data-layer coordinator; UI only calls it, never executes SQL directly.
 class PdfArchivingCoordinator {
-  static ArchiveOutcome _failureOutcome(String error) => ArchiveOutcome(
-      archiveSuccess: false,
-      archivePath: '',
-      errorMessage: error,
-      copyTechnicianDefault: true,
-      technicianEmail: '',
-      snapshot: const {});
-
   final Future<Database> Function() _database;
   final EmailOutboxRepository _outbox;
   final Directory? _documentsDirectoryOverride;
@@ -39,22 +32,25 @@ class PdfArchivingCoordinator {
     PdfArchiveResult? archiveResult;
     Map<String, Object?> snapshot = const {};
     Map<String, Object?> smtpRow = const {};
+    Database? db;
 
     try {
-      final db = await _database();
+      db = await _database();
       final rows = await db.query('maintenance_visits',
           columns: ['snapshot_json'],
           where: 'id = ? AND is_draft = 0',
           whereArgs: [visitId],
           limit: 1);
       if (rows.isEmpty) {
-        return _failureOutcome('Gefinaliseerd bezoek niet gevonden.');
+        return PdfArchivingOutcomeHelper.failureOutcome(
+            'Gefinaliseerd bezoek niet gevonden.');
       }
 
       final snapshotJson = rows.single['snapshot_json'] as String? ?? '';
       if (snapshotJson.isEmpty) {
         await _recordFailureIfFinalized(db, visitId);
-        return _failureOutcome('Snapshot_json is leeg.');
+        return PdfArchivingOutcomeHelper.failureOutcome(
+            'Snapshot_json is leeg.');
       }
 
       try {
@@ -78,7 +74,8 @@ class PdfArchivingCoordinator {
           archivePath: archiveResult.archivePath,
         );
         if (!registered) {
-          return _buildOutcome(
+          await _recordFailureIfFinalized(db, visitId);
+          return PdfArchivingOutcomeHelper.buildOutcome(
             success: false,
             path: archiveResult.archivePath,
             isDbRegFailure: true,
@@ -91,7 +88,7 @@ class PdfArchivingCoordinator {
         await _recordFailureIfFinalized(db, visitId);
       }
 
-      return _buildOutcome(
+      return PdfArchivingOutcomeHelper.buildOutcome(
         success: archiveResult.isSuccess,
         path: archiveResult.archivePath,
         error: archiveResult.errorMessage,
@@ -100,7 +97,13 @@ class PdfArchivingCoordinator {
       );
     } catch (e) {
       debugPrint('[PdfArchivingCoordinator] Database or archive error: $e');
-      return _buildOutcome(
+      try {
+        final targetDb = db ?? await _database();
+        await _recordFailureIfFinalized(targetDb, visitId);
+      } catch (_) {
+        // Fallback DB failure recording must never throw out of archiveAndUpdateStatus.
+      }
+      return PdfArchivingOutcomeHelper.buildOutcome(
         success: false,
         path: archiveResult?.archivePath ?? '',
         isDbRegFailure: archiveResult?.isSuccess ?? false,
@@ -110,25 +113,6 @@ class PdfArchivingCoordinator {
       );
     }
   }
-
-  ArchiveOutcome _buildOutcome({
-    required bool success,
-    required String path,
-    String? error,
-    bool isDbRegFailure = false,
-    Map<String, Object?> smtp = const {},
-    Map<String, Object?> snapshot = const {},
-  }) =>
-      ArchiveOutcome(
-        archiveSuccess: success,
-        archivePath: path,
-        isDatabaseRegistrationFailure: isDbRegFailure,
-        errorMessage: error,
-        copyTechnicianDefault:
-            (smtp['email_copy_technician'] as int? ?? 1) == 1,
-        technicianEmail: (smtp['email'] as String? ?? '').trim(),
-        snapshot: snapshot,
-      );
 
   /// Registers an already archived PDF path and sets `pdf_status = 'ready'` in SQLite.
   /// Strictly verifies the file exists on disk before marking the database ready.
@@ -247,5 +231,5 @@ class PdfArchivingCoordinator {
 
   /// Extracts attest number from a decoded snapshot map.
   static String attestNumberFromSnapshot(Map<String, Object?> snapshot) =>
-      ((snapshot['visit'] as Map?)?['attest_number'] as String? ?? '').trim();
+      PdfArchivingOutcomeHelper.attestNumberFromSnapshot(snapshot);
 }
