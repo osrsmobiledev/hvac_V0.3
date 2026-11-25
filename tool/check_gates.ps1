@@ -87,26 +87,10 @@ if ($gitExit -ne 0 -and $wsErrors) {
 }
 
 # 2. Anti-pattern scan on lib/
-# Get modified and untracked .dart files under lib/ for ratcheted checks
-$prevEAP = $ErrorActionPreference
-$ErrorActionPreference = 'Continue'
-$gitStatusLines = (& git status --porcelain lib/ 2>&1) | Where-Object { $_ -notmatch 'warning: in the working copy of' -and $_.Trim() -ne '' }
-$ErrorActionPreference = $prevEAP
-
-$modifiedLibFiles = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
-foreach ($statusLine in $gitStatusLines) {
-    if ($statusLine -match '^(?:[ MADRCU?]{2})\s+(?:.*->\s+)?(.*\.dart)$') {
-        $p = $matches[1].Trim().Replace('/', '\')
-        [void]$modifiedLibFiles.Add($p)
-    }
-}
-
 $antiPatternViolations = @()
 Get-ChildItem -Path lib -Filter *.dart -Recurse | ForEach-Object {
     $filePath = $_.FullName
     $relPath = $filePath.Replace((Get-Location).Path + "\", "")
-    $relPathNorm = $relPath.Replace('/', '\')
-    $isModified = $modifiedLibFiles.Contains($relPathNorm)
     $fileLines = Get-Content $filePath
     for ($i = 0; $i -lt $fileLines.Length; $i++) {
         $lineNum = $i + 1
@@ -116,8 +100,8 @@ Get-ChildItem -Path lib -Filter *.dart -Recurse | ForEach-Object {
         # Explicit inline escape hatch for verified intentional exceptions: // gate-1d-ok: <reason>
         if ($line -match '//\s*gate-1d-ok:\s*\S+') { continue }
 
-        # Private Flutter widget helper methods (ratcheted: checked on modified/untracked files only)
-        if ($isModified -and $line -match '(?<!pw\.)\bWidget\s+_[a-zA-Z0-9_]+\s*\(') {
+        # Private Flutter widget helper methods (scans all lib/)
+        if ($line -match '(?<!pw\.)\bWidget\s+_[a-zA-Z0-9_]+\s*\(') {
             $antiPatternViolations += "[Widget Helper] ${relPath}:${lineNum} : $line"
         }
 

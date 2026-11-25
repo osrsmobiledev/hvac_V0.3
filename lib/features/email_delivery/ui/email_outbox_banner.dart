@@ -21,7 +21,7 @@ class EmailOutboxBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (!isConfigured) {
-      return _buildContainer(
+      return const _OutboxNoticeCard(
         color: AppColors.warningOrange,
         icon: Icons.warning_amber_rounded,
         message: EmailDeliveryDictionary.outboxUnconfiguredNotice,
@@ -29,7 +29,7 @@ class EmailOutboxBanner extends StatelessWidget {
     }
 
     if (needsAttention) {
-      return _buildContainer(
+      return const _OutboxNoticeCard(
         color: AppColors.errorRed,
         icon: Icons.lock_reset,
         message: EmailDeliveryDictionary.outboxNeedsAttentionNotice,
@@ -37,7 +37,7 @@ class EmailOutboxBanner extends StatelessWidget {
     }
 
     if (isOffline) {
-      return _buildContainer(
+      return const _OutboxNoticeCard(
         color: AppColors.slate,
         icon: Icons.wifi_off_rounded,
         message: EmailDeliveryDictionary.outboxOfflineNotice,
@@ -46,12 +46,21 @@ class EmailOutboxBanner extends StatelessWidget {
 
     return const SizedBox.shrink();
   }
+}
 
-  Widget _buildContainer({
-    required Color color,
-    required IconData icon,
-    required String message,
-  }) {
+class _OutboxNoticeCard extends StatelessWidget {
+  final Color color;
+  final IconData icon;
+  final String message;
+
+  const _OutboxNoticeCard({
+    required this.color,
+    required this.icon,
+    required this.message,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),

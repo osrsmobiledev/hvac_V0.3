@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 
 import '../../../app/localization/email_delivery_dictionary.dart';
 import '../../../app/theme/app_colors.dart';
-import '../../../core/widgets/tactical_dialog_button.dart';
 import '../../../core/widgets/tactical_feedback.dart';
 import '../../certificate_draft/ui/widgets/bento_main_section.dart';
 import '../../certificate_draft/ui/widgets/dark_text_form_field.dart';
 import '../data/email_settings_model.dart';
 import 'email_banners.dart';
 import 'email_clear_dialog.dart';
+import 'email_settings_actions.dart';
 import 'email_settings_form_sections.dart';
 import 'email_settings_notifier.dart';
 
@@ -106,43 +106,30 @@ class EmailSettingsCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 16),
-              _buildActionButtons(context, isClearing),
+              EmailSettingsActionButtons(
+                isTesting: notifier.isTesting,
+                isSaving: notifier.isSaving,
+                canAct: !notifier.isTesting &&
+                    !notifier.isSaving &&
+                    !isClearing &&
+                    !notifier.isClearing,
+                onTest: () => _handleTestConnection(context),
+                onSave: () => _handleSaveSettings(context),
+              ),
               if (!isClearing) ...[
                 const SizedBox(height: 8),
-                _buildClearButton(context),
+                EmailSettingsClearButton(
+                  isClearing: notifier.isClearing,
+                  isEnabled: !notifier.isSaving &&
+                      !notifier.isTesting &&
+                      !notifier.isClearing,
+                  onClear: () => _handleClearSettings(context),
+                ),
               ],
             ],
           ),
         );
       },
-    );
-  }
-
-  Widget _buildActionButtons(BuildContext context, bool isClearing) {
-    final canAct = !notifier.isTesting &&
-        !notifier.isSaving &&
-        !isClearing &&
-        !notifier.isClearing;
-    return Row(
-      children: [
-        Expanded(
-          child: TacticalDialogButton.secondary(
-            label: notifier.isTesting
-                ? EmailDeliveryDictionary.testingConnection
-                : EmailDeliveryDictionary.testConnectionButton,
-            onPressed: canAct ? () => _handleTestConnection(context) : null,
-          ),
-        ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: TacticalDialogButton.primary(
-            label: notifier.isSaving
-                ? EmailDeliveryDictionary.savingSettings
-                : EmailDeliveryDictionary.saveSettingsButton,
-            onPressed: canAct ? () => _handleSaveSettings(context) : null,
-          ),
-        ),
-      ],
     );
   }
 
@@ -173,29 +160,6 @@ class EmailSettingsCard extends StatelessWidget {
         notifier.saveErrorMessage ?? EmailDeliveryDictionary.serverError,
       );
     }
-  }
-
-  Widget _buildClearButton(BuildContext context) {
-    return Center(
-      child: TextButton.icon(
-        onPressed:
-            notifier.isSaving || notifier.isTesting || notifier.isClearing
-                ? null
-                : () => _handleClearSettings(context),
-        icon: const Icon(Icons.delete_outline_rounded,
-            size: 16, color: AppColors.destructiveRed),
-        label: Text(
-          notifier.isClearing
-              ? EmailDeliveryDictionary.clearingSettings
-              : EmailDeliveryDictionary.clearSettingsButton,
-          style: const TextStyle(
-            color: AppColors.destructiveRed,
-            fontSize: 13,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ),
-    );
   }
 
   Future<void> _handleClearSettings(BuildContext context) async {

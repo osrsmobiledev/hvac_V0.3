@@ -135,27 +135,80 @@ class _QuickSliderPickerState extends State<QuickSliderPicker> {
     }
   }
 
-  Widget _buildChip(String val, bool isSelected, bool isRecommended) {
-    final displayText = widget.suffix.isEmpty ? val : '$val ${widget.suffix}';
-    final key = _chipKeys.putIfAbsent(val.toLowerCase(), () => GlobalKey());
+  @override
+  Widget build(BuildContext context) {
+    final trimmedCurrent = widget.selectedValue.trim().toLowerCase();
+    final prefLower = widget.preferredInitialItem?.trim().toLowerCase();
 
+    return SizedBox(
+      height: 32,
+      child: SingleChildScrollView(
+        controller: _scrollController,
+        scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
+        child: Row(
+          children: [
+            for (int i = 0; i < widget.options.length; i++) ...[
+              if (i > 0) const SizedBox(width: 6),
+              _QuickSliderChip(
+                key: _chipKeys.putIfAbsent(
+                  widget.options[i].toLowerCase(),
+                  () => GlobalKey(),
+                ),
+                displayText: widget.suffix.isEmpty
+                    ? widget.options[i]
+                    : '${widget.options[i]} ${widget.suffix}',
+                isSelected:
+                    trimmedCurrent == widget.options[i].trim().toLowerCase(),
+                isRecommended:
+                    prefLower == widget.options[i].trim().toLowerCase(),
+                hasSelectedValue: widget.selectedValue.isNotEmpty,
+                onTap: () {
+                  HapticFeedback.selectionClick();
+                  _centerKey(widget.options[i], animate: true);
+                  final isSel =
+                      trimmedCurrent == widget.options[i].trim().toLowerCase();
+                  widget.onSelected(isSel ? '' : widget.options[i]);
+                },
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _QuickSliderChip extends StatelessWidget {
+  final String displayText;
+  final bool isSelected;
+  final bool isRecommended;
+  final bool hasSelectedValue;
+  final VoidCallback onTap;
+
+  const _QuickSliderChip({
+    super.key,
+    required this.displayText,
+    required this.isSelected,
+    required this.isRecommended,
+    required this.hasSelectedValue,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     Color borderColor;
     if (isSelected) {
       borderColor = AppColors.amberGoldBorder;
-    } else if (isRecommended && widget.selectedValue.isEmpty) {
+    } else if (isRecommended && !hasSelectedValue) {
       borderColor = AppColors.amberGold.withValues(alpha: 0.45);
     } else {
       borderColor = Colors.white.withValues(alpha: 0.12);
     }
 
     return InkWell(
-      key: key,
       canRequestFocus: false,
-      onTap: () {
-        HapticFeedback.selectionClick();
-        _centerKey(val, animate: true);
-        widget.onSelected(isSelected ? '' : val);
-      },
+      onTap: onTap,
       borderRadius: BorderRadius.circular(6),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
@@ -176,33 +229,6 @@ class _QuickSliderPickerState extends State<QuickSliderPicker> {
             fontFamily: AppTheme.fontFamily,
             letterSpacing: 0.2,
           ),
-        ),
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final trimmedCurrent = widget.selectedValue.trim().toLowerCase();
-    final prefLower = widget.preferredInitialItem?.trim().toLowerCase();
-
-    return SizedBox(
-      height: 32,
-      child: SingleChildScrollView(
-        controller: _scrollController,
-        scrollDirection: Axis.horizontal,
-        physics: const BouncingScrollPhysics(),
-        child: Row(
-          children: [
-            for (int i = 0; i < widget.options.length; i++) ...[
-              if (i > 0) const SizedBox(width: 6),
-              _buildChip(
-                widget.options[i],
-                trimmedCurrent == widget.options[i].trim().toLowerCase(),
-                prefLower == widget.options[i].trim().toLowerCase(),
-              ),
-            ],
-          ],
         ),
       ),
     );

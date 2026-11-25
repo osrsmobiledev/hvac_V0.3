@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hvac_app/app/theme/app_colors.dart';
-import 'package:hvac_app/app/theme/app_theme.dart';
+import 'horizontal_wheel_item.dart';
 import 'wheel_fade_mask.dart';
 
 /// Reusable tactical horizontal 3D cylindrical wheel dial with infinite looping.
@@ -190,58 +190,27 @@ class _HorizontalWheelPickerState extends State<HorizontalWheelPicker> {
                 }
               },
               childDelegate: ListWheelChildLoopingListDelegate(
-                children: List.generate(len, (i) => _buildItem(i)),
+                children: List.generate(
+                  len,
+                  (i) => HorizontalWheelItem(
+                    value: widget.items[i],
+                    suffix: widget.suffix,
+                    isSelected: i == _currentIndex,
+                    onTap: () {
+                      if (i != _currentIndex && _scrollController.hasClients) {
+                        _animateToNearestIndex(i);
+                      } else if (widget.controller.text.isEmpty) {
+                        _applySelection(i);
+                      }
+                    },
+                  ),
+                ),
               ),
             ),
           ),
           const WheelFadeMask(width: 28.0, isLeft: true),
           const WheelFadeMask(width: 28.0, isLeft: false),
         ],
-      ),
-    );
-  }
-
-  Widget _buildItem(int index) {
-    final isSelected = index == _currentIndex;
-    final val = widget.items[index];
-    final numStyle = TextStyle(
-      fontFamily: AppTheme.fontFamily,
-      fontSize: isSelected ? 12.5 : 11.0,
-      fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-      color: isSelected ? Colors.white : AppColors.textMuted,
-    );
-    final unitStyle = TextStyle(
-      fontFamily: AppTheme.fontFamily,
-      fontSize: isSelected ? 10.5 : 9.5,
-      fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-      color: isSelected
-          ? AppColors.amberGold.withValues(alpha: 0.9)
-          : AppColors.textMuted.withValues(alpha: 0.7),
-    );
-
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: () {
-        if (index != _currentIndex && _scrollController.hasClients) {
-          _animateToNearestIndex(index);
-        } else if (widget.controller.text.isEmpty) {
-          _applySelection(index);
-        }
-      },
-      child: RotatedBox(
-        quarterTurns: 1,
-        child: Center(
-          child: Text.rich(
-            TextSpan(children: [
-              TextSpan(text: val, style: numStyle),
-              if (widget.suffix.isNotEmpty)
-                TextSpan(text: ' ${widget.suffix}', style: unitStyle),
-            ]),
-            maxLines: 1,
-            softWrap: false,
-            overflow: TextOverflow.clip,
-          ),
-        ),
       ),
     );
   }

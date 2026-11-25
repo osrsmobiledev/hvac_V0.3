@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../../../app/localization/email_delivery_dictionary.dart';
-import '../../../core/widgets/tactical_dialog_button.dart';
 import '../../../core/widgets/tactical_dialog_window.dart';
 import '../../../features/pdf_export/data/pdf_visit_data.dart';
 import '../data/recipient_confirmation.dart';
+import 'recipient_dialog_actions.dart';
 import 'recipient_dialog_content.dart';
 
 export '../data/recipient_confirmation.dart';
@@ -127,62 +127,6 @@ class _EmailRecipientDialogState extends State<EmailRecipientDialog> {
   void _onCancel() =>
       Navigator.of(context).pop(const RecipientDialogResult.cancel());
 
-  Widget _buildActions() {
-    if (_canQueue) {
-      return Padding(
-        padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TacticalDialogButton.primary(
-              label: _confirmActionLabel,
-              onPressed: _onConfirm,
-            ),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                Expanded(
-                  child: TacticalDialogButton.secondary(
-                    label: EmailDeliveryDictionary.recipientDialogAbort,
-                    onPressed: _onCancel,
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: TacticalDialogButton.secondary(
-                    label: EmailDeliveryDictionary.finalizeOnlySaveAction,
-                    onPressed: _onSkip,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      );
-    }
-
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
-      child: Row(
-        children: [
-          Expanded(
-            child: TacticalDialogButton.secondary(
-              label: EmailDeliveryDictionary.recipientDialogAbort,
-              onPressed: _onCancel,
-            ),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: TacticalDialogButton.primary(
-              label: EmailDeliveryDictionary.finalizeOnlySaveAction,
-              onPressed: _onSkip,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return PopScope(
@@ -195,7 +139,13 @@ class _EmailRecipientDialogState extends State<EmailRecipientDialog> {
         maxWidth: 440,
         maxHeight: 580,
         onClose: _onCancel,
-        actions: _buildActions(),
+        actions: RecipientDialogActions(
+          canQueue: _canQueue,
+          confirmActionLabel: _confirmActionLabel,
+          onConfirm: _onConfirm,
+          onCancel: _onCancel,
+          onSkip: _onSkip,
+        ),
         child: RecipientDialogContent(
           customerName: _customerName,
           customerEmail: _customerEmail,
