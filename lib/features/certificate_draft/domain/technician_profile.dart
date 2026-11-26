@@ -19,6 +19,8 @@ class TechnicianProfile {
   final String tvNumber;
   final String analyzerBrandModel;
   final String analyzerSerialNumber;
+  final bool isErkendTechnicus;
+  final bool isSchoorsteenveger;
 
   const TechnicianProfile({
     this.id,
@@ -37,6 +39,8 @@ class TechnicianProfile {
     this.tvNumber = '',
     this.analyzerBrandModel = '',
     this.analyzerSerialNumber = '',
+    this.isErkendTechnicus = true,
+    this.isSchoorsteenveger = false,
   });
 
   factory TechnicianProfile.fromMap(Map<String, Object?> map) {
@@ -57,6 +61,8 @@ class TechnicianProfile {
       tvNumber: (map['tv_number'] as String?) ?? '',
       analyzerBrandModel: (map['analyzer_brand_model'] as String?) ?? '',
       analyzerSerialNumber: (map['analyzer_serial_number'] as String?) ?? '',
+      isErkendTechnicus: (map['is_erkend_technicus'] as int? ?? 1) == 1,
+      isSchoorsteenveger: (map['is_schoorsteenveger'] as int? ?? 0) == 1,
     );
   }
 
@@ -77,6 +83,8 @@ class TechnicianProfile {
     String? tvNumber,
     String? analyzerBrandModel,
     String? analyzerSerialNumber,
+    bool? isErkendTechnicus,
+    bool? isSchoorsteenveger,
   }) {
     return TechnicianProfile(
       id: id ?? this.id,
@@ -95,6 +103,8 @@ class TechnicianProfile {
       tvNumber: tvNumber ?? this.tvNumber,
       analyzerBrandModel: analyzerBrandModel ?? this.analyzerBrandModel,
       analyzerSerialNumber: analyzerSerialNumber ?? this.analyzerSerialNumber,
+      isErkendTechnicus: isErkendTechnicus ?? this.isErkendTechnicus,
+      isSchoorsteenveger: isSchoorsteenveger ?? this.isSchoorsteenveger,
     );
   }
 
@@ -116,6 +126,8 @@ class TechnicianProfile {
       'tv_number': tvNumber,
       'analyzer_brand_model': analyzerBrandModel,
       'analyzer_serial_number': analyzerSerialNumber,
+      'is_erkend_technicus': isErkendTechnicus ? 1 : 0,
+      'is_schoorsteenveger': isSchoorsteenveger ? 1 : 0,
       'updated_at': now,
     };
   }

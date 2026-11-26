@@ -8,7 +8,9 @@ class EindbeoordelingDraft {
     this.toestelWerkingGoed,
     this.toestelWerkingVeilig,
     this.nextInspectionDate,
+    this.nextChimneyInspectionDate,
     this.defectsNotes,
+    this.remedialMeasuresNotes,
     this.generalRemarks,
     this.technicianSignaturePath,
     this.customerSignaturePath,
@@ -19,7 +21,9 @@ class EindbeoordelingDraft {
   final String? toestelWerkingGoed;
   final String? toestelWerkingVeilig;
   final String? nextInspectionDate;
+  final String? nextChimneyInspectionDate;
   final String? defectsNotes;
+  final String? remedialMeasuresNotes;
   final String? generalRemarks;
   final String? technicianSignaturePath;
   final String? customerSignaturePath;
@@ -135,7 +139,9 @@ class EindbeoordelingDraft {
     String? toestelWerkingGoed,
     String? toestelWerkingVeilig,
     String? nextInspectionDate,
+    Object? nextChimneyInspectionDate = _sentinel,
     String? defectsNotes,
+    Object? remedialMeasuresNotes = _sentinel,
     String? generalRemarks,
     String? technicianSignaturePath,
     String? customerSignaturePath,
@@ -155,7 +161,13 @@ class EindbeoordelingDraft {
           ? null
           : (toestelWerkingVeilig ?? this.toestelWerkingVeilig),
       nextInspectionDate: nextInspectionDate ?? this.nextInspectionDate,
+      nextChimneyInspectionDate: identical(nextChimneyInspectionDate, _sentinel)
+          ? this.nextChimneyInspectionDate
+          : nextChimneyInspectionDate as String?,
       defectsNotes: defectsNotes ?? this.defectsNotes,
+      remedialMeasuresNotes: identical(remedialMeasuresNotes, _sentinel)
+          ? this.remedialMeasuresNotes
+          : remedialMeasuresNotes as String?,
       generalRemarks: generalRemarks ?? this.generalRemarks,
       technicianSignaturePath: clearTechnicianSignature
           ? null
@@ -178,7 +190,9 @@ class EindbeoordelingDraft {
       toestelWerkingGoed: map['toestel_werking_goed'] as String?,
       toestelWerkingVeilig: map['toestel_werking_veilig'] as String?,
       nextInspectionDate: map['next_inspection_date'] as String?,
+      nextChimneyInspectionDate: map['next_chimney_inspection_date'] as String?,
       defectsNotes: map['defects_notes'] as String?,
+      remedialMeasuresNotes: map['remedial_measures_notes'] as String?,
       generalRemarks: map['general_remarks'] as String?,
       technicianSignaturePath: map['technician_signature_path'] as String?,
       customerSignaturePath: map['customer_signature_path'] as String?,
@@ -193,7 +207,9 @@ class EindbeoordelingDraft {
       'toestel_werking_goed': toestelWerkingGoed,
       'toestel_werking_veilig': toestelWerkingVeilig,
       'next_inspection_date': nextInspectionDate,
+      'next_chimney_inspection_date': nextChimneyInspectionDate,
       'defects_notes': defectsNotes,
+      'remedial_measures_notes': remedialMeasuresNotes,
       'general_remarks': generalRemarks,
       'technician_signature_path': technicianSignaturePath,
       'customer_signature_path': customerSignaturePath,

@@ -12,13 +12,17 @@ class DraftRepository {
   DraftRepository({AppDatabase? appDatabase})
       : _appDatabase = appDatabase ?? AppDatabase.instance;
 
-  /// Retrieves the existing active draft, or creates a new draft record
-  /// if none currently exists.
-  Future<DraftVisit> getOrCreateActiveDraft({Database? dbOverride}) async {
+  /// Retrieves the existing active draft for [certificateType], or creates a
+  /// new draft record if none currently exists for that certificate type.
+  Future<DraftVisit> getOrCreateActiveDraft({
+    String certificateType = 'verbranding',
+    Database? dbOverride,
+  }) async {
     final db = dbOverride ?? await _appDatabase.database;
     final rows = await db.query(
       'maintenance_visits',
-      where: 'is_draft = 1',
+      where: 'is_draft = 1 AND certificate_type = ?',
+      whereArgs: [certificateType],
       orderBy: 'id DESC',
       limit: 1,
     );
@@ -32,6 +36,7 @@ class DraftRepository {
         '${now.year.toString().padLeft(4, '0')}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
 
     final id = await db.insert('maintenance_visits', {
+      'certificate_type': certificateType,
       'activity_type': '',
       'attest_number': '',
       'visit_date': today,
@@ -44,6 +49,7 @@ class DraftRepository {
 
     return DraftVisit(
       id: id,
+      certificateType: certificateType,
       activityType: '',
       attestNumber: '',
       visitDate: today,

@@ -56,7 +56,7 @@
 
 ## 2. Current Handoff (Active State for AI Agent)
 
-**Active Milestone: Milestone 6 (Email Delivery & PDF Archiving) complete and accepted on Android by owner; post-Milestone 6 timeout, warmup cache, and PDF archive failure-status hardening verified across 476 tests passing (`.\tool\check_gates.ps1` exit code 0). Next active milestone / slice: ready for Milestone 7 brainstorming.**
+**Active Milestone: Milestone 7 (Reinigingsattest Vlaanderen) — Slice 7.1 (Schema & Data Layer) complete and verified across 486 tests passing (`.\tool\check_gates.ps1` exit code 0). Next active slice: Slice 7.2 — Tab 5 (`Reiniging en controle`). See `doc/REINIGINGSATTEST_BLUEPRINT.md`.**
 
 ### Slice 6.4 Implementation Summary & Verification
 Slice 6.4 completed and accepted on Android by the owner. Full implementation and 3-layer dependency invariant verified across the 458-test automated suite (0 analyzer lints, all files <= 250 lines):

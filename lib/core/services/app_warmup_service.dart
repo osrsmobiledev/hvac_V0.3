@@ -61,6 +61,14 @@ class AppWarmupService {
   bool get isWarmedUp => _isWarmedUp;
   WarmupResult? get cachedResult => _cachedResult;
 
+  /// Returns the cached active draft only when its [certificateType] matches,
+  /// preventing cross-mode draft collision between Verbranding/Reiniging/Combined.
+  DraftVisit? activeDraftFor(String certificateType) {
+    final draft = _cachedResult?.activeDraft;
+    if (draft == null || draft.certificateType != certificateType) return null;
+    return draft;
+  }
+
   /// Performs true asynchronous warm-up of the database, active draft, and all tab models.
   Future<WarmupResult> warmup({
     AppDatabase? databaseOverride,

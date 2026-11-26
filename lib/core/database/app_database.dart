@@ -3,6 +3,7 @@ import 'package:path/path.dart' as p;
 import 'package:sqflite/sqflite.dart';
 import 'database_schema.dart';
 import 'email_delivery_schema.dart';
+import 'reiniging_schema.dart';
 import 'veka_attempt_schema.dart';
 
 /// Central database service managing the SQLite connection for offline draft safety.
@@ -208,6 +209,9 @@ class AppDatabase {
                   'ALTER TABLE email_delivery_jobs ADD COLUMN resolution_notes TEXT;');
             }
           }
+        }
+        if (oldVersion < 14) {
+          await ReinigingSchema.applyV14(db);
         }
       },
     );

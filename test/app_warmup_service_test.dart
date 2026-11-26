@@ -56,7 +56,10 @@ class FakeDraftRepository implements DraftRepository {
   int callCount = 0;
 
   @override
-  Future<DraftVisit> getOrCreateActiveDraft({Database? dbOverride}) async {
+  Future<DraftVisit> getOrCreateActiveDraft({
+    String certificateType = 'verbranding',
+    Database? dbOverride,
+  }) async {
     callCount++;
     return const DraftVisit(
       id: 42,
@@ -97,7 +100,10 @@ class _FlakyDraftRepository implements DraftRepository {
   _FlakyDraftRepository({this.shouldThrow = false, this.gate});
 
   @override
-  Future<DraftVisit> getOrCreateActiveDraft({Database? dbOverride}) async {
+  Future<DraftVisit> getOrCreateActiveDraft({
+    String certificateType = 'verbranding',
+    Database? dbOverride,
+  }) async {
     callCount++;
     if (gate != null) return gate!.future;
     if (shouldThrow) throw Exception('Simulated SQLite error');
