@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:printing/printing.dart';
+import '../certificate_pdf_dispatcher.dart';
 
 /// Result object returned after attempting to save a PDF file to device storage.
 class PdfSaveResult {
@@ -26,6 +27,7 @@ abstract final class PdfFileSaver {
   static Future<PdfSaveResult> saveToDevice({
     required Uint8List pdfBytes,
     required String attestNumber,
+    String certificateType = 'verbranding',
     Directory? overrideDirectory,
   }) async {
     try {
@@ -33,8 +35,9 @@ abstract final class PdfFileSaver {
           ? attestNumber.trim().replaceAll(RegExp(r'[\\/:*?"<>| ]'), '_')
           : 'concept';
 
-      final fileName = 'Verbrandingsattest_$sanitizedAttest.pdf';
-      final pngName = 'Verbrandingsattest_$sanitizedAttest.png';
+      final prefix = CertificatePdfDispatcher.documentPrefix(certificateType);
+      final fileName = '${prefix}_$sanitizedAttest.pdf';
+      final pngName = '${prefix}_$sanitizedAttest.png';
 
       // 1. Try overrideDirectory if supplied (useful for unit tests)
       if (overrideDirectory != null) {

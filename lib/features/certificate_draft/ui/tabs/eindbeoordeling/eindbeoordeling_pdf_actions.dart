@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:hvac_app/app/localization/eindbeoordeling_dictionary.dart';
-import 'package:hvac_app/app/localization/reiniging_dictionary.dart';
 import 'package:hvac_app/core/utils/debouncer.dart';
 import 'package:hvac_app/core/widgets/tactical_feedback.dart';
-import 'package:hvac_app/features/pdf_export/combustion_pdf_generator.dart';
+import 'package:hvac_app/features/pdf_export/certificate_pdf_dispatcher.dart';
 import 'package:hvac_app/features/pdf_export/data/pdf_data_mapper.dart';
 import 'package:hvac_app/features/pdf_export/services/pdf_file_saver.dart';
 import 'package:hvac_app/features/pdf_export/ui/pdf_preview_dialog.dart';
@@ -18,13 +17,6 @@ abstract final class EindbeoordelingPdfActions {
   }) async {
     await debouncer.settle(ignoreFailure: true);
     if (!context.mounted) return;
-    if (certificateType == 'reiniging') {
-      TacticalFeedback.showInfo(
-        context,
-        ReinigingDictionary.toastPdfNotYetAvailable,
-      );
-      return;
-    }
     final data = await PdfDataMapper.loadVisitData(visitId);
     if (!context.mounted) return;
     await PdfPreviewDialog.show(context, data);
@@ -38,18 +30,19 @@ abstract final class EindbeoordelingPdfActions {
   }) async {
     await debouncer.settle(ignoreFailure: true);
     if (!context.mounted) return;
-    if (certificateType == 'reiniging') {
-      TacticalFeedback.showInfo(
-        context,
-        ReinigingDictionary.toastPdfNotYetAvailable,
-      );
-      return;
-    }
     final data = await PdfDataMapper.loadVisitData(visitId);
-    final pdfBytes = await CombustionPdfGenerator.generateCertificate(data);
+    final effectiveType = certificateType == 'reiniging' ||
+            data.cleaning.certificateType == 'reiniging'
+        ? 'reiniging'
+        : 'verbranding';
+    final pdfBytes = await CertificatePdfDispatcher.generateCertificate(
+      data,
+      certificateTypeOverride: effectiveType,
+    );
     final result = await PdfFileSaver.saveToDevice(
       pdfBytes: pdfBytes,
       attestNumber: data.volgnummerAttest,
+      certificateType: effectiveType,
     );
     if (!context.mounted) return;
     if (result.isSuccess) {

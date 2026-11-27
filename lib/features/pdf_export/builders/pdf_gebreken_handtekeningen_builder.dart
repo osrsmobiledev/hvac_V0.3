@@ -9,8 +9,8 @@ abstract final class PdfGebrekenHandtekeningenBuilder {
   static const double boxHeight = 88.0;
 
   static pw.Widget buildGebrekenSection(PdfVisitData data) {
-    final displayDefects = _formatInlineItems(data.gebrekenOpmerkingen);
-    final displayRemarks = _formatInlineItems(data.andereOpmerkingen);
+    final displayDefects = formatInlineItems(data.gebrekenOpmerkingen);
+    final displayRemarks = formatInlineItems(data.andereOpmerkingen);
 
     return PdfComponents.fullWidthBox(
       titleHeight: 9.8,
@@ -115,7 +115,7 @@ abstract final class PdfGebrekenHandtekeningenBuilder {
                         alignment: pw.Alignment.center,
                         child: (data.technicusHandtekeningBytes != null &&
                                 data.technicusHandtekeningBytes!.isNotEmpty)
-                            ? _buildSafeSignatureImage(
+                            ? buildSafeSignatureImage(
                                 data.technicusHandtekeningBytes!)
                             : pw.Center(
                                 child: pw.Text(
@@ -151,7 +151,7 @@ abstract final class PdfGebrekenHandtekeningenBuilder {
                       pw.Container(
                         height: 30.0,
                         alignment: pw.Alignment.center,
-                        child: _buildCustomerSignatureArea(data),
+                        child: buildCustomerSignatureArea(data),
                       ),
                     ],
                   ),
@@ -164,10 +164,10 @@ abstract final class PdfGebrekenHandtekeningenBuilder {
     );
   }
 
-  static pw.Widget _buildCustomerSignatureArea(PdfVisitData data) {
+  static pw.Widget buildCustomerSignatureArea(PdfVisitData data) {
     if (data.klantHandtekeningBytes != null &&
         data.klantHandtekeningBytes!.isNotEmpty) {
-      return _buildSafeSignatureImage(data.klantHandtekeningBytes!);
+      return buildSafeSignatureImage(data.klantHandtekeningBytes!);
     }
     final exc = data.klantHandtekeningUitzondering.toLowerCase().trim();
     if (exc == 'weigert' || exc == 'refused') {
@@ -194,7 +194,7 @@ abstract final class PdfGebrekenHandtekeningenBuilder {
     );
   }
 
-  static pw.Widget _buildSafeSignatureImage(Uint8List bytes) {
+  static pw.Widget buildSafeSignatureImage(Uint8List bytes) {
     try {
       return pw.Center(
         child: pw.ConstrainedBox(
@@ -219,7 +219,7 @@ abstract final class PdfGebrekenHandtekeningenBuilder {
 
   /// Formats multiple lines of defects or remarks into a clean horizontal line
   /// with bullet points separated by spaces (e.g. "• Issue 1      • Issue 2").
-  static String _formatInlineItems(String raw) {
+  static String formatInlineItems(String raw) {
     final trimmed = raw.trim();
     if (trimmed.isEmpty) return '';
 

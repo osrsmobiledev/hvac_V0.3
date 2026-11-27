@@ -1,29 +1,16 @@
 import 'dart:typed_data';
+import 'pdf_cleaning_data.dart';
 
 /// Immutable snapshot of visit, profile, customer, boiler, and measurement
-/// data required to render the Flemish combustion certificate PDF.
+/// data required to render the Flemish combustion and cleaning certificate PDFs.
 class PdfVisitData {
   // --- Header / Start ---
-  final String activiteitType;
-  final String volgnummerAttest;
-
+  final String activiteitType, volgnummerAttest;
   // --- Firma & Technicus ---
-  final String firmaNaam;
-  final String firmaStraat;
-  final String firmaNr;
-  final String firmaBus;
-  final String firmaPostcode;
-  final String firmaGemeente;
-  final String firmaTel;
-  final String firmaEmail;
-  final String firmaKbo;
-  final String technicusVoornaam;
-  final String technicusAchternaam;
-  final String technicusGv;
-  final String technicusTv;
-  final String datumOnderhoud;
-  final String arbeidsduurVan;
-  final String arbeidsduurTot;
+  final String firmaNaam, firmaStraat, firmaNr, firmaBus, firmaPostcode;
+  final String firmaGemeente, firmaTel, firmaEmail, firmaKbo;
+  final String technicusVoornaam, technicusAchternaam, technicusGv, technicusTv;
+  final String datumOnderhoud, arbeidsduurVan, arbeidsduurTot;
 
   // --- Klant & Locatie ---
   final String klantNaam;
@@ -131,6 +118,7 @@ class PdfVisitData {
   final Uint8List? klantHandtekeningBytes;
   final String klantHandtekeningNaam;
   final String klantHandtekeningUitzondering; // 'weigert', 'afwezig', ''
+  final PdfCleaningData cleaning;
 
   const PdfVisitData({
     this.activiteitType = '',
@@ -244,5 +232,6 @@ class PdfVisitData {
     this.klantHandtekeningBytes,
     this.klantHandtekeningNaam = '',
     this.klantHandtekeningUitzondering = '',
+    this.cleaning = const PdfCleaningData(),
   });
 }

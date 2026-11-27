@@ -145,7 +145,7 @@ void main() {
           serial,
           date,
           start,
-          end
+          end,
         ]) {
           c.dispose();
         }
@@ -217,7 +217,7 @@ void main() {
     });
 
     testWidgets(
-        'reiniging mode omits Staat van werking, adds fields, stubs PDF/Finalize',
+        'reiniging mode omits Staat van werking, adds fields, opens PDF & stubs Finalize',
         (tester) async {
       late DraftVisit draft;
       await tester.runAsync(() async {
@@ -238,29 +238,35 @@ void main() {
 
       expect(find.text(EindbeoordelingDictionary.cardTitleConclusie),
           findsNothing);
-      expect(
-          find.text(
-              EindbeoordelingDictionary.cardTitleVolgendeControleReiniging),
-          findsOneWidget);
-      expect(find.text(EindbeoordelingDictionary.lblNextReinigingStooktoestel),
-          findsOneWidget);
-      expect(find.text(EindbeoordelingDictionary.lblNextReinigingRookgas),
-          findsOneWidget);
-      expect(find.text(EindbeoordelingDictionary.lblTeTreffenMaatregelen),
-          findsOneWidget);
-      expect(find.text(EindbeoordelingDictionary.lblHandtekeningErkendOfVakman),
-          findsOneWidget);
-      expect(
-          find.text(EindbeoordelingDictionary.lblHandtekeningKlantKennisname),
+      for (final label in [
+        EindbeoordelingDictionary.cardTitleVolgendeControleReiniging,
+        EindbeoordelingDictionary.lblNextReinigingStooktoestel,
+        EindbeoordelingDictionary.lblNextReinigingRookgas,
+        EindbeoordelingDictionary.lblTeTreffenMaatregelen,
+        EindbeoordelingDictionary.lblHandtekeningErkendOfVakman,
+        EindbeoordelingDictionary.lblHandtekeningKlantKennisname,
+      ]) {
+        expect(find.text(label), findsOneWidget);
+      }
+
+      await tester.ensureVisible(
+        find.text(EindbeoordelingDictionary.btnVoltooienReiniging),
+      );
+      await tester
+          .tap(find.text(EindbeoordelingDictionary.btnVoltooienReiniging));
+      await tester.pump();
+      expect(find.text(ReinigingDictionary.toastPdfNotYetAvailable),
           findsOneWidget);
 
       await tester.ensureVisible(
         find.text(EindbeoordelingDictionary.btnTestPdf),
       );
       await tester.tap(find.text(EindbeoordelingDictionary.btnTestPdf));
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 250)),
+      );
       await tester.pump();
-      expect(find.text(ReinigingDictionary.toastPdfNotYetAvailable),
-          findsOneWidget);
+      expect(find.text('Reinigingsattest Vlaanderen (A4)'), findsOneWidget);
     });
   });
 }

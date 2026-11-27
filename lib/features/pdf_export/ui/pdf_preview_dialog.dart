@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:printing/printing.dart';
 import 'package:pdf/pdf.dart';
@@ -5,7 +6,7 @@ import 'package:pdf/pdf.dart';
 import '../../../app/localization/eindbeoordeling_dictionary.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../../core/widgets/tactical_feedback.dart';
-import '../combustion_pdf_generator.dart';
+import '../certificate_pdf_dispatcher.dart';
 import '../data/pdf_visit_data.dart';
 import '../services/pdf_file_saver.dart';
 import 'pdf_page_card.dart';
@@ -75,11 +76,19 @@ class _PdfPreviewDialogState extends State<PdfPreviewDialog> {
     scale > 1.2 ? _resetZoom() : _zoomBy(2.5 / scale);
   }
 
+  String get _docPrefix => CertificatePdfDispatcher.documentPrefix(
+        widget.data.cleaning.certificateType,
+      );
+
+  Future<Uint8List> _generatePdf() =>
+      CertificatePdfDispatcher.generateCertificate(widget.data);
+
   Future<void> _savePdfToDevice() async {
-    final bytes = await CombustionPdfGenerator.generateCertificate(widget.data);
+    final bytes = await _generatePdf();
     final result = await PdfFileSaver.saveToDevice(
       pdfBytes: bytes,
       attestNumber: widget.data.volgnummerAttest,
+      certificateType: widget.data.cleaning.certificateType,
     );
     if (!mounted) return;
     final msg = result.isSuccess
@@ -123,12 +132,12 @@ class _PdfPreviewDialogState extends State<PdfPreviewDialog> {
                   size: 20.0,
                 ),
                 const SizedBox(width: 8.0),
-                const Expanded(
+                Expanded(
                   child: Text(
-                    'Verbrandingsattest Vlaanderen (A4)',
+                    '$_docPrefix Vlaanderen (A4)',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontFamily: 'Libron',
                       fontSize: 15.0,
                       fontWeight: FontWeight.bold,
@@ -183,8 +192,7 @@ class _PdfPreviewDialogState extends State<PdfPreviewDialog> {
                 bottomRight: Radius.circular(16.0),
               ),
               child: PdfPreview.builder(
-                build: (PdfPageFormat format) =>
-                    CombustionPdfGenerator.generateCertificate(widget.data),
+                build: (PdfPageFormat format) => _generatePdf(),
                 allowPrinting: true,
                 allowSharing: true,
                 canChangeOrientation: false,
@@ -194,7 +202,7 @@ class _PdfPreviewDialogState extends State<PdfPreviewDialog> {
                 maxPageWidth: 700.0,
                 dpi: 240.0,
                 pdfFileName:
-                    'Verbrandingsattest_${widget.data.volgnummerAttest.isNotEmpty ? widget.data.volgnummerAttest : 'concept'}.pdf',
+                    '${_docPrefix}_${widget.data.volgnummerAttest.isNotEmpty ? widget.data.volgnummerAttest : 'concept'}.pdf',
                 previewPageMargin: const EdgeInsets.all(8.0),
                 loadingWidget: const Center(
                   child: CircularProgressIndicator(

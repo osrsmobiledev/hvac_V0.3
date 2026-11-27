@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+import 'pdf_cleaning_data.dart';
 import 'pdf_visit_data.dart';
 import 'pdf_visit_loader.dart';
 
@@ -18,6 +19,7 @@ abstract final class PdfDataMapper {
     required Map<String, Object?> slotInitial,
     required Map<String, Object?> slotLow,
     required Map<String, Object?> slotHigh,
+    Map<String, Object?> reinigingRow = const {},
     Uint8List? techSigBytes,
     Uint8List? custSigBytes,
   }) {
@@ -59,12 +61,10 @@ abstract final class PdfDataMapper {
                 ? 'vast'
                 : '';
 
-    // Co evaluation: prefer initial, fallback to final low / high
+    // Co & Efficiency Hi evaluation: prefer initial, fallback to final low/high
     final coOkVal = slotInitial['co_ok'] as int? ??
         slotLow['co_ok'] as int? ??
         slotHigh['co_ok'] as int?;
-
-    // Efficiency Hi evaluation: prefer initial, fallback to final low / high
     final hiOkVal = (slotInitial['combustion_efficiency_hi_ok'] as int? ??
             slotInitial['combustion_efficiency_ok'] as int?) ??
         (slotLow['combustion_efficiency_hi_ok'] as int? ??
@@ -211,19 +211,21 @@ abstract final class PdfDataMapper {
       klantHandtekeningBytes: custSigBytes,
       klantHandtekeningNaam: custSigName,
       klantHandtekeningUitzondering: str(visit, 'customer_signature_exception'),
+      cleaning:
+          PdfCleaningData.fromRows(visit: visit, reinigingRow: reinigingRow),
     );
   }
 
   static bool _hasSlotData(Map<String, Object?> slot) {
-    for (final key in [
+    for (final k in const [
       'o2_percent',
       'co2_percent',
       'co_mg_kwh',
       'co_ppm',
       'flue_temp_celsius',
-      'combustion_efficiency_hi'
+      'combustion_efficiency_hi',
     ]) {
-      if (slot[key] != null) return true;
+      if (slot[k] != null) return true;
     }
     return false;
   }

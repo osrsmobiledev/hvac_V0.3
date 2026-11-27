@@ -1,6 +1,4 @@
-import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart' show rootBundle;
-import 'package:pdf/pdf.dart';
+import 'dart:typed_data';
 import 'package:pdf/widgets.dart' as pw;
 
 import 'data/pdf_visit_data.dart';
@@ -13,6 +11,7 @@ import 'builders/pdf_meting_builder.dart';
 import 'builders/pdf_eindbeoordeling_builder.dart';
 import 'builders/pdf_gebreken_handtekeningen_builder.dart';
 import 'builders/pdf_legal_footer_builder.dart';
+import 'widgets/pdf_document_factory.dart';
 
 /// Master orchestrator generating the complete official Flemish Combustion Certificate A4 PDF.
 abstract final class CombustionPdfGenerator {
@@ -21,46 +20,14 @@ abstract final class CombustionPdfGenerator {
   /// Fits strictly onto a single A4 page with 0.2pt borders, Libron typography,
   /// and 1-to-1 statutory fidelity to the official Flemish government template.
   static Future<Uint8List> generateCertificate(PdfVisitData data) async {
-    pw.Font baseFont;
-    pw.Font boldFont;
-
-    try {
-      final libronRegularData =
-          await rootBundle.load('assets/fonts/libron-regular.ttf');
-      final libronBoldData =
-          await rootBundle.load('assets/fonts/libron-bold.ttf');
-      baseFont = pw.Font.ttf(libronRegularData);
-      boldFont = pw.Font.ttf(libronBoldData);
-    } catch (e, stack) {
-      debugPrint('[CombustionPdfGenerator] Font loading fallback: $e\n$stack');
-      baseFont = pw.Font.helvetica();
-      boldFont = pw.Font.helveticaBold();
-    }
-
-    final pdf = pw.Document(
+    final pdf = await PdfDocumentFactory.createA4Document(
       title: 'Verbrandingsattest Vlaanderen',
-      author: data.firmaNaam.isNotEmpty ? data.firmaNaam : 'Erkend Technicus',
-      theme: pw.ThemeData.withFont(
-        base: baseFont,
-        bold: boldFont,
-      ),
+      author: data.firmaNaam,
     );
 
     pdf.addPage(
       pw.Page(
-        pageTheme: pw.PageTheme(
-          pageFormat: PdfPageFormat.a4,
-          margin: const pw.EdgeInsets.only(
-            top: 8.0,
-            left: 24.9,
-            right: 17.3,
-            bottom: 8.0,
-          ),
-          buildBackground: (pw.Context context) => pw.FullPage(
-            ignoreMargins: true,
-            child: pw.Container(color: PdfColors.white),
-          ),
-        ),
+        pageTheme: PdfDocumentFactory.a4PageTheme(),
         build: (pw.Context context) {
           return pw.Column(
             crossAxisAlignment: pw.CrossAxisAlignment.start,

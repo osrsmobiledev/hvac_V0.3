@@ -6,12 +6,11 @@ import '../data/pdf_visit_data.dart';
 /// Renders the Firma (left) and Technicus + Work duration (right) section.
 abstract final class PdfFirmaBuilder {
   static pw.Widget buildFirmaSection(PdfVisitData data) {
-    const double firmaLabelWidth = 95.0;
     const double technicusLabelWidth = 95.0;
     const double technicusSublabelWidth = 91.5;
 
-    final String gvFormatted = _formatErkenningsnummer(data.technicusGv, 'GV');
-    final String tvFormatted = _formatErkenningsnummer(data.technicusTv, 'TV');
+    final String gvFormatted = formatErkenningsnummer(data.technicusGv, 'GV');
+    final String tvFormatted = formatErkenningsnummer(data.technicusTv, 'TV');
 
     String erkenningsnummerText;
     if (gvFormatted.isNotEmpty && tvFormatted.isNotEmpty) {
@@ -28,63 +27,7 @@ abstract final class PdfFirmaBuilder {
       crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
         // LEFT COLUMN (Firma)
-        PdfComponents.halfWidthBox(
-          titleContent: pw.RichText(
-            text: const pw.TextSpan(
-              children: [
-                pw.TextSpan(text: 'Firma ', style: PdfComponents.titleBoldText),
-                pw.TextSpan(
-                  text: '(ook invullen indien zelfstandige)',
-                  style: PdfComponents.subTitleText,
-                ),
-              ],
-            ),
-          ),
-          contentHeight: 69.2,
-          mainContent: pw.Padding(
-            padding: const pw.EdgeInsets.only(left: 3.6, top: 2.0, bottom: 2.0),
-            child: pw.Column(
-              crossAxisAlignment: pw.CrossAxisAlignment.start,
-              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-              children: [
-                PdfComponents.buildDynamicLine(
-                  'naam: ',
-                  data.firmaNaam,
-                  firmaLabelWidth,
-                ),
-                PdfComponents.buildAddressLine(
-                  'straat en nummer: ',
-                  data.firmaStraat,
-                  data.firmaNr,
-                  data.firmaBus,
-                  firmaLabelWidth,
-                ),
-                PdfComponents.buildDynamicLine(
-                  'postnummer en gemeente: ',
-                  '${data.firmaPostcode} ${data.firmaGemeente}'.trim(),
-                  firmaLabelWidth,
-                ),
-                PdfComponents.buildPrefixedLine(
-                  'tel: ',
-                  data.firmaTel,
-                  '+32',
-                  firmaLabelWidth,
-                ),
-                PdfComponents.buildDynamicLine(
-                  'e-mail: ',
-                  data.firmaEmail,
-                  firmaLabelWidth,
-                ),
-                PdfComponents.buildPrefixedLine(
-                  'ondernemingsnummer: ',
-                  data.firmaKbo,
-                  'BE',
-                  firmaLabelWidth,
-                ),
-              ],
-            ),
-          ),
-        ),
+        buildFirmaColumn(data, boxHeight: 69.2),
 
         pw.SizedBox(width: 1.4),
 
@@ -149,7 +92,7 @@ abstract final class PdfFirmaBuilder {
                           ),
                           pw.Expanded(
                             child: pw.Text(
-                              _formatDate(data.datumOnderhoud),
+                              formatDate(data.datumOnderhoud),
                               style: PdfComponents.inputBlue,
                             ),
                           ),
@@ -207,9 +150,64 @@ abstract final class PdfFirmaBuilder {
     );
   }
 
-  static String _formatDate(String raw) {
+  /// Builds the shared left-hand Firma column for both Verbrandingsattest
+  /// and Reinigingsattest PDFs.
+  static pw.Widget buildFirmaColumn(
+    PdfVisitData data, {
+    double boxHeight = 69.2,
+  }) {
+    const double firmaLabelWidth = 95.0;
+    return PdfComponents.halfWidthBox(
+      titleContent: pw.RichText(
+        text: const pw.TextSpan(
+          children: [
+            pw.TextSpan(text: 'Firma ', style: PdfComponents.titleBoldText),
+            pw.TextSpan(
+              text: '(ook invullen indien zelfstandige)',
+              style: PdfComponents.subTitleText,
+            ),
+          ],
+        ),
+      ),
+      contentHeight: boxHeight,
+      mainContent: pw.Padding(
+        padding: const pw.EdgeInsets.only(left: 3.6, top: 2.0, bottom: 2.0),
+        child: pw.Column(
+          crossAxisAlignment: pw.CrossAxisAlignment.start,
+          mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+          children: [
+            PdfComponents.buildDynamicLine(
+                'naam: ', data.firmaNaam, firmaLabelWidth),
+            PdfComponents.buildAddressLine(
+              'straat en nummer: ',
+              data.firmaStraat,
+              data.firmaNr,
+              data.firmaBus,
+              firmaLabelWidth,
+            ),
+            PdfComponents.buildDynamicLine(
+              'postnummer en gemeente: ',
+              '${data.firmaPostcode} ${data.firmaGemeente}'.trim(),
+              firmaLabelWidth,
+            ),
+            PdfComponents.buildPrefixedLine(
+                'tel: ', data.firmaTel, '+32', firmaLabelWidth),
+            PdfComponents.buildDynamicLine(
+                'e-mail: ', data.firmaEmail, firmaLabelWidth),
+            PdfComponents.buildPrefixedLine(
+                'ondernemingsnummer: ', data.firmaKbo, 'BE', firmaLabelWidth),
+          ],
+        ),
+      ),
+    );
+  }
+
+  static String formatDate(
+    String raw, {
+    String emptyFallback = '_______-________-___________',
+  }) {
     final trimmed = raw.trim();
-    if (trimmed.isEmpty) return '_______-________-___________';
+    if (trimmed.isEmpty) return emptyFallback;
     if (RegExp(r'^\d{2}[/-]\d{2}[/-]\d{4}').hasMatch(trimmed)) {
       return trimmed.replaceAll('-', '/');
     }
@@ -223,7 +221,7 @@ abstract final class PdfFirmaBuilder {
     }
   }
 
-  static String _formatErkenningsnummer(String raw, String prefix) {
+  static String formatErkenningsnummer(String raw, String prefix) {
     final trimmed = raw.trim();
     if (trimmed.isEmpty) return '';
     final digits = trimmed.replaceAll(RegExp(r'\D'), '');

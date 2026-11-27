@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:sqflite/sqflite.dart';
 import '../../../core/database/app_database.dart';
 import 'pdf_visit_data.dart';
+import 'pdf_cleaning_data.dart';
 import 'pdf_data_mapper.dart';
 
 /// Loads raw relational tables, flue gas captures, and signatures for a visit.
@@ -67,10 +68,7 @@ abstract final class PdfVisitLoader {
     final resolvedVisitId = (visit['id'] as int?) ?? visitId;
 
     // 2. Load Singleton Technician Profile
-    final profileRows = await db.query(
-      'technician_profile',
-      limit: 1,
-    );
+    final profileRows = await db.query('technician_profile', limit: 1);
     final profile =
         profileRows.isNotEmpty ? profileRows.first : <String, Object?>{};
 
@@ -78,12 +76,8 @@ abstract final class PdfVisitLoader {
     final int? customerId = visit['customer_id'] as int?;
     Map<String, Object?> customer = {};
     if (customerId != null) {
-      final cRows = await db.query(
-        'customers',
-        where: 'id = ?',
-        whereArgs: [customerId],
-        limit: 1,
-      );
+      final cRows = await db.query('customers',
+          where: 'id = ?', whereArgs: [customerId], limit: 1);
       if (cRows.isNotEmpty) customer = cRows.first;
     }
 
@@ -91,12 +85,8 @@ abstract final class PdfVisitLoader {
     final int? locationId = visit['service_location_id'] as int?;
     Map<String, Object?> location = {};
     if (locationId != null) {
-      final locRows = await db.query(
-        'service_locations',
-        where: 'id = ?',
-        whereArgs: [locationId],
-        limit: 1,
-      );
+      final locRows = await db.query('service_locations',
+          where: 'id = ?', whereArgs: [locationId], limit: 1);
       if (locRows.isNotEmpty) location = locRows.first;
     }
 
@@ -104,12 +94,8 @@ abstract final class PdfVisitLoader {
     final int? boilerId = visit['boiler_id'] as int?;
     Map<String, Object?> boiler = {};
     if (boilerId != null) {
-      final bRows = await db.query(
-        'boilers',
-        where: 'id = ?',
-        whereArgs: [boilerId],
-        limit: 1,
-      );
+      final bRows = await db.query('boilers',
+          where: 'id = ?', whereArgs: [boilerId], limit: 1);
       if (bRows.isNotEmpty) boiler = bRows.first;
     }
 
@@ -147,6 +133,8 @@ abstract final class PdfVisitLoader {
       }
     }
 
+    final reinigingRow = await PdfCleaningData.loadRow(db, resolvedVisitId);
+
     // 7. Load Signatures (supporting Base64 Data URI, raw Base64, and file paths)
     final techSigData = visit['technician_signature_path'] as String? ?? '';
     final custSigData = visit['customer_signature_path'] as String? ?? '';
@@ -174,6 +162,7 @@ abstract final class PdfVisitLoader {
       'initial': slotInitial,
       'low': slotLow,
       'high': slotHigh,
+      'reiniging': reinigingRow,
       'technician_signature':
           techSigBytes == null ? null : base64Encode(techSigBytes),
       'customer_signature':
@@ -186,7 +175,7 @@ abstract final class PdfVisitLoader {
       throw const FormatException('Unknown certificate format');
     }
     Map<String, Object?> row(String key) =>
-        snapshot[key] as Map<String, Object?>;
+        snapshot[key] as Map<String, Object?>? ?? const {};
     Uint8List? signature(String key) {
       final encoded = snapshot[key] as String?;
       return encoded == null ? null : base64Decode(encoded);
@@ -201,6 +190,7 @@ abstract final class PdfVisitLoader {
       slotInitial: row('initial'),
       slotLow: row('low'),
       slotHigh: row('high'),
+      reinigingRow: row('reiniging'),
       techSigBytes: signature('technician_signature'),
       custSigBytes: signature('customer_signature'),
     );
