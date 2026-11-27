@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../draft_save_scope.dart';
 import 'package:hvac_app/app/localization/app_dictionary.dart';
+import 'package:hvac_app/app/localization/reiniging_dictionary.dart';
 import 'package:hvac_app/core/services/app_warmup_service.dart';
 import 'package:hvac_app/core/utils/debouncer.dart';
 import 'package:hvac_app/core/widgets/tactical_group_outline.dart';
@@ -9,17 +10,13 @@ import '../../data/draft_repository.dart';
 import '../widgets/bento_main_section.dart';
 import '../widgets/dark_text_form_field.dart';
 import 'start/activity_option_tile.dart';
+import 'start/reiniging_locked_activity_card.dart';
 
-/// Tab 2 (Start) form for Verbrandingsattest Vlaanderen.
-///
-/// Features:
-/// - Reusable tactical activity selection buttons with zero-jump red border validation.
-/// - Attest sequence number tracking with live auto-save to SQLite and red border validation.
-/// - Exposes [onFormKeyReady] so the parent screen can call [FormState.validate]
-///   on "Voltooien" without any database round-trip.
+/// Tab 2 (Start) form for Verbrandingsattest & Reinigingsattest Vlaanderen.
 class StartTab extends StatefulWidget {
   final int? visitId;
   final DraftRepository? draftRepository;
+  final String certificateType;
 
   /// Called once after first build with this tab's [GlobalKey<FormState>].
   final ValueChanged<GlobalKey<FormState>>? onFormKeyReady;
@@ -28,6 +25,7 @@ class StartTab extends StatefulWidget {
     super.key,
     this.visitId,
     this.draftRepository,
+    this.certificateType = 'verbranding',
     this.onFormKeyReady,
   });
 
@@ -58,10 +56,14 @@ class _StartTabState extends State<StartTab>
     WidgetsBinding.instance.addPostFrameCallback(
       (_) => widget.onFormKeyReady?.call(_formKey),
     );
-    final cachedDraft = AppWarmupService.instance.cachedResult?.activeDraft;
+    final cachedDraft =
+        AppWarmupService.instance.activeDraftFor(widget.certificateType);
     if (cachedDraft != null && widget.draftRepository == null) {
       _visitId = cachedDraft.id;
-      _activityType = cachedDraft.activityType;
+      _activityType = cachedDraft.activityType.isEmpty &&
+              widget.certificateType == 'reiniging'
+          ? 'onderhoud'
+          : cachedDraft.activityType;
       _attestNumberController.text = cachedDraft.attestNumber;
     } else {
       _loadDraft();
@@ -88,14 +90,23 @@ class _StartTabState extends State<StartTab>
     try {
       final draft = widget.visitId != null
           ? await _repository.getDraftById(widget.visitId!) ??
-              await _repository.getOrCreateActiveDraft()
-          : await _repository.getOrCreateActiveDraft();
+              await _repository.getOrCreateActiveDraft(
+                  certificateType: widget.certificateType)
+          : await _repository.getOrCreateActiveDraft(
+              certificateType: widget.certificateType);
       if (mounted) {
+        final isReiniging = widget.certificateType == 'reiniging';
+        final resolvedActivity = isReiniging && draft.activityType.isEmpty
+            ? 'onderhoud'
+            : draft.activityType;
         setState(() {
           _visitId = draft.id;
-          _activityType = draft.activityType;
+          _activityType = resolvedActivity;
           _attestNumberController.text = draft.attestNumber;
         });
+        if (isReiniging && draft.activityType.isEmpty) {
+          _queueSave(immediate: true);
+        }
       }
     } catch (e, stack) {
       debugPrint('[StartTab] _loadDraft error: $e\n$stack');
@@ -147,53 +158,60 @@ class _StartTabState extends State<StartTab>
         scrollKey: 'start_tab_scroll',
         children: [
           BentoMainSection(
-            title: AppDictionary.headerActivity,
+            title: widget.certificateType == 'reiniging'
+                ? ReinigingDictionary.headerStartReiniging
+                : AppDictionary.headerActivity,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Activity selection with zero-jump red border validation
-                FormField<String>(
-                  key: const ValueKey('start_activity_field'),
-                  initialValue: _activityType,
-                  validator: (_) => _activityType.isEmpty
-                      ? 'Kies een activiteitstype (Onderhoud of Eerste ingebruikname)'
-                      : null,
-                  builder: (field) {
-                    final isError = field.hasError && _activityType.isEmpty;
+                if (widget.certificateType == 'reiniging')
+                  const ReinigingLockedActivityCard(
+                    key: ValueKey('start_reiniging_activity'),
+                  )
+                else
+                  // Activity selection with zero-jump red border validation
+                  FormField<String>(
+                    key: const ValueKey('start_activity_field'),
+                    initialValue: _activityType,
+                    validator: (_) => _activityType.isEmpty
+                        ? 'Kies een activiteitstype (Onderhoud of Eerste ingebruikname)'
+                        : null,
+                    builder: (field) {
+                      final isError = field.hasError && _activityType.isEmpty;
 
-                    return TacticalGroupOutline(
-                      hasError: isError,
-                      borderRadius: 14.0,
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: ActivityOptionTile(
-                              title: AppDictionary.activityMaintenance,
-                              isSelected: _activityType == 'onderhoud',
-                              onTap: () {
-                                _onActivityChanged('onderhoud');
-                                field.didChange(_activityType);
-                              },
+                      return TacticalGroupOutline(
+                        hasError: isError,
+                        borderRadius: 14.0,
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: ActivityOptionTile(
+                                title: AppDictionary.activityMaintenance,
+                                isSelected: _activityType == 'onderhoud',
+                                onTap: () {
+                                  _onActivityChanged('onderhoud');
+                                  field.didChange(_activityType);
+                                },
+                              ),
                             ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: ActivityOptionTile(
-                              title: AppDictionary.activityCommissioningShort,
-                              subtitle: AppDictionary.captionCommissioning,
-                              isSelected:
-                                  _activityType == 'eerste_ingebruikname',
-                              onTap: () {
-                                _onActivityChanged('eerste_ingebruikname');
-                                field.didChange(_activityType);
-                              },
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: ActivityOptionTile(
+                                title: AppDictionary.activityCommissioningShort,
+                                subtitle: AppDictionary.captionCommissioning,
+                                isSelected:
+                                    _activityType == 'eerste_ingebruikname',
+                                onTap: () {
+                                  _onActivityChanged('eerste_ingebruikname');
+                                  field.didChange(_activityType);
+                                },
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
                 const SizedBox(height: 18),
                 const Divider(color: Colors.white10, height: 1),
                 const SizedBox(height: 14),

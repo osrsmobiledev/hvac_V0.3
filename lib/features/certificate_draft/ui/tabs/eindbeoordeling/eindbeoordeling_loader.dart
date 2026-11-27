@@ -12,11 +12,14 @@ abstract final class EindbeoordelingLoader {
     required EindbeoordelingRepository repository,
     required BoilerDraftNotifier? boilerNotifier,
     required MeasurementAssessmentNotifier? assessmentNotifier,
+    String certificateType = 'verbranding',
     required void Function(EindbeoordelingDraft draft, String fuel, String date)
         onLoaded,
   }) async {
     final cached = AppWarmupService.instance.cachedResult;
-    if (cached?.eindbeoordeling != null) {
+    if (cached?.eindbeoordeling != null &&
+        cached?.activeDraft?.certificateType == certificateType &&
+        cached?.activeDraft?.id == visitId) {
       final nFuel = boilerNotifier?.draft.fuelCategory;
       final fuel = (nFuel != null && nFuel.isNotEmpty)
           ? nFuel

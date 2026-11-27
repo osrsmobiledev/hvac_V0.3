@@ -6,7 +6,9 @@ import 'package:hvac_app/core/utils/name_capitalization_formatter.dart';
 import 'package:hvac_app/core/utils/technician_recognition_formatters.dart';
 import '../../widgets/bento_main_section.dart';
 import 'firma_field.dart';
+import 'technician_role_section.dart';
 import 'technician_timing_fields.dart';
+import 'package:hvac_app/app/localization/reiniging_dictionary.dart';
 
 /// Technician, instrument serial number, and visit timing section on Tab 3 (Firma - Technicus).
 class TechnicianSection extends StatefulWidget {
@@ -22,6 +24,11 @@ class TechnicianSection extends StatefulWidget {
   final VoidCallback onProfileChanged;
   final VoidCallback onTimingsChanged;
   final String? fuelType;
+  final String certificateType;
+  final bool isErkendTechnicus;
+  final bool isSchoorsteenveger;
+  final VoidCallback? onToggleErkend;
+  final VoidCallback? onToggleSchoorsteenveger;
 
   const TechnicianSection({
     super.key,
@@ -37,6 +44,11 @@ class TechnicianSection extends StatefulWidget {
     required this.onProfileChanged,
     required this.onTimingsChanged,
     this.fuelType,
+    this.certificateType = 'verbranding',
+    this.isErkendTechnicus = true,
+    this.isSchoorsteenveger = false,
+    this.onToggleErkend,
+    this.onToggleSchoorsteenveger,
   });
 
   @override
@@ -58,12 +70,44 @@ class _TechnicianSectionState extends State<TechnicianSection> {
   }
 
   @override
+  void didUpdateWidget(covariant TechnicianSection oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.isErkendTechnicus != widget.isErkendTechnicus) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        if (_gvFieldKey.currentState?.hasError == true) {
+          _gvFieldKey.currentState?.validate();
+        }
+        if (_tvFieldKey.currentState?.hasError == true) {
+          _tvFieldKey.currentState?.validate();
+        }
+      });
+    }
+  }
+
+  bool get _requireRecognition =>
+      widget.certificateType == 'verbranding' || widget.isErkendTechnicus;
+
+  @override
   Widget build(BuildContext context) {
+    final isReiniging = widget.certificateType == 'reiniging';
+    final showRoles = widget.certificateType != 'verbranding';
+
     return BentoMainSection(
       title: AppDictionary.headerTechnicus,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          if (showRoles) ...[
+            TechnicianRoleSection(
+              isErkendTechnicus: widget.isErkendTechnicus,
+              isSchoorsteenveger: widget.isSchoorsteenveger,
+              onToggleErkend: widget.onToggleErkend ?? () {},
+              onToggleSchoorsteenveger:
+                  widget.onToggleSchoorsteenveger ?? () {},
+            ),
+            const SizedBox(height: 12),
+          ],
           Row(
             children: [
               Expanded(
@@ -114,6 +158,7 @@ class _TechnicianSectionState extends State<TechnicianSection> {
                     widget.gvController.text,
                     fuelType: widget.fuelType,
                     isTvEmpty: widget.tvController.text.trim().isEmpty,
+                    requireRecognition: _requireRecognition,
                   ),
                   onChanged: _onGvChanged,
                 ),
@@ -135,6 +180,7 @@ class _TechnicianSectionState extends State<TechnicianSection> {
                     widget.tvController.text,
                     fuelType: widget.fuelType,
                     isGvEmpty: widget.gvController.text.trim().isEmpty,
+                    requireRecognition: _requireRecognition,
                   ),
                   onChanged: _onTvChanged,
                 ),
@@ -143,24 +189,26 @@ class _TechnicianSectionState extends State<TechnicianSection> {
           ),
           const SizedBox(height: 12),
 
-          // Flue-Gas Analyzer Instrument Details (Brand/Type + Serial stacked full-width)
-          FirmaField(
-            fieldKey: const ValueKey('technician_analyzerBrand'),
-            label: AppDictionary.lblAnalyzerBrand,
-            controller: widget.analyzerBrandController,
-            hint: AppDictionary.hintAnalyzerBrand,
-            onChanged: widget.onProfileChanged,
-          ),
-          const SizedBox(height: 12),
-          FirmaField(
-            fieldKey: const ValueKey('technician_analyzerSerial'),
-            label: AppDictionary.lblAnalyzerSerial,
-            controller: widget.analyzerSerialController,
-            hint: AppDictionary.hintAnalyzerSerial,
-            textCapitalization: TextCapitalization.characters,
-            onChanged: widget.onProfileChanged,
-          ),
-          const SizedBox(height: 14),
+          if (!isReiniging) ...[
+            // Flue-Gas Analyzer Instrument Details (Brand/Type + Serial stacked full-width)
+            FirmaField(
+              fieldKey: const ValueKey('technician_analyzerBrand'),
+              label: AppDictionary.lblAnalyzerBrand,
+              controller: widget.analyzerBrandController,
+              hint: AppDictionary.hintAnalyzerBrand,
+              onChanged: widget.onProfileChanged,
+            ),
+            const SizedBox(height: 12),
+            FirmaField(
+              fieldKey: const ValueKey('technician_analyzerSerial'),
+              label: AppDictionary.lblAnalyzerSerial,
+              controller: widget.analyzerSerialController,
+              hint: AppDictionary.hintAnalyzerSerial,
+              textCapitalization: TextCapitalization.characters,
+              onChanged: widget.onProfileChanged,
+            ),
+            const SizedBox(height: 14),
+          ],
           const Divider(color: AppColors.goldHairline, height: 1),
           const SizedBox(height: 12),
 
@@ -170,6 +218,9 @@ class _TechnicianSectionState extends State<TechnicianSection> {
             startTimeController: widget.startTimeController,
             endTimeController: widget.endTimeController,
             onTimingsChanged: widget.onTimingsChanged,
+            dateLabel: isReiniging
+                ? ReinigingDictionary.lblDateReiniging
+                : AppDictionary.lblDate,
           ),
         ],
       ),

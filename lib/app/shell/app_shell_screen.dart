@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../../features/certificate_draft/ui/reinigingsattest_screen.dart';
 import '../../features/certificate_draft/ui/verbrandingsattest_screen.dart';
 import '../../features/email_delivery/data/email_delivery_coordinator.dart';
 import '../../features/technician_settings/technician_settings_applet.dart';
@@ -37,6 +38,7 @@ class _AppShellScreenState extends State<AppShellScreen>
   final GlobalKey<ScaffoldState> _phoneScaffoldKey = GlobalKey<ScaffoldState>();
   bool _isDrawerOpen = false;
   bool _hasOpenedCombustion = false;
+  bool _hasOpenedCleaning = false;
 
   @override
   void initState() {
@@ -89,6 +91,8 @@ class _AppShellScreenState extends State<AppShellScreen>
 
             if (_controller.activeApplet == AppletType.combustion) {
               _hasOpenedCombustion = true;
+            } else if (_controller.activeApplet == AppletType.cleaning) {
+              _hasOpenedCleaning = true;
             }
 
             final int bodyIndex;
@@ -96,8 +100,10 @@ class _AppShellScreenState extends State<AppShellScreen>
               bodyIndex = 0;
             } else if (_controller.activeApplet == AppletType.combustion) {
               bodyIndex = 1;
-            } else {
+            } else if (_controller.activeApplet == AppletType.cleaning) {
               bodyIndex = 2;
+            } else {
+              bodyIndex = 3;
             }
 
             final Widget currentBody = IndexedStack(
@@ -107,6 +113,12 @@ class _AppShellScreenState extends State<AppShellScreen>
                 _hasOpenedCombustion
                     ? VerbrandingsattestScreen(
                         key: ValueKey(_controller.visitGeneration),
+                        controller: _controller)
+                    : const SizedBox.shrink(),
+                _hasOpenedCleaning
+                    ? ReinigingsattestScreen(
+                        key:
+                            ValueKey('cleaning_${_controller.visitGeneration}'),
                         controller: _controller)
                     : const SizedBox.shrink(),
                 if (_controller.activeApplet == AppletType.history)

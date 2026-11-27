@@ -20,10 +20,12 @@ class HandtekeningenCard extends StatelessWidget {
     super.key,
     required this.draft,
     required this.onDraftChanged,
+    this.certificateType = 'verbranding',
   });
 
   final EindbeoordelingDraft draft;
   final ValueChanged<EindbeoordelingDraft> onDraftChanged;
+  final String certificateType;
 
   Future<void> _openSignatureModal(
     BuildContext context, {
@@ -81,7 +83,9 @@ class HandtekeningenCard extends StatelessWidget {
               final isError = field.hasError && !hasSig;
 
               return SignatureTile(
-                label: EindbeoordelingDictionary.lblHandtekeningTechnicus,
+                label: certificateType == 'reiniging'
+                    ? EindbeoordelingDictionary.lblHandtekeningErkendOfVakman
+                    : EindbeoordelingDictionary.lblHandtekeningTechnicus,
                 signatureData: draft.technicianSignaturePath,
                 isError: isError,
                 onTapSign: () => _openSignatureModal(
@@ -117,6 +121,9 @@ class HandtekeningenCard extends StatelessWidget {
             onDraftChanged: onDraftChanged,
             onOpenSignatureModal: _openSignatureModal,
             onConfirmClearSignature: _confirmClearSignature,
+            label: certificateType == 'reiniging'
+                ? EindbeoordelingDictionary.lblHandtekeningKlantKennisname
+                : null,
           ),
         ],
       ),

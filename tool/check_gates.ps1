@@ -229,7 +229,9 @@ if ($gitExit -ne 0 -and $wsErrors) {
 # 2. Universal + optional project rules (tool/gate_rules.json)
 $libRules = @(
     @{ name = "Widget Helper"; pattern = "(?<!pw\.)\bWidget\s+_[a-zA-Z0-9_]+\s*\("; excludePathPattern = "" },
-    @{ name = "Empty Catch"; pattern = "catch\s*(\([^)]*\))?\s*\{\s*\}"; excludePathPattern = "" }
+    @{ name = "Empty Catch"; pattern = "catch\s*(\([^)]*\))?\s*\{\s*\}"; excludePathPattern = "" },
+    @{ name = "No-Op Tap Handler"; pattern = "(onTap|onPressed)\s*:\s*\(\s*\)\s*\{\s*\}"; excludePathPattern = "" },
+    @{ name = "Ternary Border Width"; pattern = "Border\.all\([^)]*width\s*:\s*[^,\)]+\?[^,\)]+:"; excludePathPattern = "" }
 )
 $testRules = @(
     @{ name = "Skipped Test"; pattern = "\bskip\s*:"; excludePathPattern = "" }

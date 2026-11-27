@@ -17,7 +17,7 @@ class DarkInputLabel extends StatelessWidget {
     this.text, {
     super.key,
     this.isMuted = false,
-    this.maxLines = 1,
+    this.maxLines = 2,
   });
 
   /// The standard label text style used across all workflow forms.

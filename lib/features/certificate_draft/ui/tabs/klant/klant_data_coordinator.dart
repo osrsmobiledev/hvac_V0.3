@@ -34,8 +34,9 @@ class KlantDataCoordinator {
         Customer? customer,
         ServiceLocation? location,
         KlantEditSession? pendingSession,
-      })> loadDraftData() async {
-    final draft = await draftRepo.getOrCreateActiveDraft();
+      })> loadDraftData({String certificateType = 'verbranding'}) async {
+    final draft = await draftRepo.getOrCreateActiveDraft(
+        certificateType: certificateType);
     final customerId = draft.customerId;
     final locationId = draft.serviceLocationId;
     final customer = customerId == null

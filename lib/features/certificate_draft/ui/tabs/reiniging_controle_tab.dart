@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:hvac_app/app/localization/reiniging_dictionary.dart';
 import 'package:hvac_app/app/theme/app_theme.dart';
 import 'package:hvac_app/core/utils/debouncer.dart';
-import 'package:hvac_app/core/widgets/tactical_group_outline.dart';
 import 'package:hvac_app/core/widgets/workflow_tab_container.dart';
 import '../boiler_draft_notifier.dart';
 import '../draft_save_scope.dart';
@@ -68,6 +67,7 @@ class _ReinigingControleTabState extends State<ReinigingControleTab>
     }
     if (oldWidget.visitId != widget.visitId) {
       _hasUserEdited = false;
+      _checklistFieldKey.currentState?.reset();
       _loadControls();
     }
   }
@@ -84,7 +84,18 @@ class _ReinigingControleTabState extends State<ReinigingControleTab>
   void _onBoilerChanged() {
     final nextFuel = widget.boilerNotifier?.draft.fuelCategory ?? '';
     if (!mounted || nextFuel == _fuelCategory) return;
-    setState(() => _fuelCategory = nextFuel);
+    final pruned = _draft.clearingInactiveFuels(nextFuel);
+    final changed = pruned != _draft;
+    setState(() {
+      _fuelCategory = nextFuel;
+      if (changed) _draft = pruned;
+    });
+    if (changed) {
+      if (_checklistFieldKey.currentState?.hasError == true) {
+        _checklistFieldKey.currentState?.validate();
+      }
+      _queueSave(pruned, immediate: true);
+    }
   }
 
   Future<void> _loadControls() async {
@@ -96,7 +107,6 @@ class _ReinigingControleTabState extends State<ReinigingControleTab>
         _draft = loaded;
         _otherTextController.text = loaded.allOtherText ?? '';
       });
-      _checklistFieldKey.currentState?.didChange(loaded.hasAnySelected);
     } catch (e, stack) {
       debugPrint('[ReinigingControleTab] _loadControls error: $e\n$stack');
     }
@@ -116,7 +126,9 @@ class _ReinigingControleTabState extends State<ReinigingControleTab>
     }
 
     setState(() => _draft = next);
-    _checklistFieldKey.currentState?.didChange(next.hasAnySelected);
+    if (_checklistFieldKey.currentState?.hasError == true) {
+      _checklistFieldKey.currentState?.validate();
+    }
     _queueSave(next, immediate: true);
   }
 
@@ -150,34 +162,28 @@ class _ReinigingControleTabState extends State<ReinigingControleTab>
           FormField<bool>(
             key: _checklistFieldKey,
             initialValue: _draft.hasAnySelected,
-            autovalidateMode: AutovalidateMode.onUserInteraction,
             validator: (_) => _draft.hasAnySelected
                 ? null
                 : ReinigingDictionary.errSelectAtLeastOne,
-            builder: (field) => TacticalGroupOutline(
-              hasError: field.hasError,
-              borderRadius: 14.0,
-              padding: const EdgeInsets.all(3.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  ReinigingFlueCard(
-                    draft: _draft,
-                    hasSelectionError: field.hasError,
-                    onChanged: _onChecklistChanged,
-                  ),
-                  const SizedBox(height: AppTheme.bentoCardSpacing),
-                  ReinigingBoilerCard(
-                    draft: _draft,
-                    fuelCategory: _fuelCategory,
-                    hasSelectionError: field.hasError,
-                    otherTextController: _otherTextController,
-                    otherTextFocusNode: _otherTextFocusNode,
-                    onChanged: _onChecklistChanged,
-                    onOtherTextChanged: _onOtherTextChanged,
-                  ),
-                ],
-              ),
+            builder: (field) => Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                ReinigingFlueCard(
+                  draft: _draft,
+                  hasSelectionError: field.hasError,
+                  onChanged: _onChecklistChanged,
+                ),
+                const SizedBox(height: AppTheme.bentoCardSpacing),
+                ReinigingBoilerCard(
+                  draft: _draft,
+                  fuelCategory: _fuelCategory,
+                  hasSelectionError: field.hasError,
+                  otherTextController: _otherTextController,
+                  otherTextFocusNode: _otherTextFocusNode,
+                  onChanged: _onChecklistChanged,
+                  onOtherTextChanged: _onOtherTextChanged,
+                ),
+              ],
             ),
           ),
         ],

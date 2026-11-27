@@ -51,7 +51,7 @@ class TacticalSelectButton extends StatelessWidget {
             ? AppColors.errorRed
             : Colors.white.withValues(alpha: 0.16);
 
-    final borderWidth = isSelected || isError ? 1.2 : 1.0;
+    const borderWidth = 1.2;
 
     return OutlinedButton(
       onPressed: () {

@@ -45,7 +45,10 @@ class _DataTabState extends State<DataTab> with AutomaticKeepAliveClientMixin {
   void initState() {
     super.initState();
     _repository = widget.repository ?? MeasurementDraftRepository();
-    final cached = AppWarmupService.instance.cachedResult?.tab1RawMeasurement;
+    final cachedResult = AppWarmupService.instance.cachedResult;
+    final cached = cachedResult?.activeDraft?.id == widget.visitId
+        ? cachedResult?.tab1RawMeasurement
+        : null;
     if (cached != null && widget.repository == null) {
       _measurement = cached;
     } else {

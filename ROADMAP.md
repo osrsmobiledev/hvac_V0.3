@@ -56,7 +56,7 @@
 
 ## 2. Current Handoff (Active State for AI Agent)
 
-**Active Milestone: Milestone 7 (Reinigingsattest Vlaanderen) — Slice 7.2 (Tab 5 — Reiniging en controle) complete and verified across 491 tests passing (`.\tool\check_gates.ps1` exit code 0). Next active slice: Slice 7.3 — Tabs 1/2/6 Deltas & `ReinigingsattestScreen`. See `doc/REINIGINGSATTEST_BLUEPRINT.md`.**
+**Active Milestone: Milestone 7 (Reinigingsattest Vlaanderen) — Slice 7.3 (Tabs 1/2/6 Deltas, `ReinigingsattestScreen` & Navigation) complete and verified on Android across 503 tests passing (`.\tool\check_gates.ps1` exit code 0). Next active slice: Slice 7.4 — Reinigingsattest PDF Export. See `doc/REINIGINGSATTEST_BLUEPRINT.md`.**
 
 ### Slice 6.4 Implementation Summary & Verification
 Slice 6.4 completed and accepted on Android by the owner. Full implementation and 3-layer dependency invariant verified across the 458-test automated suite (0 analyzer lints, all files <= 250 lines):

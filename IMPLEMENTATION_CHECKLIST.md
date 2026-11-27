@@ -10,6 +10,7 @@ Answer these 3 questions in your slice plan before touching application code:
 1. **Negative States:** What happens when each toggle or prerequisite is OFF, empty, null, or offline?
 2. **Lowest Data Boundary:** Which layer (DTO mapper, repository, or database schema) enforces the domain invariant even if the UI layer is bypassed?
 3. **Scope & Files:** What is the single user-visible outcome and exact files to touch?
+4. **UI States & Labels:** For interactive controls, define Resting / Active / Locked / Error states with constant border width and font weight (zero pixel shift), and avoid `FittedBox` shrinking on multi-word labels.
 
 ---
 

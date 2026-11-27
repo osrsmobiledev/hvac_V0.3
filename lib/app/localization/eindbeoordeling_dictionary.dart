@@ -118,4 +118,24 @@ abstract final class EindbeoordelingDictionary {
   static const String toastPdfSaveFailed = 'Fout bij opslaan van PDF: ';
   static const String toastValidationMissingConclusions =
       'Duid eerst de beoordeling aan (Goed/Niet goed, Veilig/Niet veilig)';
+
+  // --- Reinigingsattest Deltas (Slice 7.3) ---
+  static const String cardTitleVolgendeControleReiniging = 'Volgende controle';
+  static const String lblNextReinigingStooktoestel =
+      'Eerstvolgende reiniging stooktoestel vóór:';
+  static const String lblNextReinigingRookgas =
+      'Eerstvolgende reiniging rookgasafvoerkanaal vóór:';
+  static const String lblTeTreffenMaatregelen =
+      'Te treffen maatregelen om deze gebreken weg te werken:';
+  static const String hintTeTreffenMaatregelen =
+      'Beschrijf de te treffen maatregelen...';
+  static const String dlgClearRemedialTitle = 'Maatregelen wissen';
+  static const String dlgClearRemedialBody =
+      'Weet u zeker dat u de ingevulde maatregelen wilt wissen?';
+  static const String feedbackRemedialCleared = 'Maatregelen gewist';
+  static const String lblHandtekeningErkendOfVakman =
+      'Handtekening erkende technicus / geschoold vakman';
+  static const String lblHandtekeningKlantKennisname =
+      'Handtekening klant voor kennisname';
+  static const String btnVoltooienReiniging = 'Reinigingsattest Voltooien';
 }

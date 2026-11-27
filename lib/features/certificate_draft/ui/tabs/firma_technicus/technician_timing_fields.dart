@@ -10,6 +10,7 @@ class TechnicianTimingFields extends StatefulWidget {
   final TextEditingController startTimeController;
   final TextEditingController endTimeController;
   final VoidCallback onTimingsChanged;
+  final String dateLabel;
 
   const TechnicianTimingFields({
     super.key,
@@ -17,6 +18,7 @@ class TechnicianTimingFields extends StatefulWidget {
     required this.startTimeController,
     required this.endTimeController,
     required this.onTimingsChanged,
+    this.dateLabel = AppDictionary.lblDate,
   });
 
   @override
@@ -68,9 +70,9 @@ class _TechnicianTimingFieldsState extends State<TechnicianTimingFields> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // Date Picker: Datum onderhoud
+        // Date Picker: Datum onderhoud / Datum reiniging
         FirmaActionField(
-          label: AppDictionary.lblDate,
+          label: widget.dateLabel,
           controller: widget.dateController,
           hint: AppDictionary.hintDateFormat,
           icon: Icons.calendar_month_rounded,

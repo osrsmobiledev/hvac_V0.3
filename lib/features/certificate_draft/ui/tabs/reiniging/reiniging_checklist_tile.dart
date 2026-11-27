@@ -65,7 +65,7 @@ class ReinigingChecklistTile extends StatelessWidget {
               borderRadius: BorderRadius.circular(10.0),
               border: Border.all(
                 color: borderColor,
-                width: isSelected ? 1.2 : 1.0,
+                width: 1.2,
               ),
             ),
             child: Row(
@@ -89,8 +89,7 @@ class ReinigingChecklistTile extends StatelessWidget {
                     style: TextStyle(
                       fontFamily: AppTheme.fontFamily,
                       fontSize: 13.5,
-                      fontWeight:
-                          isSelected ? FontWeight.w600 : FontWeight.w400,
+                      fontWeight: FontWeight.w500,
                       color: isSelected
                           ? AppColors.textPrimary
                           : AppColors.textSecondary,

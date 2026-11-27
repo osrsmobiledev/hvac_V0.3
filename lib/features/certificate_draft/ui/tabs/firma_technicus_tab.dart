@@ -6,6 +6,7 @@ import 'package:hvac_app/core/services/app_warmup_service.dart';
 import 'package:hvac_app/core/utils/debouncer.dart';
 import 'package:hvac_app/core/widgets/workflow_tab_container.dart';
 import '../../data/draft_repository.dart';
+import '../../data/reiniging_repository.dart';
 import '../../data/technician_profile_repository.dart';
 import '../../domain/draft_visit.dart';
 import '../../domain/technician_profile.dart';
@@ -20,7 +21,9 @@ class FirmaTechnicusTab extends StatefulWidget {
   final int? visitId;
   final TechnicianProfileRepository? profileRepository;
   final DraftRepository? draftRepository;
+  final ReinigingRepository? reinigingRepository;
   final BoilerDraftNotifier? boilerNotifier;
+  final String certificateType;
 
   /// Called once after first build with this tab's form key; used by parent to validate on "Voltooien".
   final ValueChanged<GlobalKey<FormState>>? onFormKeyReady;
@@ -29,7 +32,9 @@ class FirmaTechnicusTab extends StatefulWidget {
     this.visitId,
     this.profileRepository,
     this.draftRepository,
+    this.reinigingRepository,
     this.boilerNotifier,
+    this.certificateType = 'verbranding',
     this.onFormKeyReady,
   });
 
@@ -41,12 +46,15 @@ class _FirmaTechnicusTabState extends State<FirmaTechnicusTab>
     with AutomaticKeepAliveClientMixin {
   late final TechnicianProfileRepository _profileRepo;
   late final DraftRepository _draftRepo;
+  late final ReinigingRepository _reinigingRepo;
 
   final _formKey = GlobalKey<FormState>();
   final _c = FirmaTechnicusControllers();
 
   int? _visitId;
   bool _isLoading = true;
+  bool _isErkendTechnicus = true;
+  bool _isSchoorsteenveger = false;
   final _debouncer = Debouncer();
 
   @override
@@ -57,11 +65,13 @@ class _FirmaTechnicusTabState extends State<FirmaTechnicusTab>
     super.initState();
     _profileRepo = widget.profileRepository ?? TechnicianProfileRepository();
     _draftRepo = widget.draftRepository ?? DraftRepository();
+    _reinigingRepo = widget.reinigingRepository ?? ReinigingRepository();
     WidgetsBinding.instance.addPostFrameCallback(
       (_) => widget.onFormKeyReady?.call(_formKey),
     );
     final cachedProfile = AppWarmupService.instance.cachedResult?.profile;
-    final cachedDraft = AppWarmupService.instance.cachedResult?.activeDraft;
+    final cachedDraft =
+        AppWarmupService.instance.activeDraftFor(widget.certificateType);
     if (cachedProfile != null &&
         cachedDraft != null &&
         widget.profileRepository == null &&
@@ -74,6 +84,12 @@ class _FirmaTechnicusTabState extends State<FirmaTechnicusTab>
 
   void _populateFields(TechnicianProfile profile, DraftVisit draft) {
     _visitId = draft.id;
+    final isFreshDraft = draft.attestNumber.isEmpty && draft.startTime.isEmpty;
+    _isErkendTechnicus =
+        isFreshDraft ? profile.isErkendTechnicus : draft.technicianRoleErkend;
+    _isSchoorsteenveger = isFreshDraft
+        ? profile.isSchoorsteenveger
+        : draft.technicianRoleSchoorsteenveger;
     FirmaProfileSync.populate(
       profile: profile,
       draft: draft,
@@ -102,8 +118,10 @@ class _FirmaTechnicusTabState extends State<FirmaTechnicusTab>
       final profile = await _profileRepo.getProfile();
       final draft = widget.visitId != null
           ? await _draftRepo.getDraftById(widget.visitId!) ??
-              await _draftRepo.getOrCreateActiveDraft()
-          : await _draftRepo.getOrCreateActiveDraft();
+              await _draftRepo.getOrCreateActiveDraft(
+                  certificateType: widget.certificateType)
+          : await _draftRepo.getOrCreateActiveDraft(
+              certificateType: widget.certificateType);
 
       if (mounted) {
         setState(() => _populateFields(profile, draft));
@@ -116,9 +134,26 @@ class _FirmaTechnicusTabState extends State<FirmaTechnicusTab>
 
   void _onProfileChanged() => _queueSave();
 
+  void _toggleRole({required bool isErkend}) {
+    setState(() {
+      if (isErkend) {
+        _isErkendTechnicus = !_isErkendTechnicus;
+      } else {
+        _isSchoorsteenveger = !_isSchoorsteenveger;
+      }
+    });
+    _queueSave(immediate: true);
+  }
+
   void _queueSave({bool immediate = false}) {
-    final profile = FirmaProfileSync.buildProfile(_c);
+    final profile = FirmaProfileSync.buildProfile(
+      _c,
+      isErkendTechnicus: _isErkendTechnicus,
+      isSchoorsteenveger: _isSchoorsteenveger,
+    );
     final id = _visitId;
+    final erkend = _isErkendTechnicus;
+    final veger = _isSchoorsteenveger;
     final date = _c.date.text.trim();
     final start = _c.startTime.text.trim();
     final end = _c.endTime.text.trim();
@@ -127,6 +162,11 @@ class _FirmaTechnicusTabState extends State<FirmaTechnicusTab>
       if (id != null) {
         await _draftRepo.updateVisitTimings(
             visitId: id, visitDate: date, startTime: start, endTime: end);
+        await _reinigingRepo.updateTechnicianRoles(
+          visitId: id,
+          isErkendTechnicus: erkend,
+          isSchoorsteenveger: veger,
+        );
       }
     }
 
@@ -168,37 +208,35 @@ class _FirmaTechnicusTabState extends State<FirmaTechnicusTab>
           if (widget.boilerNotifier != null)
             ListenableBuilder(
               listenable: widget.boilerNotifier!,
-              builder: (context, _) => TechnicianSection(
-                firstNameController: _c.firstName,
-                lastNameController: _c.lastName,
-                gvController: _c.gv,
-                tvController: _c.tv,
-                analyzerBrandController: _c.analyzerBrand,
-                analyzerSerialController: _c.analyzerSerial,
-                dateController: _c.date,
-                startTimeController: _c.startTime,
-                endTimeController: _c.endTime,
-                onProfileChanged: _onProfileChanged,
-                onTimingsChanged: () => _queueSave(immediate: true),
+              builder: (context, _) => _buildTechnicianSection(
                 fuelType: widget.boilerNotifier?.draft.fuelCategory,
               ),
             )
           else
-            TechnicianSection(
-              firstNameController: _c.firstName,
-              lastNameController: _c.lastName,
-              gvController: _c.gv,
-              tvController: _c.tv,
-              analyzerBrandController: _c.analyzerBrand,
-              analyzerSerialController: _c.analyzerSerial,
-              dateController: _c.date,
-              startTimeController: _c.startTime,
-              endTimeController: _c.endTime,
-              onProfileChanged: _onProfileChanged,
-              onTimingsChanged: () => _queueSave(immediate: true),
-            ),
+            _buildTechnicianSection(),
         ],
       ),
     );
   }
+
+  TechnicianSection _buildTechnicianSection({String? fuelType}) =>
+      TechnicianSection(
+        firstNameController: _c.firstName,
+        lastNameController: _c.lastName,
+        gvController: _c.gv,
+        tvController: _c.tv,
+        analyzerBrandController: _c.analyzerBrand,
+        analyzerSerialController: _c.analyzerSerial,
+        dateController: _c.date,
+        startTimeController: _c.startTime,
+        endTimeController: _c.endTime,
+        onProfileChanged: _onProfileChanged,
+        onTimingsChanged: () => _queueSave(immediate: true),
+        fuelType: fuelType,
+        certificateType: widget.certificateType,
+        isErkendTechnicus: _isErkendTechnicus,
+        isSchoorsteenveger: _isSchoorsteenveger,
+        onToggleErkend: () => _toggleRole(isErkend: true),
+        onToggleSchoorsteenveger: () => _toggleRole(isErkend: false),
+      );
 }

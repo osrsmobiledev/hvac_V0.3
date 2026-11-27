@@ -104,7 +104,7 @@ void main() {
     return loaded;
   }
 
-  testWidgets('1. Renders all 14 Dutch labels and hides andere field initially',
+  testWidgets('1. Renders flue, all-boiler, and fuel hint when fuel is empty',
       (tester) async {
     await tester.pumpWidget(buildHarness(id: visitId));
     await tester.pumpAndSettle();
@@ -118,24 +118,26 @@ void main() {
       ReinigingDictionary.itemAllOther,
       ReinigingDictionary.itemAllVentilation,
       ReinigingDictionary.itemAllFlueTightness,
-      ReinigingDictionary.itemGasDustRemoval,
-      ReinigingDictionary.itemGasBurnerBedExchanger,
-      ReinigingDictionary.itemGasFanBurner,
-      ReinigingDictionary.itemLiquidFilters,
-      ReinigingDictionary.itemLiquidBoiler,
-      ReinigingDictionary.itemLiquidBurner,
-      ReinigingDictionary.itemSolidGeneralCondition,
-      ReinigingDictionary.itemSolidInternalCleaning,
     ]) {
       expect(find.text(label), findsOneWidget);
     }
+    expect(
+        find.text(ReinigingDictionary.hintSelectFuelForBoiler), findsOneWidget);
+    expect(find.text(ReinigingDictionary.subGas), findsNothing);
+    expect(find.text(ReinigingDictionary.subLiquid), findsNothing);
+    expect(find.text(ReinigingDictionary.subSolid), findsNothing);
     expect(find.text(ReinigingDictionary.lblOtherText), findsNothing);
   });
 
   testWidgets('2. Toggling persists to SQLite and restores on remount',
       (tester) async {
+    final notifier = BoilerDraftNotifier(repository: _FakeBoilerRepository())
+      ..useSavedCopy(BoilerDraft.initial().copyWith(fuelCategory: 'vloeibaar'));
+    addTearDown(notifier.dispose);
     final saves = <Debouncer>{};
-    await tester.pumpWidget(buildHarness(id: visitId, saves: saves));
+    await tester.pumpWidget(
+      buildHarness(id: visitId, boilerNotifier: notifier, saves: saves),
+    );
     await tester.pumpAndSettle();
 
     await tester.tap(find.text(ReinigingDictionary.itemFlueSweeping));
@@ -149,7 +151,9 @@ void main() {
     expect(saved.liquidBoiler, isTrue);
 
     await tester.pumpWidget(const SizedBox.shrink());
-    await tester.pumpWidget(buildHarness(id: visitId));
+    await tester.pumpWidget(
+      buildHarness(id: visitId, boilerNotifier: notifier),
+    );
     await tester
         .runAsync(() => Future<void>.delayed(const Duration(milliseconds: 50)));
     await tester.pumpAndSettle();
@@ -203,7 +207,8 @@ void main() {
     expect(field.controller!.text, isEmpty);
   });
 
-  testWidgets('4. Fuel subgroup highlights active fuel without losing checks',
+  testWidgets(
+      '4. Shows only active fuel subgroup and clears prior fuel on switch',
       (tester) async {
     final notifier = BoilerDraftNotifier(repository: _FakeBoilerRepository())
       ..useSavedCopy(BoilerDraft.initial().copyWith(fuelCategory: 'vloeibaar'));
@@ -215,40 +220,51 @@ void main() {
     );
     await tester.pumpAndSettle();
 
+    expect(find.text(ReinigingDictionary.subLiquid), findsOneWidget);
+    expect(find.text(ReinigingDictionary.subGas), findsNothing);
+    expect(find.text(ReinigingDictionary.subSolid), findsNothing);
+
+    await tester.ensureVisible(find.text(ReinigingDictionary.itemFlueSweeping));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(ReinigingDictionary.itemFlueSweeping));
+    await tester.pumpAndSettle();
     await tester.ensureVisible(find.text(ReinigingDictionary.itemLiquidBoiler));
+    await tester.pumpAndSettle();
     await tester.tap(find.text(ReinigingDictionary.itemLiquidBoiler));
-    await tester.pump();
+    await tester.pumpAndSettle();
 
-    expect(find.text(ReinigingDictionary.badgeActiveFuel), findsOneWidget);
-    final liquidY =
-        tester.getTopLeft(find.text(ReinigingDictionary.subLiquid)).dy;
-    final gasY = tester.getTopLeft(find.text(ReinigingDictionary.subGas)).dy;
-    expect(liquidY, lessThan(gasY));
-
-    // Switch fuel to gas: Gas moves above Liquid, liquid item stays checked.
+    // Switch fuel to gas: only gas subgroup is shown, liquid check is cleared,
+    // while flue/all checks are preserved.
     notifier.useSavedCopy(notifier.draft.copyWith(fuelCategory: 'gas'));
     await tester.pumpAndSettle();
 
-    final newGasY = tester.getTopLeft(find.text(ReinigingDictionary.subGas)).dy;
-    final newLiquidY =
-        tester.getTopLeft(find.text(ReinigingDictionary.subLiquid)).dy;
-    expect(newGasY, lessThan(newLiquidY));
+    expect(find.text(ReinigingDictionary.subGas), findsOneWidget);
+    expect(find.text(ReinigingDictionary.subLiquid), findsNothing);
+    expect(find.text(ReinigingDictionary.subSolid), findsNothing);
     final saved = await settleAndLoad(tester, saves);
-    expect(saved.liquidBoiler, isTrue);
+    expect(saved.liquidBoiler, isFalse);
+    expect(saved.flueSweeping, isTrue);
   });
 
   testWidgets('5. Empty selection fails validation and clears on first tap',
       (tester) async {
     GlobalKey<FormState>? formKey;
     final saves = <Debouncer>{};
-    await tester.pumpWidget(
-      buildHarness(
-        id: visitId,
-        saves: saves,
-        onFormKeyReady: (k) => formKey = k,
-      ),
-    );
+    await tester.pumpWidget(buildHarness(
+        id: visitId, saves: saves, onFormKeyReady: (k) => formKey = k));
+    await tester
+        .runAsync(() => Future<void>.delayed(const Duration(milliseconds: 50)));
     await tester.pumpAndSettle();
+
+    // Fresh empty draft must start clean with zero error state after _loadControls().
+    expect(FormScrollHelper.findFirstError(formKey!.currentContext), isNull);
+
+    // Selecting and deselecting during normal editing must not flash red.
+    await tester.tap(find.text(ReinigingDictionary.itemFlueSweeping));
+    await tester.pump();
+    await tester.tap(find.text(ReinigingDictionary.itemFlueSweeping));
+    await tester.pump();
+    expect(FormScrollHelper.findFirstError(formKey!.currentContext), isNull);
 
     expect(formKey!.currentState!.validate(), isFalse);
     await tester.pump();

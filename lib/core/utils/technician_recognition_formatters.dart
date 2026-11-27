@@ -42,12 +42,20 @@ abstract final class TechnicianRecognitionFormatters {
   }
 
   /// Validates a GV certification number according to statutory length and active fuel type.
+  ///
+  /// When [requireRecognition] is false (e.g. standalone Schoorsteenveger in
+  /// Reinigingsattest), an empty value is permitted; non-empty values must still
+  /// contain 5 digits.
   static String? validateGv(
     String? value, {
     String? fuelType,
     bool isTvEmpty = true,
+    bool requireRecognition = true,
   }) {
     final digits = stripPrefix(value ?? '');
+    if (!requireRecognition && digits.isEmpty) {
+      return null;
+    }
     final isGas = fuelType == 'gas';
 
     if (isGas && digits.isEmpty) {
@@ -67,12 +75,20 @@ abstract final class TechnicianRecognitionFormatters {
   }
 
   /// Validates a TV certification number according to statutory length and active fuel type.
+  ///
+  /// When [requireRecognition] is false (e.g. standalone Schoorsteenveger in
+  /// Reinigingsattest), an empty value is permitted; non-empty values must still
+  /// contain 5 digits.
   static String? validateTv(
     String? value, {
     String? fuelType,
     bool isGvEmpty = true,
+    bool requireRecognition = true,
   }) {
     final digits = stripPrefix(value ?? '');
+    if (!requireRecognition && digits.isEmpty) {
+      return null;
+    }
     final isOil = fuelType == 'vloeibaar';
 
     if (isOil && digits.isEmpty) {

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../localization/app_dictionary.dart';
 import '../theme/app_theme.dart';
 import 'app_shell_controller.dart';
 
@@ -13,14 +12,15 @@ class AppBarTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (controller.activeApplet == AppletType.combustion) {
-      return const FittedBox(
+    if (controller.activeApplet == AppletType.combustion ||
+        controller.activeApplet == AppletType.cleaning) {
+      return FittedBox(
         fit: BoxFit.scaleDown,
         child: Text(
-          AppDictionary.menuCombustion,
+          controller.appBarTitle,
           textAlign: TextAlign.center,
           maxLines: 1,
-          style: TextStyle(
+          style: const TextStyle(
             fontFamily: AppTheme.fontFamily,
             fontWeight: FontWeight.w700,
             fontSize: 16.5,

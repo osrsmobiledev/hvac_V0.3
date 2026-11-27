@@ -39,7 +39,7 @@ class TacticalCheckButton extends StatelessWidget {
             color: isActive
                 ? activeBorderColor
                 : Colors.white.withValues(alpha: 0.12),
-            width: isActive ? 1.2 : 1.0,
+            width: 1.2,
           ),
         ),
         child: FittedBox(

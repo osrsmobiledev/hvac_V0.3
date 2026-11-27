@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hvac_app/app/localization/reiniging_dictionary.dart';
+import 'package:hvac_app/app/theme/app_colors.dart';
+import 'package:hvac_app/app/theme/app_theme.dart';
 import '../../../domain/reiniging_controls_draft.dart';
 import '../../widgets/bento_main_section.dart';
 import 'reiniging_checklist_tile.dart';
@@ -24,6 +26,15 @@ class ReinigingFlueCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          const Text(
+            ReinigingDictionary.subFlue,
+            style: TextStyle(
+              fontFamily: AppTheme.fontFamily,
+              fontSize: 12.5,
+              color: AppColors.textMuted,
+            ),
+          ),
+          const SizedBox(height: 10.0),
           ReinigingChecklistTile(
             label: ReinigingDictionary.itemFlueSweeping,
             isSelected: draft.flueSweeping,

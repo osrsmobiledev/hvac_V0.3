@@ -146,7 +146,7 @@ flowchart LR
 
 - [x] **Slice 7.1 — Schema & Data Layer:** DB v14 migration, `ReinigingControlsDraft` model, `DraftVisit` / `EindbeoordelingDraft` / `TechnicianProfile` extensions, `ReinigingRepository`, draft isolation by `certificate_type`, and unit tests.
 - [x] **Slice 7.2 — Tab 5 (`Reiniging en controle`):** `ReinigingDictionary`, `ReinigingControleTab` + tactical checklist tiles, conditional `andere, namelijk:` input + pruning, and widget tests.
-- [ ] **Slice 7.3 — Tabs 1/2/6 Deltas & `ReinigingsattestScreen`:** Lightweight mode flags on `StartTab`, `FirmaTechnicusTab`, `EindbeoordelingTab`, `GV`/`TV` role-based validation, standalone `ReinigingsattestScreen`, and navigation entry point.
+- [x] **Slice 7.3 — Tabs 1/2/6 Deltas & `ReinigingsattestScreen`:** Lightweight mode flags on `StartTab`, `FirmaTechnicusTab`, `EindbeoordelingTab`, `GV`/`TV` role-based validation, standalone `ReinigingsattestScreen`, and navigation entry point.
 - [ ] **Slice 7.4 — Reinigingsattest PDF Export:** `CleaningPdfGenerator` + `PdfDataMapper` extensions + `Reinigingsattest_<nr>.pdf` preview & device save. *(Note: owner will provide a sample official Vlaanderen / EuroSoft Reinigingsattest PDF reference before building `CleaningPdfGenerator`.)*
 - [ ] **Slice 7.5 — Finalization, Email & Historiek:** Visit finalization snapshot freeze, dynamic Dutch `EmailJobSpec` for Reinigingsattest, and Historiek type badges/filtering (VEKA hidden for standalone Reiniging).
 - [ ] **Slice 7.6 — Combined Maintenance Mode (Option B):** Shared 8-tab workflow (`MetingTab` + `ReinigingControleTab`), dual PDF generation/archiving (`pdf_path` + `reiniging_pdf_path`), and 1 email with 2 separate PDF attachments.

@@ -29,6 +29,7 @@ class CustomerSignatureSection extends StatefulWidget {
     required String title,
     required VoidCallback onConfirmed,
   }) onConfirmClearSignature;
+  final String? label;
 
   const CustomerSignatureSection({
     super.key,
@@ -36,6 +37,7 @@ class CustomerSignatureSection extends StatefulWidget {
     required this.onDraftChanged,
     required this.onOpenSignatureModal,
     required this.onConfirmClearSignature,
+    this.label,
   });
 
   @override
@@ -87,7 +89,8 @@ class _CustomerSignatureSectionState extends State<CustomerSignatureSection> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             SignatureTile(
-              label: EindbeoordelingDictionary.lblHandtekeningKlant,
+              label: widget.label ??
+                  EindbeoordelingDictionary.lblHandtekeningKlant,
               signatureData: draft.customerSignaturePath,
               exception: draft.customerSignatureException,
               isError: isError,
@@ -130,13 +133,15 @@ class _CustomerSignatureSectionState extends State<CustomerSignatureSection> {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Text(
-                          EindbeoordelingDictionary.lblKlantKanNietTekenen,
-                          style: TextStyle(
-                            fontFamily: AppTheme.fontFamily,
-                            color: AppColors.antiqueGold,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
+                        const Flexible(
+                          child: Text(
+                            EindbeoordelingDictionary.lblKlantKanNietTekenen,
+                            style: TextStyle(
+                              fontFamily: AppTheme.fontFamily,
+                              color: AppColors.antiqueGold,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                            ),
                           ),
                         ),
                         const SizedBox(width: 4),

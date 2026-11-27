@@ -4,9 +4,10 @@
 /// checklist labels, conditional input labels, and validation messages.
 abstract final class ReinigingDictionary {
   // --- Card Headers ---
-  static const String headerFlue =
-      'Reiniging en controle rookgasafvoerkanaal (erkend technicus of schoorsteenveger)';
-  static const String headerBoiler = 'Reiniging van het stooktoestel';
+  static const String headerFlue = 'Rookgasafvoerkanaal';
+  static const String subFlue =
+      'Reiniging en controle (erkend technicus of schoorsteenveger)';
+  static const String headerBoiler = 'Stooktoestel';
 
   // --- Subgroup Headers ---
   static const String subAll = 'Alle toestellen:';
@@ -14,6 +15,8 @@ abstract final class ReinigingDictionary {
   static const String subLiquid = 'Vloeibare brandstof: (erkend technicus)';
   static const String subSolid = 'Vaste brandstof: (geschoold vakman)';
   static const String badgeActiveFuel = 'Actieve brandstof';
+  static const String hintSelectFuelForBoiler =
+      "Kies een brandstof op tab 'Stooktoestel' om de brandstofspecifieke reinigingspunten te tonen.";
 
   // --- Card 1: Flue (3 items) ---
   static const String itemFlueSweeping =
@@ -54,4 +57,25 @@ abstract final class ReinigingDictionary {
       'Vul een omschrijving in voor "andere, namelijk:".';
   static const String errSelectAtLeastOne =
       'Duid minstens 1 controle- of reinigingspunt aan.';
+
+  // --- Workflow Tabs & Start / Firma Deltas (Slice 7.3) ---
+  static const List<String> reinigingTabs = [
+    'Data',
+    'Start',
+    'Firma - Technicus',
+    'Klant',
+    'Stooktoestel',
+    'Reiniging en controle',
+    'Eindbeoordeling',
+  ];
+
+  static const String headerStartReiniging = 'Reinigingsattest';
+  static const String activityOnderhoudStooktoestel =
+      'Onderhoud centraal stooktoestel';
+  static const String lblTechnicianRoles = 'Hoedanigheid';
+  static const String roleErkendTechnicus = 'Erkend technicus';
+  static const String roleSchoorsteenveger = 'Schoorsteenveger';
+  static const String lblDateReiniging = 'Datum reiniging:';
+  static const String toastPdfNotYetAvailable =
+      'Reinigingsattest PDF-export en afronding volgen in Slice 7.4–7.5. Uw concept is veilig opgeslagen.';
 }

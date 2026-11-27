@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hvac_app/app/localization/reiniging_dictionary.dart';
+import 'package:hvac_app/app/theme/app_colors.dart';
+import 'package:hvac_app/app/theme/app_theme.dart';
 import '../../../domain/reiniging_controls_draft.dart';
 import '../../widgets/bento_main_section.dart';
 import '../../widgets/dark_text_form_field.dart';
@@ -31,15 +33,11 @@ class ReinigingBoilerCard extends StatelessWidget {
     required this.onOtherTextChanged,
   });
 
-  List<String> _orderedFuelKeys() {
-    const base = ['gas', 'vloeibaar', 'vast'];
-    if (!base.contains(fuelCategory)) return base;
-    return [fuelCategory, ...base.where((k) => k != fuelCategory)];
-  }
+  static const _validFuels = ['gas', 'vloeibaar', 'vast'];
 
   @override
   Widget build(BuildContext context) {
-    final orderedFuels = _orderedFuelKeys();
+    final hasValidFuel = _validFuels.contains(fuelCategory);
     return BentoMainSection(
       title: ReinigingDictionary.headerBoiler,
       child: Column(
@@ -92,16 +90,46 @@ class ReinigingBoilerCard extends StatelessWidget {
               ),
             ),
           ),
-          for (final fuelKey in orderedFuels) ...[
-            const SizedBox(height: 14.0),
+          const SizedBox(height: 14.0),
+          if (hasValidFuel)
             ReinigingFuelSubgroup(
-              fuelKey: fuelKey,
-              isHighlighted: fuelCategory == fuelKey,
+              fuelKey: fuelCategory,
+              isHighlighted: true,
               draft: draft,
               hasSelectionError: hasSelectionError,
               onChanged: onChanged,
+            )
+          else
+            Container(
+              padding: const EdgeInsets.all(12.0),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.03),
+                borderRadius: BorderRadius.circular(10.0),
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.10),
+                ),
+              ),
+              child: const Row(
+                children: [
+                  Icon(
+                    Icons.info_outline_rounded,
+                    size: 18.0,
+                    color: AppColors.textMuted,
+                  ),
+                  SizedBox(width: 10.0),
+                  Expanded(
+                    child: Text(
+                      ReinigingDictionary.hintSelectFuelForBoiler,
+                      style: TextStyle(
+                        fontFamily: AppTheme.fontFamily,
+                        fontSize: 12.5,
+                        color: AppColors.textMuted,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ],
         ],
       ),
     );

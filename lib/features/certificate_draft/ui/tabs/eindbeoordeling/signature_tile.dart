@@ -69,12 +69,12 @@ class SignatureTile extends StatelessWidget {
         ? AppColors.errorRed
         : AppColors.antiqueGold;
 
-    final borderWidth = (hasSignature || hasException || isError) ? 1.2 : 1.0;
+    const borderWidth = 1.2;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        DarkInputLabel(label),
+        DarkInputLabel(label, maxLines: 2),
         InkWell(
           onTap: hasException
               ? null
@@ -134,14 +134,16 @@ class _SignatureEmptyPrompt extends StatelessWidget {
             size: 20,
           ),
           const SizedBox(width: 8),
-          Text(
-            EindbeoordelingDictionary.btnTikOmTeTekenen,
-            style: TextStyle(
-              fontFamily: AppTheme.fontFamily,
-              color: isError ? AppColors.errorRed : Colors.white,
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              letterSpacing: 0.2,
+          Flexible(
+            child: Text(
+              EindbeoordelingDictionary.btnTikOmTeTekenen,
+              style: TextStyle(
+                fontFamily: AppTheme.fontFamily,
+                color: isError ? AppColors.errorRed : Colors.white,
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                letterSpacing: 0.2,
+              ),
             ),
           ),
         ],

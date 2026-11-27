@@ -20,6 +20,7 @@ class GebrekenOpmerkingenCard extends StatelessWidget {
     super.key,
     required this.defectsController,
     required this.remarksController,
+    this.remedialController,
     required this.hasNegativeAssessment,
     required this.onChanged,
     this.fuelType = 'gas',
@@ -28,6 +29,7 @@ class GebrekenOpmerkingenCard extends StatelessWidget {
 
   final TextEditingController defectsController;
   final TextEditingController remarksController;
+  final TextEditingController? remedialController;
   final bool hasNegativeAssessment;
   final VoidCallback onChanged;
   final String fuelType;
@@ -166,6 +168,26 @@ class GebrekenOpmerkingenCard extends StatelessWidget {
               feedback: EindbeoordelingDictionary.feedbackRemarksCleared,
             ),
           ),
+
+          if (remedialController != null) ...[
+            const SizedBox(height: 14),
+            const DarkInputLabel(
+              EindbeoordelingDictionary.lblTeTreffenMaatregelen,
+            ),
+            TacticalMultilineInput(
+              key: const ValueKey('eindbeoordeling_remedial_measures'),
+              controller: remedialController!,
+              hintText: EindbeoordelingDictionary.hintTeTreffenMaatregelen,
+              onChanged: onChanged,
+              onClear: () => _confirmClear(
+                context,
+                controller: remedialController!,
+                title: EindbeoordelingDictionary.dlgClearRemedialTitle,
+                message: EindbeoordelingDictionary.dlgClearRemedialBody,
+                feedback: EindbeoordelingDictionary.feedbackRemedialCleared,
+              ),
+            ),
+          ],
         ],
       ),
     );

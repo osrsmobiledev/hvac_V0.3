@@ -55,8 +55,7 @@ class MainSlotTab extends StatelessWidget {
           decoration: BoxDecoration(
             color: backgroundColor,
             borderRadius: BorderRadius.circular(8.0),
-            border:
-                Border.all(color: borderColor, width: isSelected ? 1.2 : 1.0),
+            border: Border.all(color: borderColor, width: 1.2),
           ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,

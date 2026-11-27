@@ -87,7 +87,11 @@ abstract final class FirmaProfileSync {
   }
 
   /// Builds a [TechnicianProfile] from controller inputs.
-  static TechnicianProfile buildProfile(FirmaTechnicusControllers c) {
+  static TechnicianProfile buildProfile(
+    FirmaTechnicusControllers c, {
+    bool isErkendTechnicus = true,
+    bool isSchoorsteenveger = false,
+  }) {
     return TechnicianProfile(
       companyName: c.name.text.trim(),
       street: c.street.text.trim(),
@@ -104,6 +108,8 @@ abstract final class FirmaProfileSync {
       tvNumber: TechnicianRecognitionFormatters.normalizeTv(c.tv.text),
       analyzerBrandModel: c.analyzerBrand.text.trim(),
       analyzerSerialNumber: c.analyzerSerial.text.trim(),
+      isErkendTechnicus: isErkendTechnicus,
+      isSchoorsteenveger: isSchoorsteenveger,
     );
   }
 }

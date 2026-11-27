@@ -151,4 +151,22 @@ class ReinigingControlsDraft {
           solidInternalCleaning ?? this.solidInternalCleaning,
     );
   }
+
+  /// Returns a copy with all fuel-specific flags cleared except for [fuelCategory]
+  /// (`'gas'`, `'vloeibaar'`, or `'vast'`).
+  ReinigingControlsDraft clearingInactiveFuels(String fuelCategory) {
+    final keepGas = fuelCategory == 'gas';
+    final keepLiquid = fuelCategory == 'vloeibaar';
+    final keepSolid = fuelCategory == 'vast';
+    return copyWith(
+      gasDustRemoval: keepGas ? gasDustRemoval : false,
+      gasBurnerBedExchanger: keepGas ? gasBurnerBedExchanger : false,
+      gasFanBurner: keepGas ? gasFanBurner : false,
+      liquidFilters: keepLiquid ? liquidFilters : false,
+      liquidBoiler: keepLiquid ? liquidBoiler : false,
+      liquidBurner: keepLiquid ? liquidBurner : false,
+      solidGeneralCondition: keepSolid ? solidGeneralCondition : false,
+      solidInternalCleaning: keepSolid ? solidInternalCleaning : false,
+    );
+  }
 }

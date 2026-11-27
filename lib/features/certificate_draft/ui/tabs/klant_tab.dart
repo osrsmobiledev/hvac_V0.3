@@ -17,22 +17,24 @@ class KlantTab extends StatefulWidget {
   final CustomerRepository? customerRepository;
   final DraftRepository? draftRepository;
   final ValueChanged<GlobalKey<FormState>>? onFormKeyReady;
-  const KlantTab({
-    super.key,
-    this.customerRepository,
-    this.draftRepository,
-    this.onFormKeyReady,
-  });
+  final String certificateType;
+  const KlantTab(
+      {super.key,
+      this.customerRepository,
+      this.draftRepository,
+      this.onFormKeyReady,
+      this.certificateType = 'verbranding'});
   @override
   State<KlantTab> createState() => _KlantTabState();
 }
 
 class _KlantTabState extends State<KlantTab>
     with AutomaticKeepAliveClientMixin {
-  late final _coord = KlantDataCoordinator(
-    customerRepository: widget.customerRepository,
-    draftRepository: widget.draftRepository,
-  );
+  late final _coord = _createCoord();
+  KlantDataCoordinator _createCoord() => KlantDataCoordinator(
+        customerRepository: widget.customerRepository,
+        draftRepository: widget.draftRepository,
+      );
   final _controllers = KlantFormControllers();
   final _formKey = GlobalKey<FormState>();
   final _d = KlantTabStateData();
@@ -59,7 +61,8 @@ class _KlantTabState extends State<KlantTab>
 
   Future<void> _loadInitialData() async {
     try {
-      final data = await _coord.loadDraftData();
+      final data =
+          await _coord.loadDraftData(certificateType: widget.certificateType);
       if (!mounted) return;
       setState(() {
         _d.draftVisitId = data.draftId;
